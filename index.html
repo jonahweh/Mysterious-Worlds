@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mysterious Worlds Probenplan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>
+/* Layout: Theater-Aushang – Signalbrett für Änderungen ganz oben, darunter der Spielplan als Datumsleiste, per Menü nach Rolle filterbar */
+:root{
+  --bg:#f3f1f7; --surface:#ffffff; --ink:#1d1830; --muted:#625b78; --line:#dcd6e8;
+  --accent:#5b2bb5; --accent-soft:#ece6fb;
+  --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#1d1830;
+  --fr:#ece6fb; --di:#fff0d2; --mi:#dcf1ea; --pl:#fbe2e2; --fe:#ebe9f0;
+  --ausfall:#c62828; --verschoben:#c25e00; --info:#2451b3; --neu:#1f7a4d;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#15121f; --surface:#1f1a2d; --ink:#efeaf9; --muted:#a9a1c2; --line:#352e4a;
+  --accent:#b8a2ff; --accent-soft:#2c2446;
+  --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
+  --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
+  --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15121f; --surface:#1f1a2d; --ink:#efeaf9; --muted:#a9a1c2; --line:#352e4a;
+  --accent:#b8a2ff; --accent-soft:#2c2446;
+  --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
+  --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
+  --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;
+  padding-inline:16px;padding-block:0 48px}
+.wrap{max-width:960px;margin:0 auto;display:grid;gap:28px}
+h1,h2,h3{text-wrap:balance;margin:0}
+button,select{font:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Kopf */
+header.top{padding-top:28px;display:grid;gap:6px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(44px,9vw,76px);line-height:.92;letter-spacing:.01em;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.lede{color:var(--muted);max-width:62ch}
+
+/* Aushang */
+.board{background:var(--signal);color:var(--signal-ink);border:3px solid var(--signal-line);border-radius:4px;
+  padding:20px 20px 16px;box-shadow:6px 6px 0 var(--signal-line);display:grid;gap:14px}
+.board-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.board h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
+.board .stand{font-family:var(--mono);font-size:12px}
+.notices{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.notice{background:#fffbe6;border:2px solid #231c00;border-radius:3px;padding:12px 14px;display:grid;gap:4px;min-width:0}
+.notice-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.kind{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:2px 8px;border-radius:2px}
+.kind.ausfall{background:#c62828}.kind.verschoben{background:#b45300}.kind.info{background:#2451b3}.kind.neu{background:#1f7a4d}
+.notice strong{font-size:16px}
+.notice .posted{font-size:12px;color:#5b5230}
+.empty{font-weight:600}
+
+/* Nächste Probe */
+.next{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.next .big{font-family:var(--display);font-weight:800;font-size:44px;line-height:.9;color:var(--accent);text-align:center;min-width:84px}
+.next .big small{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.next .label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.next .what{font-weight:700;font-size:17px}
+
+/* Menü */
+nav.menu{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px}
+.tab{background:transparent;border:1.5px solid var(--line);color:var(--ink);border-radius:999px;padding:7px 16px;cursor:pointer;font-weight:600}
+.tab:hover{border-color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+
+/* Legende */
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:13px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid var(--line);display:inline-block}
+
+/* Plan */
+.month{display:grid;gap:10px}
+.month h3{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding-top:8px}
+.entry{display:grid;grid-template-columns:78px 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;position:relative}
+.entry.t-fr .date{background:var(--fr)}.entry.t-di .date{background:var(--di)}.entry.t-mi .date{background:var(--mi)}.entry.t-pl .date{background:var(--pl)}
+.entry.t-fe{background:var(--fe);border-style:dashed}
+.entry.past{opacity:.55}
+.entry.is-next{border:2px solid var(--accent)}
+.date{border-radius:4px;text-align:center;padding:8px 4px;align-self:start;display:grid;gap:2px}
+.date .wd{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.date .dm{font-family:var(--display);font-weight:800;font-size:26px;line-height:1;font-variant-numeric:tabular-nums}
+.body{display:grid;gap:6px;min-width:0}
+.line1{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.type{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.time{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.scenes{font-weight:700;font-size:16px}
+.scenes.cancelled{text-decoration:line-through;opacity:.6}
+.songs{font-size:14px}
+.songs b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-right:6px}
+.roles{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;background:transparent;color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.me{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.note{font-size:13px;color:var(--muted)}
+.flag{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:2px;background:var(--signal);color:var(--signal-ink);border:1px solid var(--signal-ink)}
+.nextbadge{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);font-weight:500}
+.change-inline{font-size:13px;font-weight:600;color:var(--ink);background:var(--accent-soft);border-radius:3px;padding:4px 8px}
+
+/* Mein Plan */
+.picker{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.picker-title{font-weight:700}
+.role-grid{display:flex;flex-wrap:wrap;gap:6px}
+.rolebtn{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 13px;cursor:pointer;font-weight:500;font-size:14px}
+.rolebtn:hover{border-color:var(--accent)}
+.rolebtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.picker-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.reset{border:none;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0;font-size:14px}
+.linkhint{font-size:13px;color:var(--muted)}
+.linkhint code{font-family:var(--mono);font-size:12px;background:var(--accent-soft);padding:1px 6px;border-radius:3px;color:var(--ink)}
+.summary{font-size:14px;color:var(--muted)}
+
+/* Infos */
+.info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.info-card{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;gap:8px;align-content:start;min-width:0}
+.info-card h3{font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.info-card ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.mono{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+@media (max-width:520px){
+  .entry{grid-template-columns:62px 1fr;gap:10px;padding:12px}
+  .date .dm{font-size:22px}
+  .board{padding:16px 14px 12px;box-shadow:4px 4px 0 var(--signal-line)}
+  .board h2{font-size:28px}
+  .next{grid-template-columns:1fr}
+  .next .big{text-align:left}
+}
+@media (prefers-reduced-motion:no-preference){.tab,.chip{transition:background .15s,border-color .15s,color .15s}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Musical · Probenplan Herbst/Winter 2026/27</div>
+    <h1>Mysterious <span>Worlds</span></h1>
+    <p class="lede">Alle Proben vom 16. Oktober 2026 bis 15. Januar 2027. Kurzfristige Änderungen stehen immer zuerst im Aushang.</p>
+  </header>
+
+  <section class="board" id="aushang" aria-labelledby="aushang-h">
+    <div class="board-head">
+      <h2 id="aushang-h">Aushang · Änderungen</h2>
+      <span class="stand" id="stand"></span>
+    </div>
+    <ul class="notices" id="notices"></ul>
+  </section>
+
+  <section class="next" id="next" aria-live="polite"></section>
+
+  <nav class="menu" role="tablist" aria-label="Ansicht wählen">
+    <button class="tab" role="tab" id="tab-gesamt" data-view="gesamt" aria-selected="true">Gesamtplan</button>
+    <button class="tab" role="tab" id="tab-rolle" data-view="rolle" aria-selected="false">Mein Probenplan</button>
+    <button class="tab" role="tab" id="tab-infos" data-view="infos" aria-selected="false">Ferien &amp; Infos</button>
+  </nav>
+
+  <section id="view-gesamt" role="tabpanel" aria-labelledby="tab-gesamt">
+    <div class="legend" style="margin-bottom:14px">
+      <span><i class="sw" style="background:var(--fr)"></i>Fr 13:55–15:25 Szenenprobe</span>
+      <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
+      <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–16:10 Chor &amp; Solisten</span>
+      <span><i class="sw" style="background:var(--pl)"></i>Platzhalter (Szene noch offen)</span>
+    </div>
+    <div id="plan-all" style="display:grid;gap:18px"></div>
+  </section>
+
+  <section id="view-rolle" role="tabpanel" aria-labelledby="tab-rolle" hidden>
+    <div class="picker">
+      <span class="picker-title" id="picker-title">Welche Rolle(n) spielst du?</span>
+      <div class="role-grid" id="role-grid" role="group" aria-labelledby="picker-title"></div>
+      <div class="summary" id="role-summary">Tippe deine Rolle an. Wenn du mehrere Rollen hast (zum Beispiel zusätzlich im Ensemble), tippe alle an.</div>
+      <div class="picker-actions"><button class="reset" id="role-reset" type="button" hidden>Auswahl zurücksetzen</button><span class="linkhint" id="link-hint"></span></div>
+    </div>
+    <div id="plan-role" style="display:grid;gap:18px;margin-top:18px"></div>
+  </section>
+
+  <section id="view-infos" role="tabpanel" aria-labelledby="tab-infos" hidden>
+    <div class="info-grid">
+      <div class="info-card">
+        <h3>Probenzeiten</h3>
+        <ul>
+          <li><b>Freitag</b> <span class="mono">13:55–15:25</span> · Szenenprobe (Regeltermin)</li>
+          <li><b>Dienstag</b> <span class="mono">13:55–15:25</span> · Zusatzprobe, nur wenn im Plan</li>
+          <li><b>Mittwoch</b> <span class="mono">14:40–16:10</span> · Chor &amp; Solisten</li>
+        </ul>
+      </div>
+      <div class="info-card">
+        <h3>Ferien &amp; schulfrei</h3>
+        <ul>
+          <li><span class="mono">02.11.–06.11.</span> Herbstferien</li>
+          <li><span class="mono">18.11.</span> Buß- und Bettag</li>
+          <li><span class="mono">24.12.–08.01.</span> Weihnachtsferien</li>
+        </ul>
+        <p class="note">An diesen Tagen finden keine Proben statt.</p>
+      </div>
+      <div class="info-card">
+        <h3>Reserve-Dienstage</h3>
+        <p class="mono">20.10. · 01.12. · 15.12. · 22.12.</p>
+        <p class="note">Werden nur genutzt, wenn eine Probe ausfällt oder eine Szene mehr Zeit braucht. Das steht dann im Aushang.</p>
+      </div>
+      <div class="info-card">
+        <h3>So funktioniert der Plan</h3>
+        <p class="note">Jeder Song wird am Mittwoch vor der Szenenprobe geübt, in der er vorkommt. Szenen ab 14 werden noch geschrieben; ihre Termine sind als Platzhalter reserviert.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Mysterious Worlds · Probenplan. Aus Datenschutzgründen stehen hier nur Rollennamen, keine Namen von Mitwirkenden.</footer>
+</div>
+
+<script>
+/* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
+const STAND = "2026-09-30";
+// art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
+const AUSHANG = [
+  { art:"info", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober", text:"Die erste Probe ist Freitag, 16.10., 13:55 Uhr. Geprobt werden Szene 4 und Szene 7.", ausgehaengt:"2026-09-30" }
+];
+
+/* ===== Rollen ===== */
+const ROLES = {
+  frank:"Frank", lutzi:"Lutzi", phillip:"Phillip", james:"James", helen:"Helen", petra:"Petra", vivian:"Vivian",
+  oberzauberer:"Oberzauberer", rotekoenigin:"Rote Königin", weissekoenigin:"Weiße Königin", katze:"Cheshire Katze",
+  gibbins:"Gibbins", balldiva:"Balldiva", madeleine:"Madeleine", sieglinde:"Sieglinde",
+  erzaehlerinnen:"Erzählerinnen", gefolge:"Gefolge / Karten", ballgesellschaft:"Ballgesellschaft & Dressers",
+  gang:"Gang", ensemble:"Ensemble / Chor"
+};
+const G = ["helen","vivian","james","petra"];
+
+/* ===== Plan ===== */
+// typ: fr | di | mi | pl | fe
+const PLAN = [
+ {d:"2026-10-16",typ:"fr",sz:"Szene 4: Oberzauberer wird informiert · Szene 7: Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","gibbins","gefolge","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
+ {d:"2026-10-21",typ:"mi",sz:"",songs:"Mysterious Worlds (Opening + Reprise) · I Say A Little Prayer",roles:["frank","erzaehlerinnen","ensemble","helen","vivian","petra"],note:""},
+ {d:"2026-10-23",typ:"fr",sz:"Opening: Mysterious Worlds · Szene 1: Kessel brauen (mit Reprise)",songs:"Mysterious Worlds, Reprise",roles:["frank","lutzi","erzaehlerinnen","ensemble"],note:""},
+ {d:"2026-10-27",typ:"di",sz:"Szene 2: Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:"Kleine Besetzung, daher Dienstag."},
+ {d:"2026-10-28",typ:"mi",sz:"",songs:"Once Upon a December (Ausschnitt) · Three Little Birds",roles:["frank","phillip","katze"],note:""},
+ {d:"2026-10-30",typ:"fr",sz:"Szene 3: Franks Turm mit Phillip · Szene 5: Cheshire Katze",songs:"Once Upon a December, Three Little Birds",roles:["frank","lutzi","phillip","katze","erzaehlerinnen"],note:"Phillip ist in beiden Szenen dabei."},
+ {d:"2026-11-02",bis:"2026-11-06",typ:"fe",sz:"Herbstferien – keine Proben"},
+ {d:"2026-11-10",typ:"di",sz:"Szene 11: Madi und Sigi",songs:"",roles:["phillip","madeleine","sieglinde"],note:"Gereimte Wechselpassagen im Rhythmus proben."},
+ {d:"2026-11-11",typ:"mi",sz:"",songs:"Candy Store · Respect · Lied der Balldiva",roles:["rotekoenigin","gefolge","petra","balldiva","ensemble"],note:""},
+ {d:"2026-11-13",typ:"fr",sz:"Szene 6: Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","gefolge","weissekoenigin"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
+ {d:"2026-11-17",typ:"di",sz:"Szene 7a: Gibbins soll ausspionieren · Szene 7b: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","phillip"],note:"Phillip nur für den Schluss von Respect."},
+ {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – Mittwochsprobe entfällt"},
+ {d:"2026-11-20",typ:"fr",sz:"Szene 10, Teil 1: Ankunft im Ballsaal",songs:"Lied der Balldiva, Walzer",roles:[...G,"phillip","balldiva","ballgesellschaft"],note:""},
+ {d:"2026-11-24",typ:"di",sz:"Szene 10, Teil 2: Frank & Lutzi auf dem Ball bis Szenenende",songs:"Walzer / Ballmusik",roles:[...G,"phillip","balldiva","ballgesellschaft","frank","lutzi"],note:"Längste Szene, daher zwei Termine."},
+ {d:"2026-11-25",typ:"mi",sz:"",songs:"Like a Prayer",roles:["weissekoenigin","ensemble"],note:""},
+ {d:"2026-11-27",typ:"fr",sz:"Szene 8: Wiedersehen mit Phillip & Wanderung",songs:"Like a Prayer",roles:[...G,"phillip","weissekoenigin"],note:"Dunkel-Passage und Lichtwechsel genau proben."},
+ {d:"2026-12-02",typ:"mi",sz:"",songs:"Medley Like a Prayer vs. Candy Store · Elephant Love Medley",roles:["weissekoenigin","rotekoenigin","phillip","helen","james"],note:""},
+ {d:"2026-12-04",typ:"fr",sz:"Szene 9: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:[...G,"phillip","weissekoenigin","rotekoenigin","frank"],note:"Frank nur als Stimme/Melodie am Ende."},
+ {d:"2026-12-08",typ:"di",sz:"Szene 12: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:["helen","james","petra","vivian"],note:"Petra und Vivian nur am Szenenanfang."},
+ {d:"2026-12-09",typ:"mi",sz:"",songs:"Beat It",roles:["ensemble","gang",...G],note:""},
+ {d:"2026-12-11",typ:"fr",sz:"Szene 13: Big big Trouble",songs:"Beat It",roles:[...G,"gang","ensemble"],note:""},
+ {d:"2026-12-16",typ:"mi",sz:"",songs:"Songs der Folgeszenen",roles:[],note:"Besetzung folgt, sobald die Szenen feststehen."},
+ {d:"2026-12-18",typ:"pl",sz:"Szene 14 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter."},
+ {d:"2026-12-23",typ:"mi",sz:"",songs:"Wiederholung: Mysterious Worlds · Beat It",roles:["ensemble","erzaehlerinnen","gang"],note:"Letzter Schultag vor den Ferien."},
+ {d:"2026-12-24",bis:"2027-01-08",typ:"fe",sz:"Weihnachtsferien – keine Proben"},
+ {d:"2027-01-12",typ:"pl",sz:"Szene 15 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter, Dienstag 13:55–15:25."},
+ {d:"2027-01-13",typ:"mi",sz:"",songs:"Songs der Folgeszenen · Wiederholung aller Songs",roles:[],note:""},
+ {d:"2027-01-15",typ:"pl",sz:"Szene 16 (wird noch geschrieben) oder Nachholtermin",songs:"",roles:[],note:"Falls keine weitere Szene kommt: Puffer für ausgefallene Proben."}
+];
+
+/* ===== Darstellung ===== */
+const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Musikprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei"};
+const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const dm = s => { const x = parse(s); return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."; };
+const timeOf = e => { const w = parse(e.d).getDay(); return w===3?"14:40–16:10":"13:55–15:25"; };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today = new Date(); today.setHours(0,0,0,0);
+
+const changesFor = d => AUSHANG.filter(a => a.datum === d);
+const nextEntry = PLAN.find(e => e.typ!=="fe" && parse(e.d) >= today &&
+  !changesFor(e.d).some(a => a.art==="ausfall"));
+
+function renderBoard(){
+  document.getElementById("stand").textContent = "Stand: " + dm(STAND) + parse(STAND).getFullYear();
+  const ul = document.getElementById("notices");
+  const list = [...AUSHANG].sort((a,b)=> (b.ausgehaengt||"").localeCompare(a.ausgehaengt||""));
+  if(!list.length){ ul.innerHTML = '<li class="notice"><span class="empty">Aktuell keine Änderungen. Es gilt der Plan unten.</span></li>'; return; }
+  ul.innerHTML = list.map(a => {
+    const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
+    const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
+    return `<li class="notice"><div class="notice-meta"><span class="kind ${esc(a.art)}">${label}</span>${when}</div>
+      <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}
+      ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
+  }).join("");
+}
+
+function renderNext(){
+  const box = document.getElementById("next");
+  if(!nextEntry){ box.innerHTML = '<div class="big">–</div><div><div class="label">Nächste Probe</div><div class="what">Keine weiteren Proben in diesem Plan.</div></div>'; return; }
+  const x = parse(nextEntry.d);
+  box.innerHTML = `<div class="big"><small>${WD[x.getDay()]}</small>${dm(nextEntry.d)}</div>
+    <div><div class="label">Nächste Probe · ${TYPE[nextEntry.typ]} · <span class="mono">${timeOf(nextEntry)}</span></div>
+    <div class="what">${esc(nextEntry.sz || nextEntry.songs)}</div></div>`;
+}
+
+function entryHTML(e, me){
+  if(e.typ==="fe"){
+    const range = e.bis ? `${dm(e.d)}–${dm(e.bis)}` : dm(e.d);
+    return `<article class="entry t-fe"><div class="date"><span class="wd">frei</span><span class="dm" style="font-size:18px">${range}</span></div>
+      <div class="body"><div class="scenes" style="font-weight:600">${esc(e.sz)}</div></div></article>`;
+  }
+  const x = parse(e.d), ch = changesFor(e.d), cancelled = ch.some(a=>a.art==="ausfall");
+  const past = x < today, isNext = nextEntry && nextEntry.d===e.d;
+  const title = e.sz || "Musikprobe";
+  const roles = e.roles.length
+    ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
+    : `<div class="note">Besetzung folgt.</div>`;
+  return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
+    <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
+    <div class="body">
+      <div class="line1"><span class="type">${TYPE[e.typ]}</span><span class="time">${timeOf(e)}</span>
+        ${ch.length?`<span class="flag">${cancelled?"Fällt aus":"Geändert"}</span>`:""}
+        ${isNext?'<span class="nextbadge">● nächste Probe</span>':""}</div>
+      <div class="scenes${cancelled?" cancelled":""}">${esc(title)}</div>
+      ${e.songs?`<div class="songs"><b>Songs</b>${esc(e.songs)}</div>`:""}
+      ${ch.map(a=>`<div class="change-inline">${esc(a.titel)}${a.text?": "+esc(a.text):""}</div>`).join("")}
+      ${roles}
+      ${e.note?`<div class="note">${esc(e.note)}</div>`:""}
+    </div></article>`;
+}
+
+function renderList(entries, el, me){
+  const groups = [];
+  entries.forEach(e => {
+    const x = parse(e.d), key = x.getFullYear()+"-"+x.getMonth();
+    let g = groups.find(g=>g.key===key);
+    if(!g){ g = {key, name: MONTHS[x.getMonth()]+" "+x.getFullYear(), items:[]}; groups.push(g); }
+    g.items.push(e);
+  });
+  el.innerHTML = groups.map(g=>`<div class="month"><h3>${g.name}</h3>${g.items.map(e=>entryHTML(e,me)).join("")}</div>`).join("")
+    || '<p class="note">Keine Termine.</p>';
+}
+
+/* Rollen-Menü */
+PLAN.forEach(e => { if(!Array.isArray(e.roles)) e.roles = []; });
+const grid = document.getElementById("role-grid");
+grid.innerHTML = Object.entries(ROLES).map(([k,v]) =>
+  `<button type="button" class="rolebtn" data-pick="${k}" aria-pressed="false">${esc(v)}</button>`).join("");
+let selected = new Set();
+
+function renderRole(){
+  const out = document.getElementById("plan-role"), sum = document.getElementById("role-summary");
+  const hint = document.getElementById("link-hint"), reset = document.getElementById("role-reset");
+  grid.querySelectorAll(".rolebtn").forEach(b => b.setAttribute("aria-pressed", String(selected.has(b.dataset.pick))));
+  reset.hidden = selected.size === 0;
+  if(!selected.size){
+    out.innerHTML = "";
+    sum.textContent = "Tippe deine Rolle an. Wenn du mehrere Rollen hast (zum Beispiel zusätzlich im Ensemble), tippe alle an.";
+    hint.textContent = "";
+    return;
+  }
+  const hits = e => e.roles.some(r => selected.has(r));
+  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || hits(e));
+  const n = PLAN.filter(hits).length;
+  const upcoming = PLAN.filter(e => hits(e) && parse(e.d) >= today).length;
+  const names = [...selected].map(r => ROLES[r]).join(", ");
+  const nextMine = PLAN.find(e => hits(e) && parse(e.d) >= today && !changesFor(e.d).some(a => a.art === "ausfall"));
+  sum.innerHTML = `<b>${esc(names)}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
+    (nextMine ? ` Deine nächste Probe: <b>${WD[parse(nextMine.d).getDay()]} ${dm(nextMine.d)}, ${timeOf(nextMine)}</b>.` : "") +
+    ` Platzhalter für neue Szenen stehen mit drin, bis ihre Besetzung feststeht.`;
+  hint.innerHTML = `Direktlink zu deinem Plan: an den Link der Seite <code>#rolle-${[...selected].join(".")}</code> anhängen.`;
+  renderList(mine, out, selected);
+}
+
+function saveRoles(){ try{ localStorage.setItem("mw-rollen", [...selected].join(".")); }catch(e){} }
+function loadRoles(){ try{ return (localStorage.getItem("mw-rollen") || "").split(".").filter(r => ROLES[r]); }catch(e){ return []; } }
+
+function showView(v){
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
+  ["gesamt","rolle","infos"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
+}
+
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+grid.addEventListener("click", ev => {
+  const b = ev.target.closest(".rolebtn"); if(!b) return;
+  const r = b.dataset.pick;
+  selected.has(r) ? selected.delete(r) : selected.add(r);
+  saveRoles(); renderRole();
+});
+document.getElementById("role-reset").addEventListener("click", () => { selected.clear(); saveRoles(); renderRole(); });
+document.addEventListener("click", ev => {
+  const c = ev.target.closest(".chip"); if(!c) return;
+  selected = new Set([c.dataset.role]); saveRoles(); renderRole(); showView("rolle");
+  document.getElementById("view-rolle").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+});
+
+renderBoard(); renderNext(); renderList(PLAN, document.getElementById("plan-all"), null);
+
+/* Deep-Links: #infos, #mein-plan, #rolle-phillip oder mehrere Rollen: #rolle-petra.ensemble */
+function applyHash(){
+  const h = (location.hash || "").slice(1);
+  if(h.startsWith("rolle-")){
+    const rs = h.slice(6).split(".").filter(r => ROLES[r]);
+    if(rs.length){ selected = new Set(rs); saveRoles(); renderRole(); showView("rolle"); return; }
+  }
+  if(h === "infos") showView("infos");
+  else if(h === "mein-plan") showView("rolle");
+}
+selected = new Set(loadRoles()); renderRole();
+applyHash();
+window.addEventListener("hashchange", applyHash);
+</script>
+
+</body>
+</html>
