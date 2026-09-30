@@ -4,6 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mysterious Worlds Probenplan</title>
+<meta name="description" content="Probenplan für das Schulmusical Mysterious Worlds: alle Proben, der Aushang mit Änderungen und dein persönlicher Plan pro Rolle.">
+<meta name="theme-color" content="#5b2bb5">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Mysterious Worlds">
+<meta property="og:locale" content="de_DE">
+<meta property="og:title" content="Mysterious Worlds · Probenplan">
+<meta property="og:description" content="Alle Proben, der Aushang mit Änderungen und dein Plan pro Rolle. Premiere am 17. März 2027.">
+<meta property="og:url" content="https://jonahweh.github.io/Mysterious-Worlds/">
+<meta property="og:image" content="https://jonahweh.github.io/Mysterious-Worlds/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Mysterious Worlds – Probenplan, Premiere 17. und 18. März 2027">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Musical">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Monoton&family=Henny+Penny&family=Pinyon+Script&family=UnifrakturMaguntia&family=Creepster&text=WORLDSworlds&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -255,6 +273,62 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
   .track .fill,.traveler{transition:none}
 }
 @media (prefers-reduced-motion:no-preference){.tab,.chip{transition:background .15s,border-color .15s,color .15s}}
+
+/* 8 · Für dich, neue Aushänge, Archiv */
+.forme{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:10px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:14px}
+.forme .label{color:var(--accent)}
+.linkbtn{border:none;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0;font-size:14px;font-weight:600}
+.newsline{margin:0;font-weight:700;font-size:14px}
+.archive{border-top:2px dashed #231c00;padding-top:10px}
+.archive summary{cursor:pointer;font-weight:700;font-size:14px}
+.archive .notices{margin-top:10px}
+.archive .notice{opacity:.75}
+.archive .stamp{animation:none}
+
+/* 9 · Vergangene Monate eingeklappt */
+details.month > summary{list-style:none;cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+details.month > summary::-webkit-details-marker{display:none}
+details.month > summary h3::before{content:"▸ ";font-size:.7em;vertical-align:.12em}
+details.month[open] > summary h3::before{content:"▾ "}
+details.month > summary .note{font-size:13px}
+details.month[open]{display:grid;gap:10px}
+
+/* 10 · Werkzeuge: Kalender, Drucken, Songs */
+.tools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.btn{border:1.5px solid var(--accent);background:var(--accent);color:var(--bg);border-radius:999px;padding:8px 16px;cursor:pointer;font-weight:600;font-size:14px}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.tools .note{flex-basis:100%}
+.songcard{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:grid;gap:10px}
+.songcard h3{font-family:var(--display);font-weight:700;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.songcard ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.songcard li{display:grid;gap:2px}
+.songcard .when{font-size:13px;color:var(--muted)}
+.songcard .when s{opacity:.7}
+.legend-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
+@media (max-width:520px){.station{width:46px}.station span{font-size:9.5px;hyphens:auto}}
+
+/* 11 · Druckansicht */
+@media print{
+  :root:not(#p){--bg:#fff;--surface:#fff;--ink:#000;--muted:#333;--line:#999;--accent:#000;--accent-soft:#eee;
+    --fr:#fff;--di:#fff;--mi:#fff;--pl:#fff;--fe:#f2f2f2;color-scheme:light}
+  body{font-size:10.5pt;padding:0;background:#fff}
+  .curtain,nav.menu,.journey,.worldname,.world .decor,.picker,.tools,.legend-row .btn,.forme,.shows .count,.tapnote,.archive{display:none!important}
+  .wrap{gap:14px;max-width:none}
+  *{animation:none!important;transition:none!important;box-shadow:none!important}
+  .world,.world.swap{opacity:1!important;filter:none!important;transform:none!important}
+  .world .lt{color:#000!important;background:none!important;-webkit-text-fill-color:#000;filter:none!important;text-shadow:none!important;font-family:var(--display)!important;font-size:1em!important;text-transform:uppercase!important}
+  .entry.is-next::before,.next::before{display:none}
+  .board{border:2px solid #000;background:#fff}
+  .notice{background:#fff;border:1px solid #000}
+  .shows{background:#fff;color:#000;border:2px solid #000;grid-template-columns:1fr}
+  .entry{break-inside:avoid;padding:8px}
+  .entry.past{opacity:1}
+  .month h3{color:#000}
+  details.month > summary h3::before{content:""}
+  .chip{border-color:#999;color:#000}
+  .chip.me{background:#000;color:#fff}
+}
 </style>
 </head>
 <body>
@@ -280,7 +354,9 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
       <h2 id="aushang-h">Aushang · Änderungen</h2>
       <span class="stand" id="stand"></span>
     </div>
+    <p class="newsline" id="newsline" hidden></p>
     <ul class="notices" id="notices"></ul>
+    <details class="archive" id="archive" hidden><summary id="archive-sum">Ältere Aushänge</summary><ul class="notices" id="archive-list"></ul></details>
   </section>
 
   <section class="next" id="next" aria-live="polite"></section>
@@ -291,17 +367,20 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
   </section>
 
   <nav class="menu" role="tablist" aria-label="Ansicht wählen">
-    <button class="tab" role="tab" id="tab-gesamt" data-view="gesamt" aria-selected="true">Gesamtplan</button>
-    <button class="tab" role="tab" id="tab-rolle" data-view="rolle" aria-selected="false">Mein Probenplan</button>
-    <button class="tab" role="tab" id="tab-infos" data-view="infos" aria-selected="false">Ferien &amp; Infos</button>
+    <button class="tab" role="tab" id="tab-gesamt" data-view="gesamt" aria-controls="view-gesamt" aria-selected="true" tabindex="0">Gesamtplan</button>
+    <button class="tab" role="tab" id="tab-rolle" data-view="rolle" aria-controls="view-rolle" aria-selected="false" tabindex="-1">Mein Probenplan</button>
+    <button class="tab" role="tab" id="tab-infos" data-view="infos" aria-controls="view-infos" aria-selected="false" tabindex="-1">Ferien &amp; Infos</button>
   </nav>
 
   <section id="view-gesamt" role="tabpanel" aria-labelledby="tab-gesamt">
-    <div class="legend" style="margin-bottom:14px">
+    <div class="legend-row">
+    <div class="legend">
       <span><i class="sw" style="background:var(--fr)"></i>Fr 13:55–15:25 Szenenprobe</span>
       <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
       <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–16:10 Chor &amp; Solisten</span>
       <span><i class="sw" style="background:var(--pl)"></i>Platzhalter (Szene noch offen)</span>
+    </div>
+    <button class="btn ghost" type="button" data-print>Plan drucken</button>
     </div>
     <div id="plan-all" style="display:grid;gap:18px"></div>
   </section>
@@ -312,7 +391,13 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
       <div class="role-grid" id="role-grid" role="group" aria-labelledby="picker-title"></div>
       <div class="summary" id="role-summary">Tippe deine Rolle an. Wenn du mehrere Rollen hast (zum Beispiel zusätzlich im Ensemble), tippe alle an.</div>
       <div class="picker-actions"><button class="reset" id="role-reset" type="button" hidden>Auswahl zurücksetzen</button><span class="linkhint" id="link-hint"></span></div>
+      <div class="tools" id="role-tools" hidden>
+        <button class="btn" type="button" id="ics-btn">In meinen Kalender übernehmen</button>
+        <button class="btn ghost" type="button" data-print>Meinen Plan drucken</button>
+        <span class="note">Lädt eine Kalenderdatei (.ics) mit deinen Proben und den Aufführungen herunter. Spätere Änderungen kommen nicht automatisch in deinen Kalender – der Aushang hier gilt immer.</span>
+      </div>
     </div>
+    <div class="songcard" id="role-songs" style="margin-top:18px" hidden></div>
     <div id="plan-role" style="display:grid;gap:18px;margin-top:18px"></div>
   </section>
 
@@ -417,36 +502,101 @@ const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
 const dm = s => { const x = parse(s); return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."; };
-const timeOf = e => { if(e.typ==="auf") return "Uhrzeit folgt"; const w = parse(e.d).getDay(); return w===3?"14:40–16:10":"13:55–15:25"; };
+const slotOf = e => parse(e.d).getDay()===3 ? ["14:40","16:10"] : ["13:55","15:25"];
+const timeOf = e => e.typ==="auf" ? "Uhrzeit folgt" : slotOf(e).join("–");
+const at = (s,hm) => { const x = parse(s), [h,m] = hm.split(":").map(Number); x.setHours(h,m,0,0); return x; };
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const today = new Date(); today.setHours(0,0,0,0);
+// Zum Testen lässt sich die Uhrzeit vorgeben: ?jetzt=2026-10-16T16:00
+const NOW = (() => { const q = new URLSearchParams(location.search).get("jetzt"); const t = q && new Date(q); return t && !isNaN(t) ? t : new Date(); })();
+const today = new Date(NOW); today.setHours(0,0,0,0);
+const daysSince = s => Math.round((today - parse(s)) / 86400000);
 
 const changesFor = d => AUSHANG.filter(a => a.datum === d);
-const nextEntry = PLAN.find(e => e.typ!=="fe" && parse(e.d) >= today &&
-  !changesFor(e.d).some(a => a.art==="ausfall"));
+const isCancelled = d => changesFor(d).some(a => a.art==="ausfall");
+// Ein Termin gilt als vorbei, sobald die Probe zu Ende ist – nicht erst am nächsten Tag
+const endOf = e => e.typ==="auf" || e.typ==="fe" ? at(e.bis || e.d, "23:59") : at(e.d, slotOf(e)[1]);
+const isOver = e => endOf(e) <= NOW;
+const nextEntry = PLAN.find(e => e.typ!=="fe" && !isOver(e) && !isCancelled(e.d));
+
+PLAN.forEach(e => { if(!Array.isArray(e.roles)) e.roles = []; });
+function loadRoles(){ try{ return (localStorage.getItem("mw-rollen") || "").split(".").filter(r => ROLES[r]); }catch(e){ return []; } }
+function saveRoles(){ try{ localStorage.setItem("mw-rollen", [...selected].join(".")); }catch(e){} }
+let selected = new Set(loadRoles());
+const hitsOf = sel => e => e.roles.some(r => sel.has(r));
+const roleNames = sel => [...sel].map(r => ROLES[r]).join(", ");
+
+/* Aushang: was ist neu seit dem letzten Besuch, was ist alt */
+const noticeId = a => [a.art, a.datum, a.titel, a.ausgehaengt].join("|");
+const FRESH = (() => {
+  try{
+    const kept = sessionStorage.getItem("mw-neu");
+    if(kept !== null) return {ids: new Set(JSON.parse(kept)), since: sessionStorage.getItem("mw-neu-seit") === "1"};
+    const raw = localStorage.getItem("mw-gesehen");
+    const seen = raw === null ? null : new Set(JSON.parse(raw));
+    const ids = AUSHANG.filter(a => seen ? !seen.has(noticeId(a)) : (a.ausgehaengt && daysSince(a.ausgehaengt) <= 2)).map(noticeId);
+    sessionStorage.setItem("mw-neu", JSON.stringify(ids));
+    sessionStorage.setItem("mw-neu-seit", seen ? "1" : "0");
+    localStorage.setItem("mw-gesehen", JSON.stringify(AUSHANG.map(noticeId)));
+    return {ids: new Set(ids), since: !!seen};
+  }catch(e){
+    return {ids: new Set(AUSHANG.filter(a => a.ausgehaengt && daysSince(a.ausgehaengt) <= 2).map(noticeId)), since:false};
+  }
+})();
+// Alte Aushänge wandern ins Archiv: 3 Tage nach dem betroffenen Termin, allgemeine Hinweise nach 3 Wochen oder ab "bis"
+const isArchived = a => a.bis ? parse(a.bis) < today
+  : a.datum ? daysSince(a.datum) > 3
+  : a.ausgehaengt ? daysSince(a.ausgehaengt) > 21 : false;
+
+function noticeHTML(a, fresh){
+  const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
+  const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
+  return `<li class="notice${fresh?" fresh":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
+    <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}
+    ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
+}
 
 function renderBoard(){
   document.getElementById("stand").textContent = "Stand: " + dm(STAND) + parse(STAND).getFullYear();
-  const ul = document.getElementById("notices");
-  const list = [...AUSHANG].sort((a,b)=> (b.ausgehaengt||"").localeCompare(a.ausgehaengt||""));
-  if(!list.length){ ul.innerHTML = '<li class="notice"><span class="empty">Aktuell keine Änderungen. Es gilt der Plan unten.</span></li>'; return; }
-  ul.innerHTML = list.map(a => {
-    const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
-    const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
-    const fresh = a.ausgehaengt && (today - parse(a.ausgehaengt)) / 86400000 <= 2;
-    return `<li class="notice${fresh?" fresh":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
-      <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}
-      ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
-  }).join("");
+  const byDate = (a,b) => (b.ausgehaengt||"").localeCompare(a.ausgehaengt||"");
+  const active = AUSHANG.filter(a => !isArchived(a)).sort(byDate);
+  const old = AUSHANG.filter(isArchived).sort(byDate);
+  const isNew = a => FRESH.ids.has(noticeId(a));
+  document.getElementById("notices").innerHTML = active.length
+    ? active.map(a => noticeHTML(a, isNew(a))).join("")
+    : '<li class="notice"><span class="empty">Aktuell keine Änderungen. Es gilt der Plan unten.</span></li>';
+  const newCount = active.filter(isNew).length, line = document.getElementById("newsline");
+  line.hidden = !(FRESH.since && newCount);
+  line.textContent = newCount === 1 ? "1 neuer Aushang seit deinem letzten Besuch" : `${newCount} neue Aushänge seit deinem letzten Besuch`;
+  const arch = document.getElementById("archive");
+  arch.hidden = !old.length;
+  document.getElementById("archive-sum").textContent = `Ältere Aushänge (${old.length})`;
+  document.getElementById("archive-list").innerHTML = old.map(a => noticeHTML(a, false)).join("");
 }
 
+const shortWhat = e => e.sz || e.songs;
 function renderNext(){
   const box = document.getElementById("next");
-  if(!nextEntry){ box.innerHTML = '<div class="big">–</div><div><div class="label">Nächste Probe</div><div class="what">Keine weiteren Proben in diesem Plan.</div></div>'; return; }
-  const x = parse(nextEntry.d);
-  box.innerHTML = `<div class="big"><small>${WD[x.getDay()]}</small>${dm(nextEntry.d)}</div>
+  let html;
+  if(!nextEntry){ html = '<div class="big">–</div><div><div class="label">Nächste Probe</div><div class="what">Keine weiteren Proben in diesem Plan.</div></div>'; }
+  else {
+    const x = parse(nextEntry.d);
+    const today2 = parse(nextEntry.d).getTime() === today.getTime();
+    html = `<div class="big"><small>${today2 ? "heute" : WD[x.getDay()]}</small>${dm(nextEntry.d)}</div>
     <div><div class="label">Nächste Probe · ${TYPE[nextEntry.typ]} · <span class="mono">${timeOf(nextEntry)}</span></div>
-    <div class="what">${esc(nextEntry.sz || nextEntry.songs)}</div></div>`;
+    <div class="what">${esc(shortWhat(nextEntry))}</div></div>`;
+  }
+  if(selected.size){
+    const hits = hitsOf(selected);
+    const mine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
+    const who = `<span class="label mono">Für dich · ${esc(roleNames(selected))}</span>`;
+    const what = !mine ? "Für dich stehen gerade keine weiteren Proben im Plan."
+      : mine === nextEntry ? "Das ist auch deine nächste Probe."
+      : `<span><b>${WD[parse(mine.d).getDay()]} ${dm(mine.d)}, ${timeOf(mine)}</b> · ${esc(shortWhat(mine))}</span>`;
+    html += `<div class="forme">${who}${what}<button class="linkbtn" type="button" data-goto="rolle">Mein Probenplan</button></div>`;
+  } else {
+    html += `<div class="forme"><span>Tipp: Wähle deine Rolle, dann steht hier auch deine persönliche nächste Probe.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></div>`;
+  }
+  box.innerHTML = html;
 }
 
 function entryHTML(e, me){
@@ -456,7 +606,7 @@ function entryHTML(e, me){
       <div class="body"><div class="scenes" style="font-weight:600">${esc(e.sz)}</div></div></article>`;
   }
   const x = parse(e.d), ch = changesFor(e.d), cancelled = ch.some(a=>a.art==="ausfall");
-  const past = x < today, isNext = nextEntry && nextEntry.d===e.d;
+  const past = isOver(e), isNext = nextEntry && nextEntry.d===e.d;
   const title = e.sz || "Musikprobe";
   const roles = e.roles.length
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
@@ -476,6 +626,7 @@ function entryHTML(e, me){
     </div></article>`;
 }
 
+// Monate, deren Termine alle vorbei sind, werden eingeklappt
 function renderList(entries, el, me){
   const groups = [];
   entries.forEach(e => {
@@ -484,50 +635,142 @@ function renderList(entries, el, me){
     if(!g){ g = {key, name: MONTHS[x.getMonth()]+" "+x.getFullYear(), items:[]}; groups.push(g); }
     g.items.push(e);
   });
-  el.innerHTML = groups.map(g=>`<div class="month"><h3>${g.name}</h3>${g.items.map(e=>entryHTML(e,me)).join("")}</div>`).join("")
-    || '<p class="note">Keine Termine.</p>';
+  el.innerHTML = groups.map(g => {
+    const items = g.items.map(e=>entryHTML(e,me)).join("");
+    if(!g.items.every(isOver)) return `<div class="month"><h3>${g.name}</h3>${items}</div>`;
+    const n = g.items.filter(e => e.typ!=="fe").length;
+    return `<details class="month"><summary><h3>${g.name}</h3><span class="note">${n} ${n===1?"Termin":"Termine"} vorbei<span class="tapnote"> · antippen zum Aufklappen</span></span></summary>${items}</details>`;
+  }).join("") || '<p class="note">Keine Termine.</p>';
+}
+
+/* Songs pro Rolle: aus den Mittwochsproben, dazu die Szenenprobe, in der der Song vorkommt */
+const songKey = s => s.replace(/\s*\(.*?\)\s*$/,"").trim().toLowerCase();
+function songsFor(sel){
+  const hits = hitsOf(sel), map = new Map();
+  PLAN.filter(e => e.typ==="mi" && hits(e)).forEach(e => {
+    const rep = /^Wiederholung:/.test(e.songs);
+    e.songs.replace(/^Wiederholung:\s*/,"").split(" · ").forEach(raw => {
+      const name = raw.trim();
+      if(!name || /^Songs der|^Wiederholung aller/.test(name)) return;
+      const k = songKey(name);
+      if(!map.has(k)) map.set(k, {name: name.replace(/\s*\(.*?\)\s*$/,""), mi:[], rep:[], sz:[]});
+      (rep ? map.get(k).rep : map.get(k).mi).push(e);
+    });
+  });
+  PLAN.filter(e => (e.typ==="fr" || e.typ==="di") && hits(e) && e.songs).forEach(e => {
+    e.songs.split(/,\s*|\s·\s/).map(songKey).forEach(k => { if(map.has(k)) map.get(k).sz.push(e); });
+  });
+  return [...map.values()];
+}
+function renderSongs(){
+  const box = document.getElementById("role-songs");
+  const list = selected.size ? songsFor(selected) : [];
+  box.hidden = !list.length;
+  if(!list.length){ box.innerHTML = ""; return; }
+  const d = (label, e) => { const t = `${label} ${WD[parse(e.d).getDay()]} ${dm(e.d)}`; return isOver(e) ? `<s>${t}</s>` : t; };
+  box.innerHTML = `<h3>Deine Songs</h3><ul>${list.map(s => `<li><b>${esc(s.name)}</b><span class="when">${[
+      ...s.mi.map(e => d("Musikprobe", e)), ...s.sz.map(e => d("in der Szenenprobe", e)), ...s.rep.map(e => d("Wiederholung", e))
+    ].join(" · ")}</span></li>`).join("")}</ul>
+    <p class="note">Aus den Mittwochsproben, zu denen deine Rolle eingeteilt ist. Neue Songs kommen dazu, sobald die Szenen ab 14 feststehen.</p>`;
+}
+
+/* Kalender-Export (.ics) */
+function icsFor(sel){
+  const hits = hitsOf(sel), pad = n => String(n).padStart(2,"0");
+  const url = location.origin + location.pathname;
+  const escI = s => String(s).replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\r?\n/g,"\\n");
+  const enc = new TextEncoder();
+  const fold = line => { // Zeilen nach 75 Bytes umbrechen (RFC 5545)
+    const out = []; let cur = "", limit = 75;
+    for(const ch of line){
+      if(enc.encode(cur + ch).length > limit){ out.push(cur); cur = " " + ch; limit = 75; }
+      else cur += ch;
+    }
+    out.push(cur); return out.join("\r\n");
+  };
+  const n = new Date();
+  const stamp = `${n.getUTCFullYear()}${pad(n.getUTCMonth()+1)}${pad(n.getUTCDate())}T${pad(n.getUTCHours())}${pad(n.getUTCMinutes())}${pad(n.getUTCSeconds())}Z`;
+  const local = (d, hm) => d.replace(/-/g,"") + "T" + hm.replace(":","") + "00";
+  const nextDay = d => { const x = parse(d); x.setDate(x.getDate()+1); return `${x.getFullYear()}${pad(x.getMonth()+1)}${pad(x.getDate())}`; };
+  const L = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mysterious Worlds//Probenplan//DE","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+    "X-WR-CALNAME:Mysterious Worlds","X-WR-TIMEZONE:Europe/Berlin",
+    "BEGIN:VTIMEZONE","TZID:Europe/Berlin",
+    "BEGIN:DAYLIGHT","TZOFFSETFROM:+0100","TZOFFSETTO:+0200","TZNAME:CEST","DTSTART:19700329T020000","RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU","END:DAYLIGHT",
+    "BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD",
+    "END:VTIMEZONE"];
+  let count = 0;
+  PLAN.filter(e => e.typ==="auf" || (e.typ!=="fe" && hits(e))).forEach(e => {
+    const cancelled = isCancelled(e.d);
+    const scenes = [...(e.sz||"").matchAll(/Opening|Szene \d+[a-z]?(?:, Teil \d)?/g)].map(m => m[0]);
+    const what = e.typ==="auf" ? e.sz : e.typ==="mi" ? "Musikprobe" : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
+    const desc = [e.sz, e.songs && "Songs: " + e.songs, e.roles.length && "Rollen: " + e.roles.map(r => ROLES[r]).join(", "), e.note,
+      ...changesFor(e.d).map(a => "Aushang: " + a.titel + (a.text ? " – " + a.text : "")),
+      "Aktueller Stand und Änderungen: " + url].filter(Boolean).join("\n");
+    L.push("BEGIN:VEVENT", `UID:mw-${e.d}-${e.typ}@jonahweh.github.io`, `DTSTAMP:${stamp}`);
+    if(e.typ==="auf") L.push(`DTSTART;VALUE=DATE:${e.d.replace(/-/g,"")}`, `DTEND;VALUE=DATE:${nextDay(e.d)}`);
+    else { const [a,b] = slotOf(e); L.push(`DTSTART;TZID=Europe/Berlin:${local(e.d,a)}`, `DTEND;TZID=Europe/Berlin:${local(e.d,b)}`); }
+    L.push(fold(`SUMMARY:${escI((cancelled ? "ABGESAGT: " : "") + "Musical · " + what)}`), fold(`DESCRIPTION:${escI(desc)}`), fold(`URL:${url}`));
+    if(cancelled) L.push("STATUS:CANCELLED");
+    L.push("END:VEVENT"); count++;
+  });
+  L.push("END:VCALENDAR");
+  return {text: L.join("\r\n") + "\r\n", count};
+}
+function downloadICS(){
+  if(!selected.size) return;
+  const {text} = icsFor(selected);
+  const blob = new Blob([text], {type:"text/calendar;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "mysterious-worlds-" + [...selected].join("-") + ".ics";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
 }
 
 /* Rollen-Menü */
-PLAN.forEach(e => { if(!Array.isArray(e.roles)) e.roles = []; });
 const grid = document.getElementById("role-grid");
 grid.innerHTML = Object.entries(ROLES).map(([k,v]) =>
   `<button type="button" class="rolebtn" data-pick="${k}" aria-pressed="false">${esc(v)}</button>`).join("");
-let selected = new Set();
 
 function renderRole(){
   const out = document.getElementById("plan-role"), sum = document.getElementById("role-summary");
   const hint = document.getElementById("link-hint"), reset = document.getElementById("role-reset");
   grid.querySelectorAll(".rolebtn").forEach(b => b.setAttribute("aria-pressed", String(selected.has(b.dataset.pick))));
   reset.hidden = selected.size === 0;
+  document.getElementById("role-tools").hidden = selected.size === 0;
+  renderSongs(); renderNext();
   if(!selected.size){
     out.innerHTML = "";
     sum.textContent = "Tippe deine Rolle an. Wenn du mehrere Rollen hast (zum Beispiel zusätzlich im Ensemble), tippe alle an.";
     hint.textContent = "";
     return;
   }
-  const hits = e => e.roles.some(r => selected.has(r));
+  const hits = hitsOf(selected);
   const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || e.typ === "auf" || hits(e));
   const n = PLAN.filter(hits).length;
-  const upcoming = PLAN.filter(e => hits(e) && parse(e.d) >= today).length;
-  const names = [...selected].map(r => ROLES[r]).join(", ");
-  const nextMine = PLAN.find(e => hits(e) && parse(e.d) >= today && !changesFor(e.d).some(a => a.art === "ausfall"));
-  sum.innerHTML = `<b>${esc(names)}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
+  const upcoming = PLAN.filter(e => hits(e) && !isOver(e)).length;
+  const nextMine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
+  sum.innerHTML = `<b>${esc(roleNames(selected))}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
     (nextMine ? ` Deine nächste Probe: <b>${WD[parse(nextMine.d).getDay()]} ${dm(nextMine.d)}, ${timeOf(nextMine)}</b>.` : "") +
     ` Platzhalter für neue Szenen stehen mit drin, bis ihre Besetzung feststeht.`;
   hint.innerHTML = `Direktlink zu deinem Plan: an den Link der Seite <code>#rolle-${[...selected].join(".")}</code> anhängen.`;
   renderList(mine, out, selected);
 }
 
-function saveRoles(){ try{ localStorage.setItem("mw-rollen", [...selected].join(".")); }catch(e){} }
-function loadRoles(){ try{ return (localStorage.getItem("mw-rollen") || "").split(".").filter(r => ROLES[r]); }catch(e){ return []; } }
-
+/* Tabs – per Maus, Touch und Pfeiltasten */
+const tabs = [...document.querySelectorAll(".tab")];
 function showView(v){
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.view === v)));
+  tabs.forEach(t => { const on = t.dataset.view === v; t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
   ["gesamt","rolle","infos"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
 }
-
-document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+tabs.forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+document.querySelector("nav.menu").addEventListener("keydown", ev => {
+  const i = tabs.indexOf(document.activeElement); if(i < 0) return;
+  const j = {ArrowRight:(i+1)%tabs.length, ArrowLeft:(i-1+tabs.length)%tabs.length, Home:0, End:tabs.length-1}[ev.key];
+  if(j === undefined) return;
+  ev.preventDefault(); tabs[j].focus(); showView(tabs[j].dataset.view);
+});
+const scrollOpts = () => ({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
 grid.addEventListener("click", ev => {
   const b = ev.target.closest(".rolebtn"); if(!b) return;
   const r = b.dataset.pick;
@@ -535,10 +778,16 @@ grid.addEventListener("click", ev => {
   saveRoles(); renderRole();
 });
 document.getElementById("role-reset").addEventListener("click", () => { selected.clear(); saveRoles(); renderRole(); });
+document.getElementById("ics-btn").addEventListener("click", downloadICS);
 document.addEventListener("click", ev => {
-  const c = ev.target.closest(".chip"); if(!c) return;
-  selected = new Set([c.dataset.role]); saveRoles(); renderRole(); showView("rolle");
-  document.getElementById("view-rolle").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  const c = ev.target.closest(".chip");
+  if(c){
+    selected = new Set([c.dataset.role]); saveRoles(); renderRole(); showView("rolle");
+    document.getElementById("view-rolle").scrollIntoView(scrollOpts()); return;
+  }
+  const g = ev.target.closest("[data-goto]");
+  if(g){ showView(g.dataset.goto); document.querySelector("nav.menu").scrollIntoView(scrollOpts()); return; }
+  if(ev.target.closest("[data-print]")) window.print();
 });
 
 (function(){
@@ -603,11 +852,12 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 /* Probenreise */
 (function(){
   const sceneEntries = PLAN.filter(e => ["fr","di","pl"].includes(e.typ));
-  const worldOf = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"weiter";
+  const worldOf = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"hs";
   const worldsIn = e => { const ns = [...(e.sz||"").matchAll(/Szene (\d+)/g)].map(m=>+m[1]); if(/Opening/.test(e.sz)) ns.push(1); return ns.map(worldOf); };
-  const isDone = e => parse(e.d) < today && !changesFor(e.d).some(a=>a.art==="ausfall");
+  const isDone = e => isOver(e) && !isCancelled(e.d);
   const done = sceneEntries.filter(isDone).length, total = sceneEntries.length;
-  const stations = [["heimat","Franks Turm"],["wunder","Wunderland"],["ball","Ballsaal"],["biblio","Bibliothek"],["boese","Böse Welt"],["premiere","Premiere"]];
+  const reserved = sceneEntries.filter(e => e.typ==="pl" && !isOver(e)).length;
+  const stations = [["heimat","Franks Turm"],["wunder","Wunder&shy;land"],["ball","Ball&shy;saal"],["biblio","Biblio&shy;thek"],["boese","Böse Welt"],["hs","High School"],["premiere","Premiere"]];
   const track = document.getElementById("track");
   const pct = total ? done/total : 0;
   stations.forEach(([k,label],idx) => {
@@ -632,8 +882,9 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const setPos = () => { fill.style.width = (pct*100) + "%"; trav.style.left = (pct*100) + "%"; };
   if(REDUCED) setPos(); else requestAnimationFrame(() => requestAnimationFrame(setPos));
   const daysToShow = Math.round((parse("2027-03-17") - today)/86400000);
+  const res = reserved ? ` · ${reserved} ${reserved===1?"Termin":"Termine"} für neue Szenen reserviert` : "";
   document.getElementById("journey-stat").textContent = done
-    ? `${done} von ${total} Szenenproben geschafft · noch ${Math.max(daysToShow,0)} Tage bis zur Premiere`
+    ? `${done} von ${total} Szenenproben geschafft${res} · noch ${Math.max(daysToShow,0)} Tage bis zur Premiere`
     : `Noch keine Szenenprobe. Die Reise beginnt am 16.10.`;
 })();
 
@@ -650,7 +901,7 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
   setTimeout(() => c.remove(), 2000);
 })();
 
-renderBoard(); renderNext(); renderList(PLAN, document.getElementById("plan-all"), null);
+renderBoard(); renderList(PLAN, document.getElementById("plan-all"), null);
 
 /* Deep-Links: #infos, #mein-plan, #rolle-phillip oder mehrere Rollen: #rolle-petra.ensemble */
 function applyHash(){
@@ -662,7 +913,7 @@ function applyHash(){
   if(h === "infos") showView("infos");
   else if(h === "mein-plan") showView("rolle");
 }
-selected = new Set(loadRoles()); renderRole();
+renderRole();
 applyHash();
 window.addEventListener("hashchange", applyHash);
 </script>
