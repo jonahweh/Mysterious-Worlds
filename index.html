@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Mysterious Worlds Probenplan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lalezar&family=Henny+Penny&family=Pinyon+Script&family=UnifrakturMaguntia&family=Creepster&text=WORLDSworlds&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <style>
@@ -16,7 +17,7 @@
   --fr:#ece6fb; --di:#fff0d2; --mi:#dcf1ea; --pl:#fbe2e2; --fe:#ebe9f0;
   --ausfall:#c62828; --verschoben:#c25e00; --info:#2451b3; --neu:#1f7a4d;
   --curtain-a:#5a0f2e; --curtain-b:#2b0716; --curtain-fringe:#d4a93a;
-  --w-wueste:#a86b00; --w-wueste2:#e0a526; --w-wunder:#c8102e; --w-ball1:#b0369c; --w-ball2:#5b2bb5; --w-boese:#23402a; --w-boese-glow:#6fd78a;
+  --w-wueste:#a86b00; --w-wueste2:#e0a526; --w-wunder:#c8102e; --w-ball1:#b0369c; --w-ball2:#5b2bb5; --w-boese:#23402a; --w-boese-glow:#6fd78a; --w-sepia:#6b4a2b; --w-card:#1d1830; --w-night:#1b2350; --w-bolt:#e6c200;
   --spot:rgba(91,43,181,.16); --stamp:#c62828;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -28,7 +29,7 @@
   --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
   --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
   --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
-  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45;
+  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45; --w-sepia:#e0c197; --w-card:#efeaf9; --w-night:#9fb2ff; --w-bolt:#ffe24a;
   --spot:rgba(184,162,255,.16); --stamp:#ff6b6b;
   color-scheme:dark}}
 :root[data-theme="dark"]{
@@ -37,7 +38,7 @@
   --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
   --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
   --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
-  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45;
+  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45; --w-sepia:#e0c197; --w-card:#efeaf9; --w-night:#9fb2ff; --w-bolt:#ffe24a;
   --spot:rgba(184,162,255,.16); --stamp:#ff6b6b;
   color-scheme:dark}
 
@@ -171,16 +172,43 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
 .curtain.open .r{transform:translateX(102%)}
 .curtain.open .word{opacity:0}
 
-/* 3 · Titel im Weltenwechsel */
-.world{display:inline-block;position:relative;transition:opacity .35s,filter .35s,transform .35s}
+/* 3 · Titel im Weltenwechsel – jede Welt mit eigener Schrift und Requisiten */
+.world{display:inline-block;position:relative;transition:opacity .35s,filter .35s,transform .35s;line-height:1}
 .world.swap{opacity:0;filter:blur(6px);transform:translateY(6px)}
-.world.w-wueste{background:linear-gradient(100deg,var(--w-wueste),var(--w-wueste2),var(--w-wueste));-webkit-background-clip:text;background-clip:text;color:transparent}
-.world.w-wunder{color:var(--w-wunder);letter-spacing:.06em}
-.world.w-ball{background:linear-gradient(90deg,var(--w-ball1),var(--w-ball2),var(--w-ball1));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 3s linear infinite}
-.world.w-boese{color:var(--w-boese);text-shadow:2px 0 var(--w-boese-glow),-2px 0 var(--stamp)}
-@keyframes shimmer{to{background-position:-200% 0}}
-.worldname{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);min-height:1.5em;transition:opacity .35s}
+.world .lt{display:inline-block}
+.world .decor{position:absolute;inset:-.3em -.34em -.3em;pointer-events:none;overflow:visible}
+.world .decor svg{position:absolute;overflow:visible}
+@keyframes twk{0%,100%{opacity:.25;transform:scale(.7)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes floaty{50%{transform:translateY(-5px)}}
+@keyframes fadegrin{0%,100%{opacity:0}40%,60%{opacity:1}}
+@keyframes flash{0%,86%,100%{opacity:0}88%,92%{opacity:1}90%{opacity:.2}}
+@keyframes flicker{0%,84%,100%{opacity:1}86%{opacity:.4}88%{opacity:1}90%{opacity:.6}}
+@keyframes rain{to{transform:translateY(14px);opacity:0}}
+@keyframes dust{50%{transform:translate(4px,-8px);opacity:.9}}
+.tw{transform-box:fill-box;transform-origin:center;animation:twk 2.2s ease-in-out infinite}
+/* Unsere Welt */
+.world.w-home .lt{color:var(--accent)}
+/* Arabische Nächte */
+.world.w-wueste .lt{font-family:"Lalezar",var(--display);font-weight:400;font-size:1.02em;text-transform:none;letter-spacing:.02em;
+  background:linear-gradient(100deg,var(--w-wueste),var(--w-wueste2) 45%,var(--w-wueste));-webkit-background-clip:text;background-clip:text;color:transparent}
+/* Wunderland */
+.world.w-wunder .lt{font-family:"Henny Penny",var(--display);font-weight:400;font-size:.9em;text-transform:none;animation:floaty 2.6s ease-in-out infinite}
+.world.w-wunder .lt:nth-child(odd){color:var(--w-wunder)}
+.world.w-wunder .lt:nth-child(even){color:var(--w-card)}
+/* Ballsaal */
+.world.w-ball .lt{font-family:"Pinyon Script",cursive;font-weight:400;font-size:1.05em;text-transform:none;
+  background:linear-gradient(90deg,var(--w-ball1),var(--w-ball2),var(--w-wueste2),var(--w-ball1));background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 4s linear infinite;padding-right:.08em}
+/* Bibliothek */
+.world.w-biblio .lt{font-family:"UnifrakturMaguntia",serif;font-weight:400;font-size:.95em;text-transform:none;color:var(--w-sepia)}
+/* Böse Welt */
+.world.w-boese .lt{font-family:"Creepster",var(--display);font-weight:400;font-size:.92em;letter-spacing:.04em;color:var(--w-boese);
+  text-shadow:2px 0 var(--w-boese-glow),-2px 0 var(--stamp);animation:flicker 3.2s steps(1) infinite}
+@keyframes shimmer{to{background-position:-300% 0}}
+@media (max-width:700px){h1 .world{display:block;width:max-content;max-width:100%;margin-top:.42em}}
+.worldname{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);min-height:1.5em;margin-top:6px}
 .worldname b{color:var(--accent);font-weight:500}
+@media (prefers-reduced-motion:reduce){.world *,.world .lt{animation:none!important}}
 
 /* 5 · Lebendiger Aushang */
 .notice{position:relative;overflow:hidden}
@@ -519,21 +547,55 @@ document.addEventListener("click", ev => {
 
 const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/* Weltenwechsel im Titel */
+/* Weltenwechsel im Titel – Welten des Stücks mit Requisiten */
 (function(){
   const el = document.getElementById("world"), nm = document.getElementById("worldname");
-  const worlds = [["","Unsere Welt"],["w-wueste","Arabische Nächte"],["w-wunder","Wunderland"],["w-ball","Der Ballsaal"],["w-boese","Die Böse Welt"]];
+  const star = (x,y,r,c,d) => `<path class="tw" style="animation-delay:${d}s" fill="${c}" d="M${x} ${y-r}L${x+r*.28} ${y-r*.28}L${x+r} ${y}L${x+r*.28} ${y+r*.28}L${x} ${y+r}L${x-r*.28} ${y+r*.28}L${x-r} ${y}L${x-r*.28} ${y-r*.28}Z"/>`;
+  const svg = (style, vb, inner) => `<svg style="${style}" viewBox="${vb}" aria-hidden="true">${inner}</svg>`;
+  const suit = {
+    heart:c=>`<path fill="${c}" d="M10 17C4 12 1 9 1 5.5 1 3 3 1 5.5 1 7.5 1 9 2.3 10 4 11 2.3 12.5 1 14.5 1 17 1 19 3 19 5.5 19 9 16 12 10 17Z"/>`,
+    spade:c=>`<path fill="${c}" d="M10 1C14 6 19 8.5 19 12.5 19 15 17 16.6 14.8 16.6 13.3 16.6 12 15.9 11.2 14.8L12.5 19H7.5L8.8 14.8C8 15.9 6.7 16.6 5.2 16.6 3 16.6 1 15 1 12.5 1 8.5 6 6 10 1Z"/>`,
+    diamond:c=>`<path fill="${c}" d="M10 1 18 10 10 19 2 10Z"/>`,
+    club:c=>`<g fill="${c}"><circle cx="10" cy="5" r="4"/><circle cx="5" cy="11" r="4"/><circle cx="15" cy="11" r="4"/><path d="M8.5 11h3l1.5 8h-6z"/></g>`
+  };
+  const W = [
+    { cls:"w-home", name:"Unsere Welt · Der Turm des Oberzauberers", decor:
+      svg("left:-2%;top:-6%;width:104%;height:40%","0 0 200 40", star(8,20,7,"var(--accent)",0)+star(70,6,4,"var(--accent)",.7)+star(150,10,5,"var(--accent)",1.3)+star(196,26,6,"var(--accent)",.4)) +
+      svg("right:-.28em;top:-.34em;width:.62em;height:.62em","0 0 30 30",`<path fill="var(--accent)" d="M3 27 15 2l5 14 7 11Z"/><path fill="var(--w-wueste2)" d="M1 26h28v3H1z"/>`+star(14,15,3,"var(--w-wueste2)",.3)) },
+    { cls:"w-wueste", name:"Arabische Nächte · Wüste & Bazar", decor:
+      svg("right:-.62em;top:-.3em;width:.55em;height:.55em","0 0 30 30",`<path fill="var(--w-wueste2)" d="M20 3A13 13 0 1 0 27 22 11 11 0 1 1 20 3Z"/>`) +
+      svg("left:10%;top:-6%;width:88%;height:30%","0 0 200 30", star(40,12,5,"var(--w-wueste2)",0)+star(110,6,3.5,"var(--w-wueste2)",.8)+star(180,16,4.5,"var(--w-wueste2)",1.5)) +
+      svg("left:-4%;bottom:-2%;width:108%;height:18%","0 0 200 18",`<path fill="var(--w-wueste)" opacity=".45" d="M0 18C30 4 55 4 80 12S140 2 170 10 200 12 200 12V18Z"/>`) },
+    { cls:"w-wunder", name:"Wunderland · Reich der Königinnen", decor:
+      svg("left:.02em;top:-.14em;width:.28em;height:.28em;transform:rotate(-18deg)","0 0 20 20",suit.heart("var(--w-wunder)")) +
+      svg("left:36%;top:-.16em;width:.24em;height:.24em;transform:rotate(12deg)","0 0 20 20",suit.spade("var(--w-card)")) +
+      svg("right:-.36em;top:.3em;width:.28em;height:.28em;transform:rotate(20deg)","0 0 20 20",suit.diamond("var(--w-wunder)")) +
+      svg("right:14%;bottom:-.28em;width:.26em;height:.26em;transform:rotate(-10deg)","0 0 20 20",suit.club("var(--w-card)")) +
+      svg("left:58%;top:-.18em;width:.7em;height:.26em;animation:fadegrin 3.4s ease-in-out infinite","0 0 60 20",`<path fill="none" stroke="var(--w-ball1)" stroke-width="3" stroke-linecap="round" d="M4 4Q30 22 56 4"/><path fill="none" stroke="var(--w-ball1)" stroke-width="1.6" d="M14 9v4M22 12v4M30 13v4M38 12v4M46 9v4"/>`) },
+    { cls:"w-ball", name:"Der Ballsaal · Die lange Nacht der Tänze", decor:
+      svg("left:50%;top:-.52em;width:.9em;height:.5em;transform:translateX(-50%)","0 0 60 34",`<path fill="none" stroke="var(--w-wueste)" stroke-width="1.6" d="M30 0v8M8 16q22 14 44 0M8 16l-2 8M52 16l2 8M30 8v14"/><circle cx="30" cy="8" r="3" fill="var(--w-wueste2)"/>`+star(6,27,4,"var(--w-wueste2)",0)+star(54,27,4,"var(--w-wueste2)",.6)+star(30,26,5,"var(--w-ball1)",1.1)) +
+      svg("left:-4%;top:0;width:108%;height:100%","0 0 200 60",star(4,40,4,"var(--w-ball1)",.3)+star(196,20,5,"var(--w-ball2)",.9)+star(120,56,3,"var(--w-wueste2)",1.6)) },
+    { cls:"w-biblio", name:"Die Bibliothek · Madis & Sigis Weltenbuch", decor:
+      svg("right:-.5em;bottom:-.12em;width:.62em;height:.42em","0 0 40 26",`<path fill="var(--w-sepia)" opacity=".85" d="M20 6C14 2 6 2 1 4v19c5-2 13-2 19 2 6-4 14-4 19-2V4c-5-2-13-2-19 2Z"/><path stroke="var(--bg)" stroke-width="1.2" d="M20 6v19"/>`) +
+      svg("left:0;top:-4%;width:100%;height:110%","0 0 200 60",[[20,10,0],[70,4,.8],[140,8,1.6],[185,40,.4],[100,55,1.2]].map(([x,y,d])=>`<circle cx="${x}" cy="${y}" r="1.8" fill="var(--w-sepia)" opacity=".4" style="animation:dust 3.5s ease-in-out ${d}s infinite"/>`).join("")) },
+    { cls:"w-boese", name:"Die Böse Welt · Sturm & Gang", decor:
+      svg("right:-.3em;top:-.46em;width:.42em;height:.62em;animation:flash 3.2s steps(1) infinite","0 0 24 36",`<path fill="var(--w-bolt)" d="M14 0 2 20h9L7 36 22 13h-9L18 0Z"/>`) +
+      svg("left:-2%;top:-10%;width:104%;height:120%","0 0 200 70",[[10,0],[40,.5],[75,.2],[110,.8],[150,.35],[185,.65]].map(([x,d])=>`<path stroke="var(--w-night)" stroke-width="1.4" opacity=".5" d="M${x} 2l-4 12" style="animation:rain .9s linear ${d}s infinite"/>`).join("")) }
+  ];
+  const letters = t => [...t].map(c=>`<span class="lt">${c}</span>`).join("");
   let i = 0;
-  nm.innerHTML = "Welt: <b>" + worlds[0][1] + "</b>";
+  const show = w => {
+    el.className = "world " + w.cls;
+    el.innerHTML = (w.cls==="w-ball"||w.cls==="w-wueste") ? `<span class="lt">Worlds</span><span class="decor">${w.decor}</span>`
+      : `${letters(w.cls==="w-home"?"Worlds":"Worlds")}<span class="decor">${w.decor}</span>`;
+    nm.innerHTML = "Welt: <b>" + w.name + "</b>";
+  };
+  show(W[0]);
   if(REDUCED) return;
   setInterval(() => {
     el.classList.add("swap");
-    setTimeout(() => {
-      i = (i + 1) % worlds.length;
-      el.className = "world " + worlds[i][0];
-      nm.innerHTML = "Welt: <b>" + worlds[i][1] + "</b>";
-    }, 350);
-  }, 3400);
+    setTimeout(() => { i = (i + 1) % W.length; show(W[i]); }, 350);
+  }, 4200);
 })();
 
 /* Probenreise */
