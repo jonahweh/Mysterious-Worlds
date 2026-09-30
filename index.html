@@ -15,6 +15,9 @@
   --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#1d1830;
   --fr:#ece6fb; --di:#fff0d2; --mi:#dcf1ea; --pl:#fbe2e2; --fe:#ebe9f0;
   --ausfall:#c62828; --verschoben:#c25e00; --info:#2451b3; --neu:#1f7a4d;
+  --curtain-a:#5a0f2e; --curtain-b:#2b0716; --curtain-fringe:#d4a93a;
+  --w-wueste:#a86b00; --w-wueste2:#e0a526; --w-wunder:#c8102e; --w-ball1:#b0369c; --w-ball2:#5b2bb5; --w-boese:#23402a; --w-boese-glow:#6fd78a;
+  --spot:rgba(91,43,181,.16); --stamp:#c62828;
   --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
@@ -25,6 +28,8 @@
   --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
   --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
   --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
+  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45;
+  --spot:rgba(184,162,255,.16); --stamp:#ff6b6b;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#15121f; --surface:#1f1a2d; --ink:#efeaf9; --muted:#a9a1c2; --line:#352e4a;
@@ -32,6 +37,8 @@
   --signal:#ffd23f; --signal-ink:#231c00; --signal-line:#ffd23f;
   --fr:#2a2242; --di:#3a2f17; --mi:#16322a; --pl:#3b1d24; --fe:#25212f;
   --ausfall:#ff7b7b; --verschoben:#ffab5c; --info:#8fb0ff; --neu:#6fd7a0;
+  --w-wueste:#f0b43c; --w-wueste2:#ffd97a; --w-wunder:#ff5a6e; --w-ball1:#ff8ad8; --w-ball2:#b8a2ff; --w-boese:#9fe3a8; --w-boese-glow:#2f7a45;
+  --spot:rgba(184,162,255,.16); --stamp:#ff6b6b;
   color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -150,6 +157,73 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
   .next{grid-template-columns:1fr}
   .next .big{text-align:left}
 }
+
+/* 1 · Vorhang */
+.curtain{position:fixed;inset:0;z-index:100;display:flex;pointer-events:none}
+.curtain .half{flex:1;background:
+  repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 6px,rgba(255,255,255,.05) 6px 22px,rgba(0,0,0,.18) 22px 34px),
+  linear-gradient(180deg,var(--curtain-a),var(--curtain-b));
+  box-shadow:inset 0 -14px 0 var(--curtain-fringe);transition:transform 1.25s cubic-bezier(.7,0,.25,1)}
+.curtain .half.l{border-right:2px solid rgba(0,0,0,.4)}
+.curtain .word{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:800;
+  font-size:clamp(28px,7vw,52px);letter-spacing:.14em;text-transform:uppercase;color:var(--curtain-fringe);transition:opacity .35s}
+.curtain.open .l{transform:translateX(-102%)}
+.curtain.open .r{transform:translateX(102%)}
+.curtain.open .word{opacity:0}
+
+/* 3 · Titel im Weltenwechsel */
+.world{display:inline-block;position:relative;transition:opacity .35s,filter .35s,transform .35s}
+.world.swap{opacity:0;filter:blur(6px);transform:translateY(6px)}
+.world.w-wueste{background:linear-gradient(100deg,var(--w-wueste),var(--w-wueste2),var(--w-wueste));-webkit-background-clip:text;background-clip:text;color:transparent}
+.world.w-wunder{color:var(--w-wunder);letter-spacing:.06em}
+.world.w-ball{background:linear-gradient(90deg,var(--w-ball1),var(--w-ball2),var(--w-ball1));background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shimmer 3s linear infinite}
+.world.w-boese{color:var(--w-boese);text-shadow:2px 0 var(--w-boese-glow),-2px 0 var(--stamp)}
+@keyframes shimmer{to{background-position:-200% 0}}
+.worldname{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);min-height:1.5em;transition:opacity .35s}
+.worldname b{color:var(--accent);font-weight:500}
+
+/* 5 · Lebendiger Aushang */
+.notice{position:relative;overflow:hidden}
+.notice.fresh{animation:glow 1.6s ease-in-out 3}
+.freshtag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;background:#231c00;color:#ffd23f;padding:2px 7px;border-radius:2px}
+@keyframes glow{50%{box-shadow:0 0 0 5px rgba(255,255,255,.75),0 0 22px 6px rgba(255,210,63,.9)}}
+.stamp{position:absolute;right:10px;top:50%;transform:translateY(-50%) rotate(-12deg);font-family:var(--display);font-weight:800;
+  font-size:26px;letter-spacing:.08em;text-transform:uppercase;color:var(--stamp);border:3px solid var(--stamp);border-radius:4px;
+  padding:0 10px;opacity:.85;pointer-events:none;animation:stampin .45s cubic-bezier(.2,1.6,.4,1) both}
+.notice .stamp{color:#c62828;border-color:#c62828}
+@keyframes stampin{from{transform:translateY(-50%) rotate(-12deg) scale(1.8);opacity:0}}
+.entry .stamp{top:18px;transform:rotate(-10deg);font-size:22px;animation:none}
+
+/* 6 · Scheinwerfer */
+.entry.is-next,.next{position:relative;overflow:hidden;isolation:isolate}
+.entry.is-next::before,.next::before{content:"";position:absolute;inset:-40% -10% auto;height:180%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse 38% 60% at 50% 0%,var(--spot),transparent 70%);animation:sway 7s ease-in-out infinite alternate}
+@keyframes sway{from{transform:translateX(-18%)}to{transform:translateX(18%)}}
+
+/* 7 · Probenreise */
+.journey{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 18px 18px;display:grid;gap:14px}
+.journey-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px}
+.journey h2{font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.03em}
+.journey .stat{font-size:14px;color:var(--muted)}
+.track{position:relative;height:74px;margin-inline:14px}
+.track .rail{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:var(--line)}
+.track .fill{position:absolute;left:0;top:12px;height:4px;border-radius:2px;background:var(--accent);width:0;transition:width 1.6s cubic-bezier(.3,.8,.3,1)}
+.station{position:absolute;top:0;transform:translateX(-50%);display:grid;justify-items:center;gap:6px;width:76px;text-align:center}
+.station i{width:28px;height:28px;border-radius:50%;background:var(--surface);border:3px solid var(--line);display:block}
+.station.done i{background:var(--accent);border-color:var(--accent)}
+.station.now i{border-color:var(--accent)}
+.station.final i{border-color:var(--w-wueste);background:var(--w-wueste2)}
+.station span{font-size:11px;line-height:1.2;color:var(--muted);font-weight:600}
+.station.done span,.station.now span{color:var(--ink)}
+.traveler{position:absolute;top:2px;left:0;width:24px;height:24px;margin-left:-12px;transition:left 1.6s cubic-bezier(.3,.8,.3,1);z-index:2}
+.traveler svg{display:block;width:24px;height:24px;filter:drop-shadow(0 0 6px var(--w-wueste2));animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{50%{transform:scale(1.15) rotate(15deg)}}
+@media (max-width:520px){.stamp{font-size:18px;right:6px;top:14px;transform:rotate(-12deg)}@keyframes stampin{from{transform:rotate(-12deg) scale(1.8);opacity:0}}.station{width:54px}.station span{font-size:10px}.track{margin-inline:8px}}
+
+@media (prefers-reduced-motion:reduce){
+  .world,.world.w-ball,.notice.fresh,.stamp,.entry.is-next::before,.next::before,.traveler svg{animation:none!important;transition:none!important}
+  .track .fill,.traveler{transition:none}
+}
 @media (prefers-reduced-motion:no-preference){.tab,.chip{transition:background .15s,border-color .15s,color .15s}}
 </style>
 </head>
@@ -158,7 +232,8 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
 <div class="wrap">
   <header class="top">
     <div class="eyebrow">Musical · Probenplan Herbst/Winter 2026/27</div>
-    <h1>Mysterious <span>Worlds</span></h1>
+    <h1 aria-label="Mysterious Worlds">Mysterious <span class="world" id="world" aria-hidden="true">Worlds</span></h1>
+    <div class="worldname" id="worldname" aria-hidden="true"></div>
     <p class="lede">Alle Proben vom 16. Oktober 2026 bis 15. Januar 2027. Kurzfristige Änderungen stehen immer zuerst im Aushang.</p>
     <div class="shows" id="shows">
       <div class="count" id="countdown"></div>
@@ -179,6 +254,11 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
   </section>
 
   <section class="next" id="next" aria-live="polite"></section>
+
+  <section class="journey" aria-labelledby="journey-h">
+    <div class="journey-head"><h2 id="journey-h">Probenreise</h2><span class="stat" id="journey-stat"></span></div>
+    <div class="track" id="track"><div class="rail"></div><div class="fill" id="track-fill"></div></div>
+  </section>
 
   <nav class="menu" role="tablist" aria-label="Ansicht wählen">
     <button class="tab" role="tab" id="tab-gesamt" data-view="gesamt" aria-selected="true">Gesamtplan</button>
@@ -323,7 +403,8 @@ function renderBoard(){
   ul.innerHTML = list.map(a => {
     const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
     const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
-    return `<li class="notice"><div class="notice-meta"><span class="kind ${esc(a.art)}">${label}</span>${when}</div>
+    const fresh = a.ausgehaengt && (today - parse(a.ausgehaengt)) / 86400000 <= 2;
+    return `<li class="notice${fresh?" fresh":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
       <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}
       ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
   }).join("");
@@ -351,6 +432,7 @@ function entryHTML(e, me){
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
     : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : "Besetzung folgt."}</div>`;
   return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
+    ${cancelled?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}
     <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
     <div class="body">
       <div class="line1"><span class="type">${TYPE[e.typ]}</span><span class="time">${timeOf(e)}</span>
@@ -434,6 +516,76 @@ document.addEventListener("click", ev => {
   const days = Math.round((parse("2027-03-17") - today) / 86400000);
   el.innerHTML = days > 0 ? `${days}<small>Tage bis zur Premiere</small>` : (days >= -1 ? `Heute<small>ist Aufführung</small>` : `Danke!<small>für alles</small>`);
 })();
+
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Weltenwechsel im Titel */
+(function(){
+  const el = document.getElementById("world"), nm = document.getElementById("worldname");
+  const worlds = [["","Unsere Welt"],["w-wueste","Arabische Nächte"],["w-wunder","Wunderland"],["w-ball","Der Ballsaal"],["w-boese","Die Böse Welt"]];
+  let i = 0;
+  nm.innerHTML = "Welt: <b>" + worlds[0][1] + "</b>";
+  if(REDUCED) return;
+  setInterval(() => {
+    el.classList.add("swap");
+    setTimeout(() => {
+      i = (i + 1) % worlds.length;
+      el.className = "world " + worlds[i][0];
+      nm.innerHTML = "Welt: <b>" + worlds[i][1] + "</b>";
+    }, 350);
+  }, 3400);
+})();
+
+/* Probenreise */
+(function(){
+  const sceneEntries = PLAN.filter(e => ["fr","di","pl"].includes(e.typ));
+  const worldOf = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"weiter";
+  const worldsIn = e => { const ns = [...(e.sz||"").matchAll(/Szene (\d+)/g)].map(m=>+m[1]); if(/Opening/.test(e.sz)) ns.push(1); return ns.map(worldOf); };
+  const isDone = e => parse(e.d) < today && !changesFor(e.d).some(a=>a.art==="ausfall");
+  const done = sceneEntries.filter(isDone).length, total = sceneEntries.length;
+  const stations = [["heimat","Franks Turm"],["wunder","Wunderland"],["ball","Ballsaal"],["biblio","Bibliothek"],["boese","Böse Welt"],["premiere","Premiere"]];
+  const track = document.getElementById("track");
+  const pct = total ? done/total : 0;
+  stations.forEach(([k,label],idx) => {
+    const pos = idx/(stations.length-1)*100;
+    let cls = "";
+    if(k==="premiere") cls = "final";
+    else {
+      const es = sceneEntries.filter(e => worldsIn(e).includes(k));
+      if(es.length && es.every(isDone)) cls = "done";
+      else if(es.some(isDone)) cls = "now";
+    }
+    const st = document.createElement("div");
+    st.className = "station " + cls; st.style.left = pos + "%";
+    st.innerHTML = `<i></i><span>${label}</span>`;
+    track.appendChild(st);
+  });
+  const trav = document.createElement("div");
+  trav.className = "traveler";
+  trav.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--w-wueste2)" stroke="var(--w-wueste)" stroke-width="1.2" d="M12 1.5l2.6 7.1 7.4.3-5.8 4.6 2 7.2L12 16.6l-6.2 4.1 2-7.2L2 8.9l7.4-.3z"/></svg>';
+  track.appendChild(trav);
+  const fill = document.getElementById("track-fill");
+  const setPos = () => { fill.style.width = (pct*100) + "%"; trav.style.left = (pct*100) + "%"; };
+  if(REDUCED) setPos(); else requestAnimationFrame(() => requestAnimationFrame(setPos));
+  const daysToShow = Math.round((parse("2027-03-17") - today)/86400000);
+  document.getElementById("journey-stat").textContent = done
+    ? `${done} von ${total} Szenenproben geschafft · noch ${Math.max(daysToShow,0)} Tage bis zur Premiere`
+    : `Noch keine Szenenprobe. Die Reise beginnt am 16.10.`;
+})();
+
+/* Vorhang auf – einmal pro Besuch */
+(function(){
+  let seen = false;
+  try{ seen = sessionStorage.getItem("mw-vorhang") === "1"; sessionStorage.setItem("mw-vorhang","1"); }catch(e){}
+  if(seen || REDUCED) return;
+  const c = document.createElement("div");
+  c.className = "curtain"; c.setAttribute("aria-hidden","true");
+  c.innerHTML = '<div class="half l"></div><div class="half r"></div><div class="word">Vorhang auf</div>';
+  document.body.appendChild(c);
+  setTimeout(() => c.classList.add("open"), 450);
+  setTimeout(() => c.remove(), 2000);
+})();
+
 renderBoard(); renderNext(); renderList(PLAN, document.getElementById("plan-all"), null);
 
 /* Deep-Links: #infos, #mein-plan, #rolle-phillip oder mehrere Rollen: #rolle-petra.ensemble */
