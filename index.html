@@ -89,6 +89,16 @@ nav.menu{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:v
 .entry{display:grid;grid-template-columns:78px 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;position:relative}
 .entry.t-fr .date{background:var(--fr)}.entry.t-di .date{background:var(--di)}.entry.t-mi .date{background:var(--mi)}.entry.t-pl .date{background:var(--pl)}
 .entry.t-fe{background:var(--fe);border-style:dashed}
+.entry.t-auf{border:2px solid var(--accent);background:var(--accent-soft)}
+.entry.t-auf .date{background:var(--accent);color:var(--bg)}
+.entry.t-auf .date .wd{color:var(--bg);opacity:.85}
+.shows{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--accent);color:var(--bg);border-radius:6px;padding:18px 20px;margin-top:10px}
+.shows .count{font-family:var(--display);font-weight:800;font-size:56px;line-height:.85;text-align:center}
+.shows .count small{display:block;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+.shows .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.shows .dates{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1;text-transform:uppercase;letter-spacing:.02em}
+.shows .sub{font-size:14px;opacity:.9}
+@media (max-width:520px){.shows{grid-template-columns:1fr}.shows .count{text-align:left}}
 .entry.past{opacity:.55}
 .entry.is-next{border:2px solid var(--accent)}
 .date{border-radius:4px;text-align:center;padding:8px 4px;align-self:start;display:grid;gap:2px}
@@ -150,6 +160,14 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="eyebrow">Musical · Probenplan Herbst/Winter 2026/27</div>
     <h1>Mysterious <span>Worlds</span></h1>
     <p class="lede">Alle Proben vom 16. Oktober 2026 bis 15. Januar 2027. Kurzfristige Änderungen stehen immer zuerst im Aushang.</p>
+    <div class="shows" id="shows">
+      <div class="count" id="countdown"></div>
+      <div>
+        <div class="kicker">Aufführungen</div>
+        <div class="dates">Mi 17. &amp; Do 18. März 2027</div>
+        <div class="sub">Uhrzeit und Ort folgen im Aushang.</div>
+      </div>
+    </div>
   </header>
 
   <section class="board" id="aushang" aria-labelledby="aushang-h">
@@ -191,6 +209,14 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
   <section id="view-infos" role="tabpanel" aria-labelledby="tab-infos" hidden>
     <div class="info-grid">
       <div class="info-card">
+        <h3>Aufführungen</h3>
+        <ul>
+          <li><span class="mono">Mi 17.03.2027</span> Aufführung 1</li>
+          <li><span class="mono">Do 18.03.2027</span> Aufführung 2</li>
+        </ul>
+        <p class="note">Uhrzeit und Ort folgen im Aushang.</p>
+      </div>
+      <div class="info-card">
         <h3>Probenzeiten</h3>
         <ul>
           <li><b>Freitag</b> <span class="mono">13:55–15:25</span> · Szenenprobe (Regeltermin)</li>
@@ -227,7 +253,6 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
 const STAND = "2026-09-30";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
-  { art:"info", datum:"", titel:"HALLO WELT", text:"", ausgehaengt:"2026-09-30" },
   { art:"info", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober", text:"Die erste Probe ist Freitag, 16.10., 13:55 Uhr. Geprobt werden Szene 4 und Szene 7.", ausgehaengt:"2026-09-30" }
 ];
 
@@ -271,16 +296,18 @@ const PLAN = [
  {d:"2026-12-24",bis:"2027-01-08",typ:"fe",sz:"Weihnachtsferien – keine Proben"},
  {d:"2027-01-12",typ:"pl",sz:"Szene 15 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter, Dienstag 13:55–15:25."},
  {d:"2027-01-13",typ:"mi",sz:"",songs:"Songs der Folgeszenen · Wiederholung aller Songs",roles:[],note:""},
- {d:"2027-01-15",typ:"pl",sz:"Szene 16 (wird noch geschrieben) oder Nachholtermin",songs:"",roles:[],note:"Falls keine weitere Szene kommt: Puffer für ausgefallene Proben."}
+ {d:"2027-01-15",typ:"pl",sz:"Szene 16 (wird noch geschrieben) oder Nachholtermin",songs:"",roles:[],note:"Falls keine weitere Szene kommt: Puffer für ausgefallene Proben."},
+ {d:"2027-03-17",typ:"auf",sz:"Aufführung 1",songs:"",roles:[],note:"Uhrzeit und Ort folgen."},
+ {d:"2027-03-18",typ:"auf",sz:"Aufführung 2",songs:"",roles:[],note:"Uhrzeit und Ort folgen."}
 ];
 
 /* ===== Darstellung ===== */
-const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Musikprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei"};
+const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Musikprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
 const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
 const dm = s => { const x = parse(s); return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."; };
-const timeOf = e => { const w = parse(e.d).getDay(); return w===3?"14:40–16:10":"13:55–15:25"; };
+const timeOf = e => { if(e.typ==="auf") return "Uhrzeit folgt"; const w = parse(e.d).getDay(); return w===3?"14:40–16:10":"13:55–15:25"; };
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const today = new Date(); today.setHours(0,0,0,0);
 
@@ -322,7 +349,7 @@ function entryHTML(e, me){
   const title = e.sz || "Musikprobe";
   const roles = e.roles.length
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
-    : `<div class="note">Besetzung folgt.</div>`;
+    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : "Besetzung folgt."}</div>`;
   return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
     <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
     <div class="body">
@@ -368,7 +395,7 @@ function renderRole(){
     return;
   }
   const hits = e => e.roles.some(r => selected.has(r));
-  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || hits(e));
+  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || e.typ === "auf" || hits(e));
   const n = PLAN.filter(hits).length;
   const upcoming = PLAN.filter(e => hits(e) && parse(e.d) >= today).length;
   const names = [...selected].map(r => ROLES[r]).join(", ");
@@ -402,6 +429,11 @@ document.addEventListener("click", ev => {
   document.getElementById("view-rolle").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
 });
 
+(function(){
+  const el = document.getElementById("countdown");
+  const days = Math.round((parse("2027-03-17") - today) / 86400000);
+  el.innerHTML = days > 0 ? `${days}<small>Tage bis zur Premiere</small>` : (days >= -1 ? `Heute<small>ist Aufführung</small>` : `Danke!<small>für alles</small>`);
+})();
 renderBoard(); renderNext(); renderList(PLAN, document.getElementById("plan-all"), null);
 
 /* Deep-Links: #infos, #mein-plan, #rolle-phillip oder mehrere Rollen: #rolle-petra.ensemble */
