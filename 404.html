@@ -11,7 +11,7 @@
 (function(){
   var base = "/Mysterious-Worlds/";
   var rest = location.pathname.replace(/^\/mysterious-worlds\/?/i, "").replace(/\/+$/, "").toLowerCase();
-  var map = { "probenplan":"probenplan/", "probenplan/index.html":"probenplan/", "reservierung":"reservierung/", "reservierung/index.html":"reservierung/", "tickets":"reservierung/", "karten":"reservierung/" };
+  var map = { "probenplan":"probenplan/", "probenplan/index.html":"probenplan/", "reservierung":"reservierung/", "reservierung/index.html":"reservierung/", "einlass":"einlass/", "tickets":"reservierung/", "karten":"reservierung/" };
   if (map[rest] !== undefined && /^\/mysterious-worlds/i.test(location.pathname)) location.replace(base + map[rest] + location.search + location.hash);
 })();
 </script>

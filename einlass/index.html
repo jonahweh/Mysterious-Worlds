@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Einlass · Mysterious Worlds</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#120e1c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Einlass">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: Einlass-Werkzeug fürs Handy im dunklen Foyer – große Zahlen oben, Suche klebt, darunter die Gästeliste mit großen Tasten */
+:root{
+  --bg:#120e1c; --surface:#1d1830; --surface2:#262040; --ink:#efeaf9; --muted:#aaa1c4; --line:#352d4d;
+  --accent:#b8a2ff; --gold:#ffd23f; --ok:#4fd18b; --ok-bg:#163828; --warn:#f0a050; --bad:#ff7a7a;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:720px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px calc(40px + env(safe-area-inset-bottom));display:grid;gap:14px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1}
+.brand small{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--gold);font-weight:500}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:14px;padding:6px}
+
+/* PIN */
+.pin{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px 18px;display:grid;gap:14px;margin-top:10vh}
+.pin h1{margin:0;font-family:var(--display);font-size:30px;text-transform:uppercase}
+.pin input{font:inherit;font-family:var(--mono);font-size:30px;letter-spacing:.3em;text-align:center;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:10px;padding:12px;width:100%}
+.pin input:focus{outline:none;border-color:var(--accent)}
+.big{border:0;border-radius:12px;background:var(--accent);color:#120e1c;font-weight:700;font-size:18px;padding:15px}
+.big:disabled{opacity:.6}
+.msg{font-size:15px;color:var(--bad)}
+
+/* Abend + Zahlen */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:none;border-radius:9px;padding:10px;font-weight:700}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#120e1c}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+.stat b{display:block;font-family:var(--display);font-weight:800;font-size:40px;line-height:1;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:var(--mono)}
+.stat.ok b{color:var(--ok)} .stat.warn b{color:var(--warn)} .stat.bad b{color:var(--bad)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);transition:width .4s}
+.sub{font-size:13px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+.walk{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:10px 12px}
+.walk p{margin:0;font-size:14px}.walk p b{display:block;font-size:16px}
+
+/* Suche */
+.search{position:sticky;top:0;z-index:5;background:var(--bg);padding:8px 0;display:grid;gap:8px}
+.search input{font:inherit;font-size:18px;width:100%;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:12px 14px}
+.search input:focus{outline:none;border-color:var(--accent)}
+.filters{display:flex;gap:6px}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:14px}
+.filters button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);font-weight:700}
+
+/* Gäste */
+.list{display:grid;gap:8px}
+.g{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center}
+.g.part{border-left-color:var(--warn)}
+.g.full{border-left-color:var(--ok);background:var(--ok-bg)}
+.g .who b{font-size:18px;display:block;line-height:1.2}
+.g .who span{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.g .note{grid-column:1/-1;font-size:14px;background:rgba(255,210,63,.12);border-left:3px solid var(--gold);padding:4px 8px;border-radius:4px}
+.g .count{font-family:var(--display);font-weight:800;font-size:26px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.g .count small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:500;display:block}
+.g .act{grid-column:1/-1;display:flex;gap:8px;align-items:center}
+.g .all{flex:1;border:0;border-radius:10px;background:var(--accent);color:#120e1c;font-weight:700;font-size:17px;padding:12px}
+.g.full .all{background:transparent;color:var(--ok);border:1px solid var(--ok)}
+.step{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.step button{border:0;background:var(--surface2);width:48px;height:48px;font-size:22px;font-weight:700}
+.step button:disabled{opacity:.35}
+.empty{color:var(--muted);text-align:center;padding:20px}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--bad);color:#120e1c;font-weight:700;padding:10px 16px;border-radius:10px;z-index:20;max-width:calc(100% - 32px)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><small>Mysterious Worlds</small>Einlass</div>
+    <button class="link" id="logout" type="button" hidden>Abmelden</button>
+  </header>
+
+  <form class="pin" id="pinbox" hidden>
+    <h1>PIN eingeben</h1>
+    <p style="margin:0;color:var(--muted)">Die Einlass-PIN steht in der Reservierungs-Tabelle im Blatt „Einstellungen“.</p>
+    <input id="pin" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Einlass-PIN">
+    <div class="msg" id="pinmsg" role="alert"></div>
+    <button class="big" id="pinbtn" type="submit">Weiter</button>
+  </form>
+
+  <main id="app" hidden>
+    <div style="display:grid;gap:12px">
+      <div class="seg" id="nights" role="group" aria-label="Abend wählen"></div>
+      <div class="stats">
+        <div class="stat ok"><b id="s-in">–</b><span>Im Saal</span></div>
+        <div class="stat"><b id="s-wait">–</b><span>Erwartet</span></div>
+        <div class="stat" id="s-free-box"><b id="s-free">–</b><span>Frei</span></div>
+      </div>
+      <div class="bar" aria-hidden="true"><i id="bar" style="width:0"></i></div>
+      <div class="sub"><span id="s-line"></span><span id="s-sync"></span></div>
+      <div class="walk">
+        <p><b>Ohne Reservierung</b>Gäste an der Abendkasse</p>
+        <div class="step"><button type="button" id="w-minus" aria-label="Einen weniger">−</button><button type="button" id="w-count" disabled style="width:56px;opacity:1;font-family:var(--display);font-size:24px">0</button><button type="button" id="w-plus" aria-label="Einen mehr">+</button></div>
+      </div>
+    </div>
+
+    <div class="search">
+      <input id="q" type="search" placeholder="Name oder Code suchen …" autocomplete="off" aria-label="Gast suchen">
+      <div class="filters" role="group" aria-label="Filter">
+        <button type="button" data-f="offen" aria-pressed="true">Noch nicht da</button>
+        <button type="button" data-f="alle" aria-pressed="false">Alle</button>
+        <button type="button" data-f="da" aria-pressed="false">Angekommen</button>
+      </div>
+    </div>
+    <div class="list" id="list" aria-live="polite"></div>
+  </main>
+</div>
+
+<script>
+/* Gleiche Web-App wie die Reservierungsseite */
+const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
+const NIGHTS = [{ id:"2027-03-17", kurz:"Mi 17.03." }, { id:"2027-03-18", kurz:"Do 18.03." }];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ v === null ? localStorage.removeItem(k) : localStorage.setItem(k,v); }catch(e){} } };
+let pin = store.get("mw-einlass-pin"), data = null, filter = "offen", busy = 0, lastSync = null;
+const todayId = (() => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })();
+let abend = store.get("mw-einlass-abend") || (NIGHTS.find(n => n.id >= todayId) || NIGHTS[0]).id;
+if (NIGHTS.some(n => n.id === todayId)) abend = todayId;
+
+async function call(body){
+  const r = await fetch(API, { method:"POST", body: JSON.stringify({ pin, ...body }) });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+function toast(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role","alert"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+}
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+function showPin(msg){
+  $("app").hidden = true; $("logout").hidden = true; $("pinbox").hidden = false;
+  $("pinmsg").textContent = msg || ""; $("pin").value = ""; setTimeout(() => $("pin").focus(), 50);
+}
+$("pinbox").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  pin = $("pin").value.trim(); if(!pin) return;
+  $("pinbtn").disabled = true; $("pinbtn").innerHTML = '<span class="spin"></span>';
+  const ok = await refresh(true);
+  $("pinbtn").disabled = false; $("pinbtn").textContent = "Weiter";
+  if(ok){ store.set("mw-einlass-pin", pin); }
+});
+$("logout").onclick = () => { store.set("mw-einlass-pin", null); pin = null; data = null; showPin(); };
+
+async function refresh(fromPin){
+  if(!pin){ showPin(); return false; }
+  busy++;
+  try{
+    const r = await call({ action:"admin_list", abend });
+    if(!r.ok){
+      if(r.badPin || r.locked){ store.set("mw-einlass-pin", null); showPin(r.error); return false; }
+      toast(r.error || "Fehler beim Laden."); return false;
+    }
+    if(busy === 1) apply(r);
+    $("pinbox").hidden = true; $("app").hidden = false; $("logout").hidden = false;
+    return true;
+  }catch(e){
+    if(fromPin) $("pinmsg").textContent = "Keine Verbindung. Internet prüfen und nochmal versuchen.";
+    else $("s-sync").textContent = "⚠ offline – zeigt letzten Stand";
+    return false;
+  }finally{ busy--; }
+}
+function apply(r){ data = r; lastSync = new Date(); render(); }
+
+function render(){
+  if(!data) return;
+  $("nights").innerHTML = NIGHTS.map(n => `<button type="button" data-n="${n.id}" aria-pressed="${n.id===abend}">${n.kurz}${n.id===todayId?" · heute":""}</button>`).join("");
+  const inHall = data.arrived + data.walkins, waiting = data.reserved - data.arrived, free = data.cap - data.reserved - data.walkins;
+  $("s-in").textContent = inHall;
+  $("s-wait").textContent = waiting;
+  $("s-free").textContent = free;
+  $("s-free-box").className = "stat " + (free < 0 ? "bad" : free <= 10 ? "warn" : "");
+  $("bar").style.width = (data.reserved ? Math.min(100, data.arrived / data.reserved * 100) : 0) + "%";
+  $("s-line").textContent = `${data.arrived} von ${data.reserved} reservierten Plätzen da · ${data.guests.length} Reservierungen · ${data.cap} Plätze gesamt`;
+  $("s-sync").textContent = lastSync ? "Stand " + lastSync.toLocaleTimeString("de-DE", {hour:"2-digit",minute:"2-digit",second:"2-digit"}) : "";
+  $("w-count").textContent = data.walkins;
+  $("w-minus").disabled = data.walkins <= 0;
+  document.querySelectorAll(".filters button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+  const q = norm($("q").value.trim());
+  const list = data.guests.filter(g => (!q || norm(g.name).includes(q) || norm(g.code).includes(q))
+    && (q || filter === "alle" || (filter === "offen" ? g.da < g.plaetze : g.da > 0)));
+  $("list").innerHTML = list.length ? list.map(g => {
+    const cls = g.da >= g.plaetze ? "full" : g.da > 0 ? "part" : "";
+    return `<div class="g ${cls}" data-code="${esc(g.code)}">
+      <div class="who"><b>${esc(g.name)}</b><span>${esc(g.code)}${g.quelle === "Warteliste" ? " · von der Warteliste" : ""}</span></div>
+      <div class="count">${g.da}/${g.plaetze}<small>da</small></div>
+      ${g.hinweis ? `<div class="note">${esc(g.hinweis)}</div>` : ""}
+      <div class="act">
+        <button type="button" class="all" data-set="${g.da >= g.plaetze ? 0 : g.plaetze}">${g.da >= g.plaetze ? "✓ Alle da · rückgängig" : g.plaetze === 1 ? "Ist da" : `Alle ${g.plaetze} da`}</button>
+        ${g.plaetze > 1 ? `<div class="step"><button type="button" data-set="${g.da-1}" ${g.da<=0?"disabled":""} aria-label="Eine Person weniger">−</button><button type="button" data-set="${g.da+1}" ${g.da>=g.plaetze?"disabled":""} aria-label="Eine Person mehr">+</button></div>` : ""}
+      </div></div>`;
+  }).join("") : `<p class="empty">${q ? "Niemand gefunden. Tippfehler? Auch der Code (MW-…) funktioniert." : filter === "offen" ? "Alle Reservierten sind da. 🎭" : "Keine Einträge."}</p>`;
+}
+
+$("nights").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-n]"); if(!b) return;
+  abend = b.dataset.n; store.set("mw-einlass-abend", abend); data && (data.guests = []); render(); refresh();
+});
+document.querySelector(".filters").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-f]"); if(!b) return; filter = b.dataset.f; render();
+});
+$("q").addEventListener("input", render);
+
+$("list").addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-set]"); if(!b) return;
+  const card = b.closest(".g"), code = card.dataset.code, g = data.guests.find(x => x.code === code);
+  const before = g.da, n = Math.max(0, Math.min(g.plaetze, Number(b.dataset.set)));
+  g.da = n; data.arrived += n - before; render();            // sofort anzeigen
+  if(n > before && navigator.vibrate) navigator.vibrate(30);
+  busy++;
+  try{
+    const r = await call({ action:"checkin", code, da: n });
+    if(!r.ok) throw new Error(r.error);
+    busy--; if(busy === 0) apply(r);
+  }catch(e){
+    busy--; g.da = before; data.arrived -= n - before; render();
+    toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung"));
+  }
+});
+async function walk(delta){
+  data.walkins = Math.max(0, data.walkins + delta); render();
+  busy++;
+  try{ const r = await call({ action:"walkin", abend, delta }); if(!r.ok) throw new Error(r.error); busy--; if(busy === 0) apply(r); }
+  catch(e){ busy--; data.walkins = Math.max(0, data.walkins - delta); render(); toast("Nicht gespeichert: keine Verbindung"); }
+}
+$("w-plus").onclick = () => walk(1);
+$("w-minus").onclick = () => walk(-1);
+
+// Mehrere Handys am Einlass: alle 15 Sekunden abgleichen
+setInterval(() => { if(pin && !$("app").hidden && busy === 0 && document.visibilityState === "visible") refresh(); }, 15000);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && pin && !$("app").hidden) refresh(); });
+
+pin ? refresh() : showPin();
+</script>
+</body>
+</html>

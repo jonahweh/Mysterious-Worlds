@@ -154,6 +154,9 @@ textarea{min-height:70px;resize:vertical}
 .btn:disabled{opacity:.55;cursor:progress}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
 .err{background:color-mix(in srgb,var(--bad) 12%,transparent);border-left:4px solid var(--bad);padding:10px 12px;border-radius:4px;font-size:15px}
+.err.info{background:color-mix(in srgb,var(--ok) 12%,transparent);border-left-color:var(--ok)}
+.storno-row{display:grid;gap:8px;margin-top:6px}
+.notice .stepper{background:var(--surface)}
 .summary{font-size:15px;background:var(--accent-soft);border-radius:6px;padding:10px 12px}
 
 /* Bestätigung */
@@ -165,7 +168,7 @@ textarea{min-height:70px;resize:vertical}
 .ticket dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:0}
 .ticket dt{color:var(--muted)}.ticket dd{margin:0;font-weight:600}
 .notice{background:var(--gold-soft);border:1.5px solid var(--gold);border-radius:8px;padding:16px 18px;display:grid;gap:6px}
-.notice b{font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.02em}
+.notice > b{font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;letter-spacing:.02em}
 
 details.dsg{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:14px}
 details.dsg summary{cursor:pointer;font-weight:600}
@@ -215,7 +218,7 @@ footer a,a{color:var(--accent)}
   <section class="sec" id="form-sec" hidden aria-labelledby="h-form">
     <div class="sec-head">
       <h2 id="h-form">Plätze reservieren</h2>
-      <p class="muted">Der Eintritt ist frei. Mit der Reservierung ist dir ein Platz sicher. Die Bestätigung kommt per E-Mail.</p>
+      <p class="muted" id="form-intro">Der Eintritt ist frei. Mit der Reservierung ist dir ein Platz sicher. Die Bestätigung kommt per E-Mail.</p>
     </div>
     <form class="card" id="form" novalidate>
       <div class="row2">
@@ -234,6 +237,8 @@ footer a,a{color:var(--accent)}
         <label>Name<input type="text" id="name" autocomplete="name" maxlength="80" required></label>
         <label>E-Mail<input type="email" id="email" autocomplete="email" inputmode="email" maxlength="120" required></label>
       </div>
+      <p class="small muted" style="margin:-6px 0 0">Damit möglichst viele die Aufführung sehen können: <b>ein Abend pro E-Mail-Adresse</b>.</p>
+      <label class="consent" id="both-wrap" hidden><input type="checkbox" id="both"><span id="both-label">Ich kann auch am anderen Abend.</span></label>
       <label>Hinweis <span class="opt">(optional, z. B. Rollstuhlplatz)</span><textarea id="hinweis" maxlength="300"></textarea></label>
       <div class="hp" aria-hidden="true"><label>Website<input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
       <label class="consent"><input type="checkbox" id="dsg" required><span>Ich bin einverstanden, dass Name, E-Mail und Anzahl der Plätze für die Reservierung gespeichert werden (siehe <a href="#datenschutz">Datenschutz</a>).</span></label>
@@ -272,8 +277,9 @@ const NIGHTS_FALLBACK = [
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const WD = {"2027-03-17":["Mittwoch","17. März"], "2027-03-18":["Donnerstag","18. März"]};
-let state = { open:false, max:6, nights:NIGHTS_FALLBACK.map(n => ({...n, free:null, total:null})), beginn:"", einlass:"", ort:"" };
+let state = { open:false, max:6, warteliste:false, nights:NIGHTS_FALLBACK.map(n => ({...n, free:null, total:null})), beginn:"", einlass:"", ort:"" };
 let chosen = null, count = 2;
+const smooth = () => matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
 
 async function api(method, body){
   const opts = method === "POST" ? { method:"POST", body: JSON.stringify(body) } : {};
@@ -289,6 +295,11 @@ function infoLine(){
   parts.push(state.ort ? state.ort : "Ort folgt");
   return parts.join(" · ");
 }
+const nightById = id => state.nights.find(n => n.id === id);
+const isFull = n => n && n.free !== null && n.free <= 0;
+const canWait = n => !!(n && state.warteliste && n.waitlistOpen !== false && !n.past);
+const bookable = n => n && !n.past && (n.free === null || n.free > 0);
+const waitMode = () => { const n = nightById(chosen); return isFull(n) && canWait(n); };
 
 function renderNights(){
   $("infoline").textContent = infoLine();
@@ -298,8 +309,10 @@ function renderNights(){
     const soldOut = known && n.free <= 0, past = !!n.past;
     const pct = known ? Math.max(0, Math.min(100, n.free / n.total * 100)) : 100;
     const level = !known ? "" : soldOut ? "none" : n.free <= Math.max(20, n.total * .1) ? "low" : "";
-    const txt = past ? "Vorbei – danke fürs Kommen!" : !known ? "" : soldOut ? "Ausgebucht" : `Noch ${n.free} von ${n.total} Plätzen frei`;
-    const dis = !state.open || soldOut || past;
+    const txt = past ? "Vorbei – danke fürs Kommen!" : !known ? ""
+      : soldOut ? (canWait(n) ? "Ausgebucht · Warteliste möglich" + (n.waiting ? ` (${n.waiting} wartend)` : "") : "Ausgebucht")
+      : `Noch ${n.free} von ${n.total} Plätzen frei`;
+    const dis = !state.open || past || (soldOut && !canWait(n));
     return `<button type="button" class="night" role="radio" aria-checked="${chosen===n.id}" data-id="${n.id}" ${dis?"disabled":""} tabindex="${chosen===n.id || (!chosen && n===state.nights[0]) ? 0 : -1}">
       <span class="check" aria-hidden="true"></span>
       <span class="wd">${esc(wd)}</span><span class="dt">${esc(dt)} 2027</span>
@@ -310,18 +323,26 @@ function renderNights(){
 }
 
 function renderForm(){
+  const n = nightById(chosen), wm = waitMode();
   count = Math.max(1, Math.min(count, state.max));
-  const n = state.nights.find(x => x.id === chosen);
-  const cap = n && n.free !== null ? Math.min(state.max, n.free) : state.max;
+  const cap = !wm && n && n.free !== null ? Math.min(state.max, n.free) : state.max;
   if(count > cap && cap > 0) count = cap;
   $("count").textContent = count;
   $("minus").disabled = count <= 1;
   $("plus").disabled = count >= cap;
-  $("maxhint").textContent = n && n.free !== null && n.free < state.max ? `An diesem Abend sind nur noch ${n.free} Plätze frei.` : `Höchstens ${state.max} Plätze pro Reservierung.`;
-  $("summary").innerHTML = n ? `<b>${count} ${count===1?"Platz":"Plätze"}</b> für <b>${esc(n.label)}</b>` : "Bitte wähle oben einen Abend.";
+  $("maxhint").textContent = !wm && n && n.free !== null && n.free < state.max ? `An diesem Abend sind nur noch ${n.free} Plätze frei.` : `Höchstens ${state.max} Plätze pro Reservierung.`;
+  $("h-form").textContent = wm ? "Auf die Warteliste" : "Plätze reservieren";
+  $("form-intro").innerHTML = wm
+    ? "Dieser Abend ist im Moment ausgebucht. Trag dich ein: Sobald genug Plätze frei werden, <b>rückst du automatisch nach</b> und bekommst deine Reservierung per E-Mail."
+    : "Der Eintritt ist frei. Mit der Reservierung ist dir ein Platz sicher. Die Bestätigung kommt per E-Mail.";
+  const other = state.nights.find(x => x.id !== chosen && canWait(x));
+  $("both-wrap").hidden = !wm || !other;
+  if(other) $("both-label").textContent = `Ich kann auch am ${other.label.split(",")[0]} – nimm den Abend, der zuerst frei wird.`;
+  $("submit").textContent = wm ? "Auf die Warteliste setzen" : "Plätze reservieren";
+  $("summary").innerHTML = n ? (wm ? `Warteliste: <b>${count} ${count===1?"Platz":"Plätze"}</b> für <b>${esc(n.label)}</b>` : `<b>${count} ${count===1?"Platz":"Plätze"}</b> für <b>${esc(n.label)}</b>`) : "Bitte wähle oben einen Abend.";
 }
 
-function showErr(msg){ const e = $("err"); e.hidden = !msg; e.textContent = msg || ""; }
+function showErr(msg, kind){ const e = $("err"); e.hidden = !msg; e.textContent = msg || ""; e.className = kind === "info" ? "err info" : "err"; }
 
 async function load(){
   if(!RESERVIERUNG.api){ applyState(); return; }
@@ -335,9 +356,10 @@ async function load(){
   applyState();
 }
 function applyState(){
-  const anyOpen = state.open && state.nights.some(n => !n.past && (n.free === null || n.free > 0));
-  if(chosen && !state.nights.some(n => n.id === chosen && !n.past && n.free > 0)) chosen = null;
-  if(anyOpen && !chosen){ const first = state.nights.find(n => !n.past && n.free > 0); if(first && state.nights.filter(n => !n.past && n.free > 0).length === 1) chosen = first.id; }
+  const usable = n => bookable(n) || (isFull(n) && canWait(n));
+  const anyOpen = state.open && state.nights.some(usable);
+  if(chosen && !usable(nightById(chosen))) chosen = null;
+  if(anyOpen && !chosen){ const u = state.nights.filter(usable); if(u.length === 1) chosen = u[0].id; }
   $("closed").hidden = state.open && anyOpen;
   if(state.open && !anyOpen){ $("closed").querySelector("b").textContent = "Alle Abende sind ausgebucht"; $("closed").querySelector("span").textContent = "Vielen Dank für das große Interesse! Falls Plätze frei werden, kannst du sie hier wieder reservieren."; }
   $("form-sec").hidden = !anyOpen || !$("done").hidden;
@@ -367,58 +389,110 @@ $("form").addEventListener("submit", async ev => {
   if(name.length < 2) { $("name").focus(); return showErr("Bitte gib deinen Namen an."); }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $("email").focus(); return showErr("Bitte prüfe deine E-Mail-Adresse."); }
   if(!$("dsg").checked) return showErr("Bitte stimme dem Datenschutzhinweis zu.");
-  const btn = $("submit"); btn.disabled = true; btn.innerHTML = '<span class="load" aria-hidden="true"></span>Wird reserviert …';
+  const wm = waitMode();
+  const btn = $("submit"), label = btn.textContent; btn.disabled = true;
+  btn.innerHTML = `<span class="load" aria-hidden="true"></span>${wm ? "Wird eingetragen …" : "Wird reserviert …"}`;
+  const body = { abend: wm && !$("both-wrap").hidden && $("both").checked ? "beide" : chosen, plaetze: count, name, email,
+    hinweis: $("hinweis").value.trim(), datenschutz: true, website: $("website").value };
+  if(wm) body.action = "waitlist";
   try{
-    const r = await api("POST", { abend: chosen, plaetze: count, name, email, hinweis: $("hinweis").value.trim(), datenschutz: true, website: $("website").value });
+    const r = await api("POST", body);
     if(!r.ok){
+      if(r.freeAgain){ await load(); chosen = r.abend; applyState(); showErr(r.error, "info"); return; }
       showErr(r.error || "Das hat nicht geklappt. Bitte versuch es noch einmal.");
-      if(r.free !== undefined){ const n = state.nights.find(x => x.id === chosen); if(n){ n.free = r.free; } applyState(); }
+      if(r.free !== undefined){ const n = nightById(chosen); if(n) n.free = r.free; applyState();
+        if(r.full && r.waitlist) showErr("Dieser Abend ist gerade ausgebucht. Du kannst dich unten auf die Warteliste setzen und rückst automatisch nach, sobald Plätze frei werden.", "info"); }
       return;
     }
-    showDone(r, name, email);
+    wm ? showWaiting(r, email) : showDone(r, name, email);
   }catch(e){
     showErr("Keine Verbindung zur Reservierung. Bitte prüfe dein Internet und versuch es noch einmal.");
   }finally{
-    btn.disabled = false; btn.textContent = "Plätze reservieren";
+    btn.disabled = false; btn.textContent = label; renderForm();
   }
 });
 
+function finish(html){
+  $("done").innerHTML = html + `<button class="btn ghost" type="button" id="again">Zurück</button>`;
+  $("done").hidden = false; $("form-sec").hidden = true;
+  $("done").scrollIntoView({behavior: smooth(), block:"start"});
+  $("again").addEventListener("click", () => { $("done").hidden = true; $("form").reset(); count = 2; chosen = null; showErr(""); load(); });
+}
 function showDone(r, name, email){
   const when = esc(r.label) + (r.beginn ? ", " + esc(r.beginn) : "");
-  $("done").innerHTML = `<h2>Du bist dabei!</h2>
+  finish(`<h2>Du bist dabei!</h2>
     <div class="ticket">
       <span class="k">Dein Reservierungscode</span>
       <span class="code">${esc(r.code)}</span>
       <dl><dt>Name</dt><dd>${esc(name)}</dd><dt>Abend</dt><dd>${when}</dd>${r.einlass?`<dt>Einlass</dt><dd>${esc(r.einlass)}</dd>`:""}<dt>Ort</dt><dd>${esc(r.ort || "folgt")}</dd><dt>Plätze</dt><dd>${r.plaetze}</dd></dl>
     </div>
     <p>${r.mailed ? `Die Bestätigung ist unterwegs an <b>${esc(email)}</b>. Schau notfalls im Spam-Ordner nach.` : `<b>Wichtig:</b> Die Bestätigungsmail konnte gerade nicht verschickt werden. Mach am besten einen Screenshot von dieser Seite. Deine Plätze sind trotzdem reserviert.`}
-    Am Einlass reicht dein Name oder der Code.</p>
-    <button class="btn ghost" type="button" id="again">Weitere Reservierung</button>`;
-  $("done").hidden = false; $("form-sec").hidden = true;
-  $("done").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
-  $("again").addEventListener("click", () => { $("done").hidden = true; $("form").reset(); count = 2; chosen = null; load(); });
+    Am Einlass reicht dein Name oder der Code. Kommen doch weniger Personen? Über den Link in der Mail kannst du auch einzelne Plätze stornieren.</p>`);
+}
+function showWaiting(r, email){
+  finish(`<h2>Du stehst auf der Warteliste</h2>
+    <div class="ticket">
+      <span class="k">Dein Platz in der Warteschlange</span>
+      <span class="code">Nr. ${r.position}</span>
+      <dl><dt>Abend</dt><dd>${esc(r.label)}</dd><dt>Plätze</dt><dd>${r.plaetze}</dd></dl>
+    </div>
+    <p>Sobald genug Plätze frei werden, rückst du <b>automatisch nach</b> und bekommst eine Bestätigung mit deinem Reservierungscode an <b>${esc(email)}</b>. Du musst nichts weiter tun. ${r.mailed ? "Eine Bestätigung, dass du auf der Warteliste stehst, ist schon unterwegs." : ""}</p>`);
 }
 
-/* Stornieren über den Link aus der Bestätigungsmail: ?storno=MW-XXXXX&t=… */
-(function(){
+/* Stornieren über den Link aus der Bestätigungsmail: ?storno=MW-XXXXX&t=… – auch einzelne Plätze */
+function linkBox(html){ const box = $("storno-box"); box.hidden = false; box.innerHTML = `<div class="notice">${html}</div>`; return box; }
+(async function(){
   const q = new URLSearchParams(location.search), code = q.get("storno"), token = q.get("t");
   if(!code || !token) return;
-  const box = $("storno-box"); box.hidden = false;
-  box.innerHTML = `<div class="notice"><b>Reservierung stornieren?</b>
-    <span>Reservierung <b>${esc(code)}</b> wirklich stornieren? Die Plätze werden dann für andere frei.</span>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="button" id="do-storno">Ja, stornieren</button><a class="btn ghost" href="./" style="text-decoration:none">Nein, behalten</a></div></div>`;
-  $("do-storno").addEventListener("click", async () => {
-    const b = $("do-storno"); b.disabled = true; b.innerHTML = '<span class="load" aria-hidden="true"></span>Wird storniert …';
+  if(!RESERVIERUNG.api){ linkBox(`<b>Stornierung</b><span>Die Reservierung ist gerade nicht erreichbar. Bitte versuch es später noch einmal.</span>`); return; }
+  linkBox(`<b>Stornierung</b><span><span class="load" aria-hidden="true"></span>Reservierung wird geladen …</span>`);
+  let b;
+  try{ b = await api("POST", { action:"lookup", code, token }); }catch(e){ b = { ok:false, error:"Keine Verbindung zur Reservierung. Bitte versuch es später noch einmal." }; }
+  if(!b.ok){ linkBox(`<b>Stornierung</b><span>${esc(b.error || "Diese Reservierung wurde nicht gefunden.")}</span>`); return; }
+  if(b.status !== "aktiv"){ linkBox(`<b>Schon storniert</b><span>Die Reservierung <b>${esc(b.code)}</b> ist bereits storniert. Danke, dass du Bescheid gegeben hast!</span>`); return; }
+  let n = b.plaetze;
+  const draw = () => {
+    const rest = b.plaetze - n;
+    const box = linkBox(`<b>Reservierung stornieren</b>
+      <span>Reservierung <b>${esc(b.code)}</b> · ${esc(b.name)} · ${esc(b.label)} · <b>${b.plaetze} ${b.plaetze===1?"Platz":"Plätze"}</b></span>
+      ${b.plaetze > 1 ? `<div class="storno-row"><span>Wie viele Plätze stornieren?</span>
+        <div class="stepper" role="group" aria-label="Anzahl stornieren"><button type="button" id="s-minus" aria-label="Einen weniger" ${n<=1?"disabled":""}>−</button><output aria-live="polite">${n}</output><button type="button" id="s-plus" aria-label="Einen mehr" ${n>=b.plaetze?"disabled":""}>+</button></div>
+        <span class="small">${rest ? `Danach bleiben dir <b>${rest} ${rest===1?"Platz":"Plätze"}</b> reserviert.` : "Die ganze Reservierung wird storniert."}</span></div>` : ""}
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="button" id="do-storno">${rest ? `${n} ${n===1?"Platz":"Plätze"} stornieren` : "Ganze Reservierung stornieren"}</button><a class="btn ghost" href="./" style="text-decoration:none">Nichts ändern</a></div>`);
+    if($("s-minus")) $("s-minus").onclick = () => { n--; draw(); };
+    if($("s-plus")) $("s-plus").onclick = () => { n++; draw(); };
+    $("do-storno").onclick = async () => {
+      const btn = $("do-storno"); btn.disabled = true; btn.innerHTML = '<span class="load" aria-hidden="true"></span>Wird storniert …';
+      let msg;
+      try{
+        const r = await api("POST", { action:"cancel", code, token, anzahl: n });
+        msg = !r.ok ? (r.error || "Das hat nicht geklappt.") : r.already ? "Diese Reservierung war schon storniert."
+          : r.remaining ? `Erledigt! ${r.cancelled} ${r.cancelled===1?"Platz ist":"Plätze sind"} storniert. Für dich bleiben ${r.remaining} ${r.remaining===1?"Platz":"Plätze"} reserviert (Code ${r.code}). Danke, dass du Bescheid gegeben hast!`
+          : "Erledigt! Deine Reservierung ist storniert. Danke, dass du Bescheid gegeben hast.";
+      }catch(e){ msg = "Keine Verbindung zur Reservierung. Bitte versuch es später noch einmal oder antworte auf die Bestätigungsmail."; }
+      linkBox(`<b>Stornierung</b><span>${esc(msg)}</span>`);
+      history.replaceState(null, "", location.pathname);
+      load();
+    };
+  };
+  draw();
+})();
+
+/* Von der Warteliste austragen: ?warteliste=W-XXXXX&t=… */
+(function(){
+  const q = new URLSearchParams(location.search), id = q.get("warteliste"), token = q.get("t");
+  if(!id || !token) return;
+  linkBox(`<b>Von der Warteliste austragen?</b><span>Du bekommst dann keine Plätze mehr von der Warteliste. Eine bestehende Reservierung ist davon nicht betroffen.</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px"><button class="btn" type="button" id="do-leave">Ja, austragen</button><a class="btn ghost" href="./" style="text-decoration:none">Auf der Liste bleiben</a></div>`);
+  $("do-leave").onclick = async () => {
+    const btn = $("do-leave"); btn.disabled = true; btn.innerHTML = '<span class="load" aria-hidden="true"></span>Einen Moment …';
     let msg;
-    try{
-      if(!RESERVIERUNG.api) throw new Error("keine api");
-      const r = await api("POST", { action:"cancel", code, token });
-      msg = r.ok ? (r.already ? "Diese Reservierung war schon storniert." : "Erledigt! Deine Reservierung ist storniert. Danke, dass du Bescheid gegeben hast.") : (r.error || "Das hat nicht geklappt.");
-    }catch(e){ msg = "Keine Verbindung zur Reservierung. Bitte versuch es später noch einmal oder antworte auf die Bestätigungsmail."; }
-    box.innerHTML = `<div class="notice"><b>Stornierung</b><span>${esc(msg)}</span></div>`;
+    try{ const r = await api("POST", { action:"leave", id, token });
+      msg = !r.ok ? (r.error || "Das hat nicht geklappt.") : r.already ? "Du stehst nicht mehr auf der Warteliste." : "Erledigt! Du bist von der Warteliste ausgetragen. Danke für die Rückmeldung.";
+    }catch(e){ msg = "Keine Verbindung. Bitte versuch es später noch einmal."; }
+    linkBox(`<b>Warteliste</b><span>${esc(msg)}</span>`);
     history.replaceState(null, "", location.pathname);
-    load();
-  });
+  };
 })();
 
 
