@@ -157,7 +157,9 @@ const NIGHTS = [{ id:"2027-03-17", kurz:"Mi 17.03." }, { id:"2027-03-18", kurz:"
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const store = { get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }, set(k,v){ try{ v === null ? localStorage.removeItem(k) : localStorage.setItem(k,v); }catch(e){} } };
-let pin = store.get("mw-einlass-pin"), data = null, filter = "offen", busy = 0, lastSync = null;
+let pin = store.get("mw-einlass-pin"), data = null, filter = "offen", lastSync = null;
+// pending = laufende Änderungen; loadSeq verhindert, dass eine alte Antwort (z. B. vom anderen Abend) die Anzeige überschreibt
+let pending = 0, loadSeq = 0, loading = false;
 const todayId = (() => { const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); })();
 let abend = store.get("mw-einlass-abend") || (NIGHTS.find(n => n.id >= todayId) || NIGHTS[0]).id;
 if (NIGHTS.some(n => n.id === todayId)) abend = todayId;
@@ -189,26 +191,37 @@ $("logout").onclick = () => { store.set("mw-einlass-pin", null); pin = null; dat
 
 async function refresh(fromPin){
   if(!pin){ showPin(); return false; }
-  busy++;
+  const seq = ++loadSeq, want = abend; loading = true;
   try{
-    const r = await call({ action:"admin_list", abend });
+    const r = await call({ action:"admin_list", abend: want });
     if(!r.ok){
       if(r.badPin || r.locked){ store.set("mw-einlass-pin", null); showPin(r.error); return false; }
       toast(r.error || "Fehler beim Laden."); return false;
     }
-    if(busy === 1) apply(r);
+    if(seq === loadSeq && pending === 0) apply(r);
     $("pinbox").hidden = true; $("app").hidden = false; $("logout").hidden = false;
     return true;
   }catch(e){
     if(fromPin) $("pinmsg").textContent = "Keine Verbindung. Internet prüfen und nochmal versuchen.";
     else $("s-sync").textContent = "⚠ offline – zeigt letzten Stand";
     return false;
-  }finally{ busy--; }
+  }finally{ if(seq === loadSeq) loading = false; }
 }
-function apply(r){ data = r; lastSync = new Date(); render(); }
+// Nur Daten des gerade gewählten Abends anzeigen
+function apply(r){ if(!r || r.abend !== abend) return; data = r; lastSync = new Date(); render(); }
+function showLoading(){
+  ["s-in","s-wait","s-free"].forEach(id => $(id).textContent = "…");
+  $("s-free-box").className = "stat"; $("bar").style.width = "0";
+  $("s-line").textContent = "Lade Gäste für diesen Abend …"; $("s-sync").textContent = "";
+  $("w-count").textContent = "…"; $("w-minus").disabled = true; $("w-plus").disabled = true;
+  $("relall").hidden = true; $("wlbox").hidden = true;
+  $("list").innerHTML = '<p class="empty"><span class="spin"></span> Lade …</p>';
+  $("nights").innerHTML = NIGHTS.map(n => `<button type="button" data-n="${n.id}" aria-pressed="${n.id===abend}">${n.kurz}${n.id===todayId?" · heute":""}</button>`).join("");
+}
 
 function render(){
-  if(!data) return;
+  if(!data || data.abend !== abend) return showLoading();
+  $("w-plus").disabled = false;
   $("nights").innerHTML = NIGHTS.map(n => `<button type="button" data-n="${n.id}" aria-pressed="${n.id===abend}">${n.kurz}${n.id===todayId?" · heute":""}</button>`).join("");
   const inHall = data.arrived + data.walkins, waiting = data.reserved - data.arrived, free = data.cap - data.reserved - data.walkins;
   $("s-in").textContent = inHall;
@@ -256,7 +269,8 @@ function render(){
 
 $("nights").addEventListener("click", ev => {
   const b = ev.target.closest("[data-n]"); if(!b) return;
-  abend = b.dataset.n; store.set("mw-einlass-abend", abend); data && (data.guests = []); render(); refresh();
+  if(b.dataset.n === abend) return;
+  abend = b.dataset.n; store.set("mw-einlass-abend", abend); data = null; showLoading(); refresh();
 });
 document.querySelector(".filters").addEventListener("click", ev => {
   const b = ev.target.closest("[data-f]"); if(!b) return; filter = b.dataset.f; render();
@@ -269,13 +283,13 @@ $("list").addEventListener("click", async ev => {
   const before = g.da, n = Math.max(0, Math.min(g.plaetze, Number(b.dataset.set)));
   g.da = n; data.arrived += n - before; render();            // sofort anzeigen
   if(n > before && navigator.vibrate) navigator.vibrate(30);
-  busy++;
+  pending++;
   try{
     const r = await call({ action:"checkin", code, da: n });
     if(!r.ok) throw new Error(r.error);
-    busy--; if(busy === 0) apply(r);
+    pending--; if(pending === 0) apply(r);
   }catch(e){
-    busy--; g.da = before; data.arrived -= n - before; render();
+    pending--; g.da = before; data.arrived -= n - before; render();
     toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung"));
   }
 });
@@ -287,13 +301,13 @@ function armed(btn){
   return false;
 }
 async function act(body, okMsg){
-  busy++;
+  pending++;
   try{
     const r = await call(body);
     if(!r.ok) throw new Error(r.error);
-    busy--; if(busy === 0) apply(r);
+    pending--; if(pending === 0) apply(r);
     if(okMsg) note(okMsg(r));
-  }catch(e){ busy--; toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung")); render(); }
+  }catch(e){ pending--; toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung")); render(); }
 }
 function note(msg){
   const t = document.createElement("div"); t.className = "toast"; t.style.background = "var(--ok)"; t.setAttribute("role","status"); t.textContent = msg;
@@ -316,16 +330,18 @@ $("wllist").addEventListener("click", ev => {
 });
 
 async function walk(delta){
+  if(!data || data.abend !== abend) return;             // erst wenn der gewählte Abend geladen ist
+  const forNight = abend;
   data.walkins = Math.max(0, data.walkins + delta); render();
-  busy++;
-  try{ const r = await call({ action:"walkin", abend, delta }); if(!r.ok) throw new Error(r.error); busy--; if(busy === 0) apply(r); }
-  catch(e){ busy--; data.walkins = Math.max(0, data.walkins - delta); render(); toast("Nicht gespeichert: keine Verbindung"); }
+  pending++;
+  try{ const r = await call({ action:"walkin", abend: forNight, delta }); if(!r.ok) throw new Error(r.error); pending--; if(pending === 0) apply(r); }
+  catch(e){ pending--; if(data && data.abend === forNight){ data.walkins = Math.max(0, data.walkins - delta); render(); } toast("Nicht gespeichert: keine Verbindung"); }
 }
 $("w-plus").onclick = () => walk(1);
 $("w-minus").onclick = () => walk(-1);
 
 // Mehrere Handys am Einlass: alle 15 Sekunden abgleichen
-setInterval(() => { if(pin && !$("app").hidden && busy === 0 && document.visibilityState === "visible") refresh(); }, 15000);
+setInterval(() => { if(pin && !$("app").hidden && pending === 0 && !loading && document.visibilityState === "visible") refresh(); }, 15000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && pin && !$("app").hidden) refresh(); });
 
 pin ? refresh() : showPin();
