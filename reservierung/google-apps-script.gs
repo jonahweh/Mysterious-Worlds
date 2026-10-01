@@ -1,16 +1,18 @@
 /**
  * Mysterious Worlds – Reservierungen (Google Apps Script)
  *
- * Einrichtung (einmalig, ca. 10 Minuten):
- * 1. Neue Google-Tabelle anlegen, z. B. "Mysterious Worlds – Reservierungen".
- * 2. Erweiterungen → Apps Script. Den gesamten Inhalt dieser Datei einfügen und speichern.
- * 3. Oben die Funktion "setup" auswählen → Ausführen → Zugriff erlauben.
- *    Danach gibt es die Blätter "Reservierungen" und "Einstellungen".
- * 4. Bereitstellen → Neue Bereitstellung → Typ "Web-App".
+ * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
+ * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
+ *    → Neues Projekt. Den gesamten Inhalt dieser Datei einfügen und speichern.
+ *    (Alternativ am Computer: Google-Tabelle → Erweiterungen → Apps Script.)
+ * 2. Oben die Funktion "setup" auswählen → Ausführen → Zugriff erlauben.
+ *    Das Script legt die Tabelle "Mysterious Worlds – Reservierungen" mit den Blättern
+ *    "Reservierungen" und "Einstellungen" selbst an (Link steht im Ausführungsprotokoll).
+ * 3. Bereitstellen → Neue Bereitstellung → Typ "Web-App".
  *    Ausführen als: Ich · Zugriff: Jeder → Bereitstellen.
  *    Die Web-App-URL (endet auf /exec) kommt in die Reservierungsseite.
  *
- * Im Alltag:
+ * Im Alltag (geht auch in der Google-Tabellen-App):
  * - Reservierung öffnen/schließen, Plätze, Beginn, Einlass, Ort und Mail-Adresse
  *   im Blatt "Einstellungen" ändern. Wirkt sofort, ohne neue Bereitstellung.
  * - Stornieren von Hand: in "Reservierungen" die Spalte Status auf "storniert" setzen.
@@ -27,9 +29,25 @@ const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
 const RES = "Reservierungen", SET = "Einstellungen";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am"];
 
+/* ---------- Tabelle finden (an eine Tabelle gebunden oder eigenständig) ---------- */
+function book_() {
+  let ss = null;
+  try { ss = SpreadsheetApp.getActive(); } catch (e) {}
+  if (ss) return ss;
+  const id = PropertiesService.getScriptProperties().getProperty("SHEET_ID");
+  if (!id) throw new Error("Noch keine Tabelle: bitte zuerst die Funktion setup ausführen.");
+  return SpreadsheetApp.openById(id);
+}
+
 /* ---------- Einrichtung ---------- */
 function setup() {
-  const ss = SpreadsheetApp.getActive();
+  let ss = null;
+  try { ss = SpreadsheetApp.getActive(); } catch (e) {}
+  if (!ss) {
+    const props = PropertiesService.getScriptProperties(), id = props.getProperty("SHEET_ID");
+    if (id) { try { ss = SpreadsheetApp.openById(id); } catch (e) { ss = null; } }
+    if (!ss) { ss = SpreadsheetApp.create("Mysterious Worlds – Reservierungen"); props.setProperty("SHEET_ID", ss.getId()); }
+  }
   let r = ss.getSheetByName(RES);
   if (!r) { r = ss.getSheets()[0]; r.setName(RES); }
   if (r.getLastRow() === 0) {
@@ -65,12 +83,13 @@ function setup() {
     s.setColumnWidth(1, 230); s.setColumnWidth(2, 260); s.setColumnWidth(3, 380);
   }
   r.getRange("C2:C").setNumberFormat("@");
-  ss.setActiveSheet(s);
+  try { ss.setActiveSheet(s); } catch (e) {}
+  console.log("Fertig! Deine Tabelle: " + ss.getUrl());
 }
 
 /* ---------- Hilfsfunktionen ---------- */
 function settings_() {
-  const vals = SpreadsheetApp.getActive().getSheetByName(SET).getDataRange().getValues();
+  const vals = book_().getSheetByName(SET).getDataRange().getValues();
   const m = {};
   vals.forEach(r => { if (r[0]) m[String(r[0]).trim()] = r[1]; });
   const cap = {};
@@ -87,7 +106,7 @@ function settings_() {
   };
 }
 function rows_() {
-  const sh = SpreadsheetApp.getActive().getSheetByName(RES);
+  const sh = book_().getSheetByName(RES);
   const v = sh.getDataRange().getValues();
   return { sh: sh, rows: v.slice(1).map((r, i) => ({ row: i + 2, code: String(r[1]), abend: nightId_(r[2]), plaetze: Number(r[3]) || 0, email: String(r[5]).toLowerCase(), status: String(r[7]), token: String(r[8]) })) };
 }
@@ -188,7 +207,7 @@ function reserve_(d) {
       body: "Neue Reservierung " + code + "\n\nName: " + name + "\nE-Mail: " + email + "\nAbend: " + night.label + "\nPlätze: " + plaetze +
         (hinweis ? "\nHinweis: " + hinweis : "") + "\n\nNoch frei an diesem Abend: " + (free - plaetze) + " von " + s.cap[night.id] +
         (mailed ? "" : "\n\nACHTUNG: Die Bestätigungsmail an den Gast konnte nicht verschickt werden (Tageslimit?). Der Gast hat den Code auf der Seite gesehen.") +
-        "\n\nAlle Reservierungen: " + SpreadsheetApp.getActive().getUrl()
+        "\n\nAlle Reservierungen: " + book_().getUrl()
     });
   } catch (err) { console.warn("Benachrichtigung fehlgeschlagen: " + err); }
 
