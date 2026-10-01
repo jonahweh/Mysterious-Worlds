@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 6 (Mails nur an Gäste, Wartelisten-Tipp)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 7 (Eintrittskarte mit QR-Code)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -29,6 +29,7 @@ const NIGHTS = [
   { id: "2027-03-18", label: "Donnerstag, 18. März 2027", kurz: "Do 18.03." }
 ];
 const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
+const KARTE = "https://jonahweh.github.io/Mysterious-Worlds/karte/";
 const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
 const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am",
@@ -89,6 +90,7 @@ function setup() {
   // Seit Version 6 gehen keine Mails mehr ans Team (spart das Tageslimit); Hinweise stehen in der Spalte „Team-Hinweis“
   setNote_(s, "Benachrichtigung an", "Antwortadresse: Antworten der Gäste auf ihre Mails landen hier. Es werden KEINE Mails an diese Adresse verschickt.");
   setNote_(s, "Mail bei Stornierung", "wird nicht mehr verwendet – Hinweise stehen in „Reservierungen“, Spalte „Team-Hinweis“");
+  ensureSetting_(s, "Freihaltezeit (Minuten vor Beginn)", 15, "Bis dahin bleiben reservierte Plätze reserviert; steht in Mail, Eintrittskarte und Reservierungsseite");
   ensureSetting_(s, "Warteliste aktiv", true, "Ist ein Abend voll, können sich Gäste eintragen und rücken automatisch nach", true);
   ensureSetting_(s, "Einlass-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Einlass-Seite …/einlass/ – nur an das Einlass-Team geben");
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
@@ -137,6 +139,7 @@ function settings_() {
     notify: String(m["Benachrichtigung an"] || "").trim(),
     notifyStorno: m["Mail bei Stornierung"] !== false,
     warteliste: m["Warteliste aktiv"] !== false,
+    freihalten: Math.max(0, Number(m["Freihaltezeit (Minuten vor Beginn)"]) || 15),
     pin: String(m["Einlass-PIN"] === undefined ? "" : m["Einlass-PIN"]).trim()
   };
 }
@@ -189,29 +192,37 @@ const waitlistOpenFor_ = id => today_() < id;
 function send_(o) {
   try { MailApp.sendEmail(o); return true; } catch (err) { console.warn("Mail fehlgeschlagen: " + err); return false; }
 }
+function ticketUrl_(code, token) { return KARTE + "?c=" + encodeURIComponent(code) + "&t=" + token; }
+const holdText_ = s => "Reservierte Plätze werden bis " + s.freihalten + " Minuten vor Beginn freigehalten. Wer später kommt, hat keinen Anspruch mehr auf den Platz: Nicht abgeholte Plätze gehen dann an die Warteliste und die Abendkasse.";
 function confirmMail_(s, b) {
   const night = nightOf_(b.abend);
   const storno = SEITE + "?storno=" + encodeURIComponent(b.code) + "&t=" + b.token;
+  const karte = ticketUrl_(b.code, b.token);
   const wann = night.label + (s.beginn ? ", Beginn " + s.beginn : "") + (s.einlass ? " (Einlass " + s.einlass + ")" : "");
   const intro = b.nachgerueckt
     ? "gute Nachricht: Es sind Plätze frei geworden, und du bist von der Warteliste nachgerückt. Deine Plätze sind fest reserviert, du musst nichts weiter tun."
     : "deine Plätze sind reserviert. Wir freuen uns auf dich!";
+  const personen = b.plaetze + " " + (b.plaetze === 1 ? "Person" : "Personen");
   return send_({
     to: b.email, name: "Mysterious Worlds", replyTo: s.notify || undefined,
-    subject: (b.nachgerueckt ? "Du bist nachgerückt! Reservierung " : "Deine Reservierung ") + b.code + " – Mysterious Worlds",
-    body: "Hallo " + b.name + ",\n\n" + intro + "\n\nCode: " + b.code + "\nAbend: " + wann +
-      "\nOrt: " + (s.ort || "folgt") + "\nPlätze: " + b.plaetze + "\n\nDer Eintritt ist frei. Am Einlass reicht dein Name oder der Code." +
+    subject: (b.nachgerueckt ? "Du bist nachgerückt! Deine Eintrittskarte " : "Deine Eintrittskarte ") + b.code + " – Mysterious Worlds",
+    body: "Hallo " + b.name + ",\n\n" + intro + "\n\nDeine Eintrittskarte mit QR-Code:\n" + karte +
+      "\n\nCode: " + b.code + "\nAbend: " + wann + "\nOrt: " + (s.ort || "folgt") + "\nFür: " + personen +
+      "\n\nDer Eintritt ist frei. Am Einlass zeigst du den QR-Code auf deiner Eintrittskarte oder nennst deinen Namen. Es gibt keine festen Plätze: Wer zuerst kommt, sucht zuerst aus." +
+      "\n\nWICHTIG: " + holdText_(s) +
       "\n\nDoch keine Zeit, oder kommen weniger Personen? Bitte storniere (auch einzelne Plätze), damit andere nachrücken können:\n" + storno +
       "\n\nFragen? Antworte einfach auf diese Mail.\n\nDein Mysterious-Worlds-Team",
     htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;color:#1d1830">' +
       '<img src="' + LOGO + '" width="520" height="165" alt="Mysterious Worlds – Musical, 17. &amp; 18. März 2027" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;margin:0 0 18px;background:#1d1036;color:#ffd97a;font-size:22px;font-weight:bold;text-align:center">' +
       "<p>Hallo " + escH_(b.name) + ",</p><p>" + intro + "</p>" +
+      '<p style="text-align:center;margin:22px 0"><a href="' + karte + '" style="display:inline-block;background:#5b2bb5;color:#ffffff;text-decoration:none;font-weight:bold;font-size:17px;padding:14px 26px;border-radius:999px">Eintrittskarte öffnen</a></p>' +
       '<table style="border-collapse:collapse;background:#f3f1f7;border-radius:6px;width:100%">' +
       '<tr><td style="padding:10px 14px;color:#625b78">Code</td><td style="padding:10px 14px;font-size:22px;font-weight:bold;letter-spacing:.08em;color:#5b2bb5">' + b.code + "</td></tr>" +
       '<tr><td style="padding:6px 14px;color:#625b78">Abend</td><td style="padding:6px 14px"><b>' + escH_(wann) + "</b></td></tr>" +
       '<tr><td style="padding:6px 14px;color:#625b78">Ort</td><td style="padding:6px 14px">' + escH_(s.ort || "folgt") + "</td></tr>" +
-      '<tr><td style="padding:6px 14px 12px;color:#625b78">Plätze</td><td style="padding:6px 14px 12px">' + b.plaetze + "</td></tr></table>" +
-      "<p>Der Eintritt ist frei. Am Einlass reicht dein Name oder der Code.</p>" +
+      '<tr><td style="padding:6px 14px 12px;color:#625b78">Für</td><td style="padding:6px 14px 12px">' + personen + "</td></tr></table>" +
+      "<p>Der Eintritt ist frei. Am Einlass zeigst du den QR-Code auf deiner Eintrittskarte oder nennst deinen Namen. Es gibt keine festen Plätze: <b>Wer zuerst kommt, sucht zuerst aus.</b></p>" +
+      '<p style="background:#fff3d6;border-left:4px solid #d4a93a;padding:10px 12px;border-radius:4px"><b>Wichtig:</b> ' + escH_(holdText_(s)) + "</p>" +
       '<p>Doch keine Zeit, oder kommen weniger Personen? Bitte <a href="' + storno + '" style="color:#5b2bb5">storniere hier</a> – auch einzelne Plätze –, damit andere nachrücken können.</p>' +
       '<p style="color:#625b78;font-size:13px">Fragen? Antworte einfach auf diese Mail.</p></div>'
   });
@@ -272,7 +283,7 @@ function doGet() {
   NIGHTS.forEach(n => wait[n.id] = 0);
   wl_().rows.filter(w => w.status === "wartend").forEach(w => (w.abend === "beide" ? NIGHTS.map(n => n.id) : [w.abend]).forEach(id => { if (wait[id] !== undefined) wait[id]++; }));
   return out_({
-    ok: true, open: s.open, max: s.max, beginn: s.beginn, einlass: s.einlass, ort: s.ort, warteliste: s.warteliste,
+    ok: true, open: s.open, max: s.max, beginn: s.beginn, einlass: s.einlass, ort: s.ort, warteliste: s.warteliste, freihalten: s.freihalten,
     nights: NIGHTS.map(n => ({ id: n.id, label: n.label, total: s.cap[n.id], booked: b[n.id], free: Math.max(0, s.cap[n.id] - b[n.id]),
       past: isPast_(n.id), waiting: wait[n.id], waitlistOpen: waitlistOpenFor_(n.id) }))
   });
@@ -285,7 +296,7 @@ function doPost(e) {
   if (d.website) return out_({ ok: true, code: "MW-OK", id: "W-OK" }); // Honeypot gegen Spam-Bots
   const a = d.action || "reserve";
   const fn = { reserve: reserve_, waitlist: waitlist_, cancel: cancel_, lookup: lookup_, leave: leave_,
-    admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_ }[a];
+    admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_, admin_find: adminFind_ }[a];
   if (!fn) return out_({ ok: false, error: "Unbekannte Aktion." });
   return out_(fn(d));
 }
@@ -340,7 +351,7 @@ function reserve_(d) {
   const mailed = confirmMail_(s, booking);
   if (!mailed) teamNote_(booking.code, "Bestätigungsmail fehlgeschlagen (Tageslimit?) – Gast hat den Code auf der Seite gesehen");
   return { ok: true, code: booking.code, abend: night.id, label: night.label, plaetze: g.plaetze, mailed: mailed,
-    beginn: s.beginn, einlass: s.einlass, ort: s.ort, storno: SEITE + "?storno=" + encodeURIComponent(booking.code) + "&t=" + booking.token };
+    beginn: s.beginn, einlass: s.einlass, ort: s.ort, storno: SEITE + "?storno=" + encodeURIComponent(booking.code) + "&t=" + booking.token, karte: ticketUrl_(booking.code, booking.token), freihalten: s.freihalten };
 }
 
 function waitlist_(d) {
@@ -404,7 +415,9 @@ function lookup_(d) {
   const hit = findBooking_(rows_(), d);
   if (!hit) return { ok: false, error: "Diese Reservierung wurde nicht gefunden." };
   const n = nightOf_(hit.abend);
-  return { ok: true, code: hit.code, name: hit.name, abend: hit.abend, label: n ? n.label : hit.abend, plaetze: hit.plaetze, status: hit.status, past: isPast_(hit.abend) };
+  const s = settings_();
+  return { ok: true, code: hit.code, name: hit.name, abend: hit.abend, label: n ? n.label : hit.abend, plaetze: hit.plaetze, status: hit.status, past: isPast_(hit.abend),
+    da: Math.min(hit.da, hit.plaetze), beginn: s.beginn, einlass: s.einlass, ort: s.ort, freihalten: s.freihalten };
 }
 function cancel_(d) {
   const s = settings_();
@@ -580,4 +593,16 @@ function walkin_(d) {
     return { ok: true };
   });
   return res.ok ? adminData_(s, night.id) : res;
+}
+// Einlass: Reservierung per Code (z. B. aus dem QR-Scan) finden – egal für welchen Abend und in welchem Zustand
+function adminFind_(d) {
+  const s = settings_(), p = pinOk_(s, d.pin);
+  if (!p.ok) return p;
+  const m = String(d.code || "").toUpperCase().match(/MW-[A-Z0-9]{5}/);
+  if (!m) return { ok: true, found: false };
+  const r = rows_().rows.find(x => x.code === m[0] && x.quelle !== "Abendkasse");
+  if (!r) return { ok: true, found: false, code: m[0] };
+  const n = nightOf_(r.abend);
+  return { ok: true, found: true, guest: { code: r.code, name: r.name, abend: r.abend, kurz: n ? n.kurz : r.abend, label: n ? n.label : r.abend,
+    plaetze: r.plaetze, da: Math.min(r.da, r.plaetze), status: r.status, hinweis: r.hinweis, quelle: r.quelle, orig: r.orig } };
 }

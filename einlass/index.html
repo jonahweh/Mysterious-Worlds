@@ -101,6 +101,28 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* QR-Scanner */
+.scanbtn{width:100%;border:0;border-radius:12px;background:var(--accent);color:#120e1c;font-weight:800;font-size:18px;padding:14px;display:flex;gap:10px;align-items:center;justify-content:center}
+.scanbtn svg{width:24px;height:24px}
+.scan{position:fixed;inset:0;z-index:30;background:#000;display:flex;flex-direction:column}
+.scan video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan .frame{position:absolute;left:50%;top:42%;width:min(70vw,300px);aspect-ratio:1;transform:translate(-50%,-50%);border-radius:20px;box-shadow:0 0 0 100vmax rgba(0,0,0,.55);border:3px solid var(--accent)}
+.scan .frame.hit{border-color:var(--ok)}
+.scan .hint{position:absolute;left:0;right:0;top:calc(42% + min(35vw,150px) + 16px);text-align:center;color:#fff;font-weight:600;padding:0 20px;text-shadow:0 1px 4px #000}
+.scan .x{position:absolute;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:2;border:0;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:16px;font-weight:700;padding:10px 16px}
+.scan .night{position:absolute;top:calc(12px + env(safe-area-inset-top));left:12px;z-index:2;border-radius:999px;background:rgba(0,0,0,.6);color:#fff;font-size:14px;font-weight:700;padding:10px 14px}
+.res{position:absolute;left:0;right:0;bottom:0;z-index:3;background:var(--surface);border-top:5px solid var(--line);border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:12px;max-height:85vh;overflow:auto}
+.res.ok{border-top-color:var(--ok)}.res.warn{border-top-color:var(--warn)}.res.bad{border-top-color:var(--bad)}
+.res .st{font-family:var(--display);font-weight:800;font-size:26px;text-transform:uppercase;line-height:1}
+.res.ok .st{color:var(--ok)}.res.warn .st{color:var(--warn)}.res.bad .st{color:var(--bad)}
+.res .nm{font-size:24px;font-weight:800;line-height:1.15}
+.res .meta{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.res .note{font-size:15px;background:rgba(255,210,63,.12);border-left:3px solid var(--gold);padding:6px 10px;border-radius:4px}
+.res .row{display:flex;gap:10px;align-items:center}
+.res .row .num{font-family:var(--display);font-weight:800;font-size:30px;min-width:64px;text-align:center;font-variant-numeric:tabular-nums}
+.res .go{flex:1;border:0;border-radius:12px;background:var(--ok);color:#0d1f15;font-weight:800;font-size:19px;padding:15px}
+.res .go.armed{background:var(--warn);color:#120e1c}
+.res .next{border:1px solid var(--line);background:var(--surface2);border-radius:12px;padding:13px;font-weight:700;font-size:16px;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -137,6 +159,8 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}
     <button type="button" class="relall" id="relall" hidden></button>
     <details class="wlbox" id="wlbox" hidden><summary id="wlsum"></summary><div id="wllist"></div></details>
 
+    <button type="button" class="scanbtn" id="scanbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3M7 12h10"/></svg>QR-Code scannen</button>
+
     <div class="search">
       <input id="q" type="search" placeholder="Name oder Code suchen …" autocomplete="off" aria-label="Gast suchen">
       <div class="filters" role="group" aria-label="Filter">
@@ -147,6 +171,15 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}
     </div>
     <div class="list" id="list" aria-live="polite"></div>
   </main>
+
+<div class="scan" id="scan" hidden role="dialog" aria-modal="true" aria-label="QR-Code scannen">
+  <video id="cam" playsinline muted autoplay></video>
+  <div class="frame" id="frame" aria-hidden="true"></div>
+  <span class="night" id="scan-night"></span>
+  <button type="button" class="x" id="scan-close">Schließen</button>
+  <p class="hint" id="scan-hint">Eintrittskarte in den Rahmen halten</p>
+  <div class="res" id="res" hidden aria-live="assertive"></div>
+</div>
 </div>
 
 <script>
@@ -342,6 +375,124 @@ $("w-minus").onclick = () => walk(-1);
 // Mehrere Handys am Einlass: alle 15 Sekunden abgleichen
 setInterval(() => { if(pin && !$("app").hidden && pending === 0 && !loading && document.visibilityState === "visible") refresh(); }, 15000);
 document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && pin && !$("app").hidden) refresh(); });
+
+/* ---------- QR-Scanner: liest den Code von der Eintrittskarte (MW-XXXXX) ---------- */
+let stream = null, detector = null, scanning = false, lastHit = { code:"", at:0 }, scanTimer = null;
+const scanCanvas = document.createElement("canvas"), scanCtx = scanCanvas.getContext("2d", { willReadFrequently: true });
+function loadJsQR(){
+  if(window.jsQR) return Promise.resolve();
+  return new Promise((ok, no) => { const s = document.createElement("script"); s.src = "../vendor/jsQR.js"; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+}
+async function openScanner(){
+  $("scan").hidden = false; $("res").hidden = true; $("frame").classList.remove("hit");
+  $("scan-night").textContent = "Einlass " + (NIGHTS.find(n => n.id === abend) || {}).kurz;
+  $("scan-hint").textContent = "Kamera wird gestartet …";
+  try{
+    if("BarcodeDetector" in window){
+      try{ const f = await BarcodeDetector.getSupportedFormats(); if(f.includes("qr_code")) detector = new BarcodeDetector({ formats:["qr_code"] }); }catch(e){ detector = null; }
+    }
+    if(!detector) await loadJsQR();
+    stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:"environment" }, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false });
+    $("cam").srcObject = stream; await $("cam").play().catch(() => {});
+    $("scan-hint").textContent = "Eintrittskarte in den Rahmen halten";
+    scanning = true; tick();
+  }catch(e){
+    $("scan-hint").textContent = "";
+    showRes("bad", "Keine Kamera", `<p style="margin:0">Die Kamera konnte nicht gestartet werden. Bitte im Browser den Kamera-Zugriff für diese Seite erlauben. Alternativ einfach über die Suche nach Name oder Code gehen.</p>`, false);
+  }
+}
+function closeScanner(){
+  scanning = false; clearTimeout(scanTimer);
+  if(stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+  $("cam").srcObject = null; $("scan").hidden = true; refresh();
+}
+async function tick(){
+  if(!scanning) return;
+  const v = $("cam"); let text = null;
+  if(v.readyState >= 2 && v.videoWidth){
+    try{
+      if(detector){ const r = await detector.detect(v); if(r.length) text = r[0].rawValue; }
+      else{
+        const sc = Math.min(1, 720 / Math.max(v.videoWidth, v.videoHeight));
+        scanCanvas.width = Math.round(v.videoWidth * sc); scanCanvas.height = Math.round(v.videoHeight * sc);
+        scanCtx.drawImage(v, 0, 0, scanCanvas.width, scanCanvas.height);
+        const img = scanCtx.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        const r = jsQR(img.data, img.width, img.height, { inversionAttempts:"dontInvert" }); if(r) text = r.data;
+      }
+    }catch(e){}
+  }
+  if(text) return onCode(text);
+  scanTimer = setTimeout(tick, detector ? 120 : 60);
+}
+function onCode(text){
+  const m = String(text).toUpperCase().match(/MW-[A-Z0-9]{5}/);
+  if(!m){ $("scan-hint").textContent = "Das ist keine Eintrittskarte von Mysterious Worlds."; scanTimer = setTimeout(tick, 600); return; }
+  if(m[0] === lastHit.code && Date.now() - lastHit.at < 2500){ scanTimer = setTimeout(tick, 300); return; }
+  lastHit = { code: m[0], at: Date.now() }; scanning = false;
+  $("frame").classList.add("hit"); if(navigator.vibrate) navigator.vibrate(60);
+  lookupScan(m[0]);
+}
+async function lookupScan(code){
+  showRes("", "Suche …", `<p class="meta" style="margin:0"><span class="spin"></span> ${esc(code)}</p>`, false);
+  let r;
+  try{ r = await call({ action:"admin_find", code }); }catch(e){ r = { ok:false, error:"Keine Verbindung. Nochmal scannen oder über die Suche gehen." }; }
+  if(!r.ok){ if(r.badPin || r.locked){ closeScanner(); store.set("mw-einlass-pin", null); showPin(r.error); return; } return showRes("bad", "Fehler", `<p style="margin:0">${esc(r.error || "Unbekannter Fehler.")}</p>`); }
+  if(!r.found) return showRes("bad", "Unbekannter Code", `<div class="nm">${esc(r.code || code)}</div><p style="margin:0">Diese Karte ist nicht in der Reservierungsliste. Bitte nach dem Namen fragen und über die Suche prüfen.</p>`);
+  showGuest(r.guest);
+}
+function showGuest(g){
+  const head = `<div class="nm">${esc(g.name)}</div><div class="meta">${esc(g.code)} · ${esc(g.kurz)} · ${g.plaetze} ${g.plaetze===1?"Platz":"Plätze"}${g.quelle === "Warteliste" ? " · von der Warteliste" : ""}</div>${g.hinweis ? `<div class="note">${esc(g.hinweis)}</div>` : ""}`;
+  if(g.status !== "aktiv") return showRes("bad", "Storniert", head + `<p style="margin:0">Diese Reservierung wurde storniert. Nur einlassen, wenn noch Plätze frei sind (Abendkasse).</p>`);
+  const wrong = g.abend !== abend, rest = g.plaetze - g.da;
+  let cls = "ok", st = g.da > 0 ? `Schon ${g.da} von ${g.plaetze} da` : "Gültig", warn = "";
+  if(wrong){ cls = "warn"; st = "Falscher Abend"; warn = `<p style="margin:0"><b>Diese Karte gilt für ${esc(g.label)}.</b> Nur einlassen, wenn heute noch Plätze frei sind.</p>`; }
+  if(rest <= 0){
+    return showRes(wrong ? "warn" : "bad", wrong ? "Falscher Abend" : "Schon eingelassen", head + warn + `<p style="margin:0">Alle ${g.plaetze} ${g.plaetze===1?"Person ist":"Personen sind"} mit dieser Karte bereits drin. Bitte nach dem Namen fragen – wurde die Karte weitergegeben?</p>`);
+  }
+  if(g.da > 0) cls = wrong ? "warn" : "ok";
+  let n = rest;
+  showRes(cls, st, head + warn + `
+    <div class="row"><span style="flex:1;font-weight:600">${g.da > 0 ? "Wie viele kommen jetzt noch?" : "Wie viele kommen jetzt?"}</span>
+      <div class="step"><button type="button" id="r-minus" aria-label="Eine Person weniger">−</button><span class="num" id="r-num">${n}</span><button type="button" id="r-plus" aria-label="Eine Person mehr">+</button></div></div>
+    <button type="button" class="go" id="r-go" ${wrong ? 'data-confirm="Anderer Abend – trotzdem einlassen?"' : ""}></button>`);
+  const upd = () => { $("r-num").textContent = n; $("r-minus").disabled = n <= 1; $("r-plus").disabled = n >= rest;
+    if(!$("r-go").classList.contains("armed")) $("r-go").textContent = n === rest ? (g.da === 0 ? (g.plaetze === 1 ? "Einlassen" : `Alle ${n} einlassen`) : `Restliche ${n} einlassen`) : `${n} von ${rest} einlassen`; };
+  $("r-minus").onclick = () => { if(n > 1){ n--; upd(); } };
+  $("r-plus").onclick = () => { if(n < rest){ n++; upd(); } };
+  upd();
+  $("r-go").onclick = async () => {
+    const b = $("r-go"); if(!armed(b)) return;
+    b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+    pending++;
+    try{
+      const r = await call({ action:"checkin", code: g.code, da: g.da + n });
+      if(!r.ok) throw new Error(r.error);
+      pending--; if(pending === 0) apply(r);
+      if(navigator.vibrate) navigator.vibrate([40, 60, 40]);
+      const left = g.plaetze - g.da - n;
+      showRes("ok", "Eingelassen ✓", `<div class="nm">${esc(g.name)}</div><div class="meta">${esc(g.code)} · ${g.da + n} von ${g.plaetze} da</div>` +
+        (left > 0 ? `<p style="margin:0">${left} ${left===1?"Person kommt":"Personen kommen"} noch. Später einfach die Karte nochmal scannen.</p>` : ""));
+      setTimeout(() => { if(!$("scan").hidden && !$("res").hidden && $("res").dataset.auto === "1") nextScan(); }, 1800);
+      $("res").dataset.auto = "1";
+    }catch(e){
+      pending--; b.disabled = false; upd();
+      toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung"));
+    }
+  };
+}
+function showRes(cls, st, html, withNext = true){
+  const r = $("res"); r.className = "res " + cls; r.hidden = false; r.dataset.auto = "0";
+  r.innerHTML = `<div class="st">${st}</div>${html}${withNext ? `<button type="button" class="next" id="r-next">Nächste Karte scannen</button>` : ""}`;
+  if(withNext) $("r-next").onclick = nextScan;
+}
+function nextScan(){
+  $("res").hidden = true; $("frame").classList.remove("hit"); $("scan-hint").textContent = "Eintrittskarte in den Rahmen halten";
+  if(stream){ scanning = true; tick(); } else openScanner();
+}
+$("scanbtn").onclick = openScanner;
+$("scan-close").onclick = closeScanner;
+document.addEventListener("keydown", ev => { if(ev.key === "Escape" && !$("scan").hidden) closeScanner(); });
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden" && !$("scan").hidden) closeScanner(); });
 
 pin ? refresh() : showPin();
 </script>

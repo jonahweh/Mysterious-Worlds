@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Eintrittskarte · Mysterious Worlds</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0d0a16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Eintrittskarte">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<style>
+/* Layout: eine Eintrittskarte in der Mitte des dunklen Foyers, darunter Kalender, Drucken, Ändern */
+:root{--bg:#0d0a16;--ink:#fff;--muted:rgba(255,255,255,.72);--gold:#ffd97a;--display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;--body:Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;--mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);min-height:100vh}
+[hidden]{display:none!important}
+.wrap{max-width:430px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));display:grid;gap:16px}
+.ticket{position:relative;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 18px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;padding-bottom:16px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:16px 18px 0;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+.top .k{color:var(--gold)} .top .c{color:var(--muted);letter-spacing:.1em}
+.art{display:flex;justify-content:center;padding:4px 10px 0}
+.titles{display:flex;flex-direction:column;align-items:center;margin-top:-6px}
+.t1{font-family:var(--display);font-weight:800;font-size:44px;line-height:.9;text-transform:uppercase;letter-spacing:.02em}
+.wn{margin-top:6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;padding:0 12px}
+.cut{position:relative;height:26px;margin-top:14px}
+.cut i{position:absolute;top:0;width:26px;height:26px;border-radius:50%;background:var(--bg)}
+.cut i:first-child{left:-13px}.cut i:last-child{right:-13px}
+.cut b{position:absolute;left:22px;right:22px;top:12px;border-top:2px dashed rgba(255,255,255,.28)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 16px;padding:4px 22px 0}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f.full{grid-column:1/-1}
+.lab{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.92}
+.val{font-size:17px;font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.val.big{font-size:20px}.val.sm{font-size:15px}
+.qrbox{display:flex;gap:14px;align-items:center;margin:16px 22px 0;padding:12px;border-radius:14px;background:rgba(255,255,255,.08)}
+.qr{background:#fff;padding:9px;border-radius:10px;line-height:0;flex:none}
+.qr svg{display:block;width:128px;height:128px}
+.code{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:.06em}
+.qrtext{display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.35;color:rgba(255,255,255,.85)}
+.qrtext .pw{font-weight:700}
+.hold{margin:14px 22px 0;font-size:11.5px;line-height:1.45;color:var(--muted);text-align:center}
+.stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg);font-family:var(--display);font-weight:800;font-size:46px;letter-spacing:.06em;text-transform:uppercase;color:#ff6b6b;border:5px solid #ff6b6b;border-radius:8px;padding:2px 16px;background:rgba(13,10,22,.75)}
+.inbadge{align-self:center;margin-top:10px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:#163828;color:#4fd18b;border:1px solid #4fd18b;border-radius:999px;padding:4px 12px}
+.actions{display:grid;gap:10px}
+.btn{font:inherit;font-weight:700;font-size:16px;border-radius:999px;padding:13px 18px;text-align:center;text-decoration:none;cursor:pointer;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff}
+.btn.main{background:#b8a2ff;border-color:#b8a2ff;color:#120c33}
+.tip{font-size:13px;line-height:1.45;color:var(--muted);text-align:center;margin:0}
+.msg{background:#1d1830;border:1px solid #352d4d;border-radius:14px;padding:18px;line-height:1.5;text-align:center}
+.msg b{display:block;font-family:var(--display);font-size:26px;text-transform:uppercase;margin-bottom:6px}
+.offline{font-size:12px;color:var(--gold);text-align:center}
+.load{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-3px;margin-right:8px}
+@keyframes sp{to{transform:rotate(360deg)}}
+footer{font-size:12px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+@media print{
+  body{background:#fff}.actions,.tip,footer,.offline{display:none!important}
+  .wrap{padding:0;max-width:400px}
+  .ticket{box-shadow:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cut i{background:#fff}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div id="box" aria-live="polite"><p class="msg"><span class="load" aria-hidden="true"></span>Eintrittskarte wird geladen …</p></div>
+  <div class="actions" id="actions" hidden>
+    <button class="btn main" type="button" id="cal">In meinen Kalender</button>
+    <button class="btn" type="button" id="print">Drucken oder als PDF sichern</button>
+    <a class="btn" id="change" href="#">Reservierung ändern oder stornieren</a>
+  </div>
+  <p class="tip" id="tip" hidden>Tipp: Mach einen Screenshot oder leg die Seite auf deinen Home-Bildschirm, dann hast du die Karte auch ohne Netz. Am Einlass den Bildschirm hell stellen.</p>
+  <p class="offline" id="offline" hidden></p>
+  <footer>Mysterious Worlds · Musical 2026/27 · Eintritt frei</footer>
+</main>
+<script src="../vendor/qrcode-generator.js"></script>
+<script>
+/* Gleiche Web-App wie die Reservierungsseite */
+const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
+const SEITE = "../reservierung/";
+const WORLDS = [{"key": "heimat", "name": "Unsere Welt · Der Turm des Oberzauberers", "bg": "linear-gradient(170deg,#2d1a6e 0%,#1b1145 55%,#120c33 100%)", "accent": "#b8a2ff", "wstyle": "font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:64px;letter-spacing:.01em;text-transform:uppercase;color:#b8a2ff", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <circle cx=\"280\" cy=\"52\" r=\"26\" fill=\"#ffd97a\" opacity=\".9\"/><circle cx=\"291\" cy=\"45\" r=\"24\" fill=\"#22175a\"/>\n  <path fill=\"#ffd97a\" opacity=\"1\" d=\"M40 33L41.96 38.04L47 40L41.96 41.96L40 47L38.04 41.96L33 40L38.04 38.04Z\"/><path fill=\"#b8a2ff\" opacity=\"1\" d=\"M110 18L111.12 20.88L114 22L111.12 23.12L110 26L108.88 23.12L106 22L108.88 20.88Z\"/><path fill=\"#ffd97a\" opacity=\"0.8\" d=\"M200 41L201.4 44.6L205 46L201.4 47.4L200 51L198.6 47.4L195 46L198.6 44.6Z\"/><path fill=\"#b8a2ff\" opacity=\"1\" d=\"M330 106L331.12 108.88L334 110L331.12 111.12L330 114L328.88 111.12L326 110L328.88 108.88Z\"/><path fill=\"#ffd97a\" opacity=\"0.7\" d=\"M70 97L70.84 99.16L73 100L70.84 100.84L70 103L69.16 100.84L67 100L69.16 99.16Z\"/><path fill=\"#fff\" opacity=\"0.8\" d=\"M230 11L230.84 13.16L233 14L230.84 14.84L230 17L229.16 14.84L227 14L229.16 13.16Z\"/>\n  <path fill=\"#120c33\" d=\"M0 190V150q60-24 120-8t110-6 120 2V190Z\"/>\n  <rect x=\"150\" y=\"70\" width=\"42\" height=\"100\" rx=\"3\" fill=\"#2a1f66\"/><path fill=\"#5b2bb5\" d=\"M138 72 171 18 204 72Z\"/>\n  <rect x=\"164\" y=\"92\" width=\"14\" height=\"22\" rx=\"7\" fill=\"#ffd97a\"/><rect x=\"164\" y=\"128\" width=\"14\" height=\"18\" rx=\"7\" fill=\"#ffd97a\" opacity=\".7\"/>\n  <path fill=\"#ffd97a\" opacity=\"1\" d=\"M171 6L172.68 10.32L177 12L172.68 13.68L171 18L169.32 13.68L165 12L169.32 10.32Z\"/>\n</svg>"}, {"key": "wunder", "name": "Wunderland · Reich der Königinnen", "bg": "linear-gradient(170deg,#7a1532 0%,#4a0d22 55%,#2b0716 100%)", "accent": "#ff8a9a", "wstyle": "font-family:'Henny Penny',cursive;font-size:58px;color:#fff;text-shadow:3px 3px 0 #c8102e", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <g transform=\"translate(120 70) rotate(-18)\"><rect width=\"70\" height=\"100\" rx=\"8\" fill=\"#fff\"/><path fill=\"#c8102e\" d=\"M35 66c-13-10-20-17-20-25 0-6 4-10 10-10 5 0 8 3 10 7 2-4 5-7 10-7 6 0 10 4 10 10 0 8-7 15-20 25z\"/></g>\n  <g transform=\"translate(176 58) rotate(10)\"><rect width=\"70\" height=\"100\" rx=\"8\" fill=\"#fff\"/><path fill=\"#14101f\" d=\"M35 26c8 11 19 17 19 27 0 7-5 11-11 11-4 0-7-2-9-5l3 13H27l3-13c-2 3-5 5-9 5-6 0-11-4-11-11 0-10 11-16 19-27z\"/></g>\n  <path fill=\"#ffd97a\" stroke=\"#a86b00\" stroke-width=\"2\" d=\"M140 52l14 18 16-28 16 28 16-28 16 28 14-18v24h-92z\" transform=\"translate(-6 -30)\"/>\n  <path fill=\"none\" stroke=\"#ff8ad8\" stroke-width=\"5\" stroke-linecap=\"round\" d=\"M30 150q40 28 80 0\" opacity=\".85\"/>\n  <path fill=\"none\" stroke=\"#ff8ad8\" stroke-width=\"2.5\" d=\"M48 160v8M62 164v8M76 164v8M90 160v8\" opacity=\".85\"/>\n  <path fill=\"#ff5a6e\" opacity=\"1\" d=\"M300 32L302.24 37.76L308 40L302.24 42.24L300 48L297.76 42.24L292 40L297.76 37.76Z\"/><path fill=\"#fff\" opacity=\"0.8\" d=\"M320 135L321.4 138.6L325 140L321.4 141.4L320 145L318.6 141.4L315 140L318.6 138.6Z\"/><path fill=\"#fff\" opacity=\"0.7\" d=\"M40 35L41.4 38.6L45 40L41.4 41.4L40 45L38.6 41.4L35 40L38.6 38.6Z\"/>\n</svg>"}, {"key": "ball", "name": "Der Ballsaal · Die lange Nacht der Tänze", "bg": "linear-gradient(170deg,#4a1a6e 0%,#2e1048 55%,#1a0a2e 100%)", "accent": "#ff8ad8", "wstyle": "font-family:'Pinyon Script',cursive;font-size:70px;line-height:1.1;background:linear-gradient(90deg,#ff8ad8,#b8a2ff,#ffd97a);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:6px", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <path fill=\"none\" stroke=\"#f0b43c\" stroke-width=\"2.5\" d=\"M175 0v40M95 70q80 50 160 0M95 70v20M255 70v20M175 40v50M135 86v14M215 86v14\"/>\n  <circle cx=\"175\" cy=\"40\" r=\"8\" fill=\"#ffd97a\"/>\n  <path fill=\"#ffd97a\" d=\"M95 90q-6-12 0-20q6 8 0 20z\"/><path fill=\"#ff8ad8\" opacity=\".9\" d=\"M95 106l-6 12 6 12 6-12z\"/><path fill=\"#ffd97a\" d=\"M135 100q-6-12 0-20q6 8 0 20z\"/><path fill=\"#ff8ad8\" opacity=\".9\" d=\"M135 116l-6 12 6 12 6-12z\"/><path fill=\"#ffd97a\" d=\"M175 92q-6-12 0-20q6 8 0 20z\"/><path fill=\"#ff8ad8\" opacity=\".9\" d=\"M175 108l-6 12 6 12 6-12z\"/><path fill=\"#ffd97a\" d=\"M215 100q-6-12 0-20q6 8 0 20z\"/><path fill=\"#ff8ad8\" opacity=\".9\" d=\"M215 116l-6 12 6 12 6-12z\"/><path fill=\"#ffd97a\" d=\"M255 90q-6-12 0-20q6 8 0 20z\"/><path fill=\"#ff8ad8\" opacity=\".9\" d=\"M255 106l-6 12 6 12 6-12z\"/>\n  <path fill=\"#ff8ad8\" opacity=\"1\" d=\"M40 51L42.52 57.48L49 60L42.52 62.52L40 69L37.48 62.52L31 60L37.48 57.48Z\"/><path fill=\"#ffd97a\" opacity=\"1\" d=\"M310 33L311.96 38.04L317 40L311.96 41.96L310 47L308.04 41.96L303 40L308.04 38.04Z\"/><path fill=\"#b8a2ff\" opacity=\"1\" d=\"M60 145L61.4 148.6L65 150L61.4 151.4L60 155L58.6 151.4L55 150L58.6 148.6Z\"/><path fill=\"#ff8ad8\" opacity=\"0.8\" d=\"M300 144L301.68 148.32L306 150L301.68 151.68L300 156L298.32 151.68L294 150L298.32 148.32Z\"/><path fill=\"#fff\" opacity=\"0.8\" d=\"M20 107L20.84 109.16L23 110L20.84 110.84L20 113L19.16 110.84L17 110L19.16 109.16Z\"/><path fill=\"#fff\" opacity=\"0.8\" d=\"M330 97L330.84 99.16L333 100L330.84 100.84L330 103L329.16 100.84L327 100L329.16 99.16Z\"/>\n</svg>"}, {"key": "biblio", "name": "Die Bibliothek · Madis & Sigis Weltenbuch", "bg": "linear-gradient(170deg,#4a3320 0%,#2e2015 55%,#1c140d 100%)", "accent": "#e0c197", "wstyle": "font-family:'UnifrakturMaguntia',serif;font-size:62px;color:#e0c197", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <rect x=\"14\" y=\"20\" width=\"14\" height=\"70\" rx=\"2\" fill=\"#6b4a2b\"/><rect x=\"30\" y=\"30\" width=\"10\" height=\"60\" rx=\"2\" fill=\"#8a5a2e\"/><rect x=\"42\" y=\"16\" width=\"16\" height=\"74\" rx=\"2\" fill=\"#4a3320\"/><rect x=\"292\" y=\"26\" width=\"14\" height=\"64\" rx=\"2\" fill=\"#8a5a2e\"/><rect x=\"308\" y=\"18\" width=\"12\" height=\"72\" rx=\"2\" fill=\"#6b4a2b\"/><rect x=\"322\" y=\"30\" width=\"16\" height=\"60\" rx=\"2\" fill=\"#4a3320\"/>\n  <path fill=\"none\" stroke=\"#6b4a2b\" stroke-width=\"3\" d=\"M8 92h56M286 92h56\"/>\n  <path fill=\"#e0c197\" d=\"M175 60C150 44 112 44 90 54v92c22-10 60-10 85 6 25-16 63-16 85-6V54c-22-10-60-10-85 6Z\"/>\n  <path fill=\"none\" stroke=\"#6b4a2b\" stroke-width=\"2\" d=\"M175 60v92M108 74q30-8 56 4M108 92q30-8 56 4M108 110q30-8 56 4M186 78q26-12 56-4M186 96q26-12 56-4M186 114q26-12 56-4\"/>\n  <circle cx=\"130\" cy=\"30\" r=\"2.5\" fill=\"#ffd97a\" opacity=\"0.8\"/><circle cx=\"210\" cy=\"24\" r=\"2\" fill=\"#ffd97a\" opacity=\"0.7\"/><circle cx=\"250\" cy=\"40\" r=\"3\" fill=\"#ffd97a\" opacity=\"0.6\"/><circle cx=\"100\" cy=\"30\" r=\"1.8\" fill=\"#ffd97a\" opacity=\"0.6\"/><circle cx=\"175\" cy=\"20\" r=\"2.2\" fill=\"#ffd97a\" opacity=\"0.9\"/><circle cx=\"150\" cy=\"170\" r=\"2\" fill=\"#ffd97a\" opacity=\"0.5\"/><circle cx=\"220\" cy=\"172\" r=\"2.4\" fill=\"#ffd97a\" opacity=\"0.5\"/>\n</svg>"}, {"key": "boese", "name": "Die Böse Welt · Sturm & Gang", "bg": "linear-gradient(170deg,#1c3324 0%,#11211a 55%,#0b140e 100%)", "accent": "#9fe3a8", "wstyle": "font-family:'Creepster',cursive;font-size:62px;letter-spacing:.04em;color:#9fe3a8;text-shadow:2px 0 #2f7a45,-2px 0 #ff6b6b", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <path fill=\"#243b2c\" d=\"M40 80a30 30 0 0 1 22-48 40 40 0 0 1 74-8 28 28 0 0 1 40 26 22 22 0 0 1-6 30z\"/>\n  <path fill=\"#1b2d22\" d=\"M170 70a26 26 0 0 1 18-40 36 36 0 0 1 66-6 26 26 0 0 1 36 24 20 20 0 0 1-6 26z\"/>\n  <path fill=\"#ffe24a\" stroke=\"#14101f\" stroke-width=\"2\" d=\"M140 60 112 112h24l-12 52 44-70h-24l14-34z\"/>\n  <path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M60 100l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M90 120l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M200 96l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M230 120l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M260 100l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M300 124l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M40 140l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M320 150l-6 16\"/><path stroke=\"#9fb2ff\" stroke-width=\"2.4\" stroke-linecap=\"round\" opacity=\".55\" d=\"M180 150l-6 16\"/>\n  <path fill=\"#0b140e\" d=\"M0 190v-24l30-10 26 10 34-18 30 14 40-20 34 22 40-12 36 16 34-12 46 18V190z\"/>\n</svg>"}, {"key": "hs", "name": "High School · Die 80er", "bg": "linear-gradient(170deg,#3a1a78 0%,#1d1036 55%,#12091f 100%)", "accent": "#3ee6ff", "wstyle": "font-family:'Monoton',sans-serif;font-size:56px;background:linear-gradient(180deg,#ff4fb0 20%,#3ee6ff 85%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 8px rgba(255,79,176,.6))", "art": "<svg width=\"100%\" height=\"170\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"0 0 350 190\" aria-hidden=\"true\">\n  <defs><linearGradient id=\"sun\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffd23f\"/><stop offset=\"1\" stop-color=\"#ff4fb0\"/></linearGradient></defs>\n  <circle cx=\"175\" cy=\"96\" r=\"54\" fill=\"url(#sun)\"/>\n  <path fill=\"#1d1036\" d=\"M110 92h130v5H110zM112 104h126v6H112zM116 117h118v7H116zM122 130h106v8H122z\"/>\n  <path fill=\"#12091f\" d=\"M0 120h350v70H0z\"/>\n  <path fill=\"none\" stroke=\"#3ee6ff\" stroke-width=\"1.4\" opacity=\".85\" d=\"M0 120H350M0 132H350M0 148H350M0 170H350M175 120L60 190M175 120L290 190M175 120L-30 190M175 120L380 190M175 120V190M175 120L120 190M175 120L230 190\"/>\n  <g transform=\"translate(262 22) rotate(12)\"><rect width=\"66\" height=\"42\" rx=\"5\" fill=\"#ff4fb0\"/><rect x=\"9\" y=\"7\" width=\"48\" height=\"17\" rx=\"3\" fill=\"#12091f\"/><circle cx=\"22\" cy=\"15.5\" r=\"5\" fill=\"#3ee6ff\"/><circle cx=\"44\" cy=\"15.5\" r=\"5\" fill=\"#3ee6ff\"/><path fill=\"#12091f\" opacity=\".5\" d=\"M16 42l5-11h24l5 11z\"/></g>\n  <path fill=\"#3ee6ff\" opacity=\"1\" d=\"M40 34L41.68 38.32L46 40L41.68 41.68L40 46L38.32 41.68L34 40L38.32 38.32Z\"/><path fill=\"#ff4fb0\" opacity=\"1\" d=\"M90 16L91.12 18.88L94 20L91.12 21.12L90 24L88.88 21.12L86 20L88.88 18.88Z\"/><path fill=\"#fff\" opacity=\"0.8\" d=\"M30 93L30.84 95.16L33 96L30.84 96.84L30 99L29.16 96.84L27 96L29.16 95.16Z\"/>\n</svg>"}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const q = new URLSearchParams(location.search), CODE = (q.get("c") || "").toUpperCase(), TOKEN = q.get("t") || "";
+const store = { get(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }, set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} } };
+
+// Jede Karte bekommt "zufällig" eine Welt – fest aus dem Code abgeleitet, damit sie immer gleich aussieht
+function worldFor(code){ let h = 7; for(const ch of code) h = (h * 31 + ch.charCodeAt(0)) >>> 0; return WORLDS[h % WORLDS.length]; }
+function qrSvg(text){
+  const qr = qrcode(0, "M"); qr.addData(text); qr.make();
+  const n = qr.getModuleCount(); let d = "";
+  for(let y = 0; y < n; y++) for(let x = 0; x < n; x++) if(qr.isDark(y, x)) d += `M${x} ${y}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" role="img" aria-label="QR-Code ${esc(text)}"><path fill="#14101f" d="${d}"/></svg>`;
+}
+function render(b, fromCache){
+  const w = worldFor(b.code), [wd, datum] = String(b.label).split(", ");
+  const personen = b.plaetze + " " + (b.plaetze === 1 ? "Person" : "Personen");
+  const zeit = [b.beginn ? "Beginn " + b.beginn : "", b.einlass ? "Einlass " + b.einlass : ""].filter(Boolean).join(" · ") || "Uhrzeit folgt";
+  const storniert = b.status !== "aktiv", drin = !storniert && b.da >= b.plaetze && b.plaetze > 0;
+  const lab = t => `<div class="lab" style="color:${w.accent}">${t}</div>`;
+  $("box").innerHTML = `<article class="ticket" style="background:${w.bg}" aria-label="Eintrittskarte ${esc(b.code)}">
+    <div class="top"><span class="k">Eintrittskarte · Eintritt frei</span><span class="c">${esc(b.code)}</span></div>
+    <div class="art">${w.art}</div>
+    <div class="titles"><div class="t1">Mysterious</div><div style="${w.wstyle};line-height:1.05">Worlds</div>
+      <div class="wn">Welt: <span style="color:${w.accent}">${esc(w.name)}</span></div></div>
+    <div class="cut" aria-hidden="true"><i></i><b></b><i></i></div>
+    <div class="grid">
+      <div class="f full">${lab("Name")}<div class="val big">${esc(b.name)}</div></div>
+      <div class="f">${lab(esc(wd || "Abend"))}<div class="val">${esc(datum || b.label)}</div></div>
+      <div class="f">${lab("Für")}<div class="val">${esc(personen)}</div></div>
+      <div class="f">${lab("Beginn · Einlass")}<div class="val sm">${esc(zeit)}</div></div>
+      <div class="f">${lab("Ort")}<div class="val sm">${esc(b.ort || "Ort folgt")}</div></div>
+    </div>
+    <div class="qrbox"><div class="qr">${qrSvg(b.code)}</div>
+      <div class="qrtext"><div class="code">${esc(b.code)}</div><div>Am Einlass QR-Code zeigen oder Namen nennen.</div>
+      <div class="pw" style="color:${w.accent}">Freie Platzwahl – wer zuerst kommt, sucht zuerst aus.</div></div></div>
+    ${drin ? `<div class="inbadge">✓ Eingelassen</div>` : ""}
+    <p class="hold">Plätze werden bis ${Number(b.freihalten) || 15} Minuten vor Beginn freigehalten. Danach gehen nicht abgeholte Plätze an die Warteliste.</p>
+    ${storniert ? `<div class="stamp" aria-hidden="true">Storniert</div>` : ""}
+  </article>`;
+  document.title = `Eintrittskarte ${b.code} · Mysterious Worlds`;
+  $("actions").hidden = storniert; $("tip").hidden = storniert;
+  $("change").href = `${SEITE}?storno=${encodeURIComponent(b.code)}&t=${encodeURIComponent(TOKEN)}`;
+  $("offline").hidden = !fromCache;
+  if(fromCache) $("offline").textContent = "Offline: gespeicherter Stand. Die Karte gilt trotzdem.";
+  if(storniert) $("box").insertAdjacentHTML("beforeend", `<p class="msg" style="margin-top:12px"><b>Storniert</b>Diese Reservierung wurde storniert. Möchtest du doch kommen? <a href="${SEITE}" style="color:#b8a2ff">Neu reservieren</a></p>`);
+  window.__ticket = b;
+}
+function fail(title, text){ $("box").innerHTML = `<div class="msg"><b>${esc(title)}</b>${text}</div>`; }
+
+async function load(){
+  if(!/^MW-[A-Z0-9]{5}$/.test(CODE) || !TOKEN) return fail("Link unvollständig", 'Bitte öffne die Eintrittskarte über den Button in deiner Bestätigungsmail.');
+  const cached = store.get("mw-karte-" + CODE);
+  if(cached) render(cached, true);
+  try{
+    const r = await fetch(API, { method:"POST", body: JSON.stringify({ action:"lookup", code: CODE, token: TOKEN }) });
+    const b = await r.json();
+    if(!b.ok){ if(!cached) fail("Nicht gefunden", esc(b.error || "Diese Eintrittskarte gibt es nicht.") + ' Bitte nutze den Link aus deiner Bestätigungsmail.'); return; }
+    store.set("mw-karte-" + CODE, b); render(b, false);
+  }catch(e){
+    if(!cached) fail("Keine Verbindung", "Die Eintrittskarte konnte gerade nicht geladen werden. Prüfe dein Internet und versuch es nochmal.");
+  }
+}
+
+/* Kalendereintrag (.ics) */
+$("cal").onclick = () => {
+  const b = window.__ticket; if(!b) return;
+  const d = b.abend.replace(/-/g, ""), m = String(b.beginn || "").match(/(\d{1,2})[:.](\d{2})/);
+  const pad = n => String(n).padStart(2, "0"), now = new Date();
+  const stamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth()+1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}00Z`;
+  const t = s => String(s).replace(/\\/g,"\\\\").replace(/;/g,"\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");
+  let when;
+  if(m){ const h = +m[1], mi = +m[2], end = new Date(2000, 0, 1, h + 2, mi);
+    when = [`DTSTART;TZID=Europe/Berlin:${d}T${pad(h)}${pad(mi)}00`, `DTEND;TZID=Europe/Berlin:${d}T${pad(end.getHours())}${pad(end.getMinutes())}00`]; }
+  else { const n = new Date(+b.abend.slice(0,4), +b.abend.slice(5,7)-1, +b.abend.slice(8,10)+1);
+    when = [`DTSTART;VALUE=DATE:${d}`, `DTEND;VALUE=DATE:${n.getFullYear()}${pad(n.getMonth()+1)}${pad(n.getDate())}`]; }
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Mysterious Worlds//Eintrittskarte//DE","BEGIN:VEVENT",
+    `UID:${b.code}@mysterious-worlds`, `DTSTAMP:${stamp}`, ...when,
+    `SUMMARY:${t("Mysterious Worlds – Musical (" + b.plaetze + " " + (b.plaetze===1?"Person":"Personen") + ")")}`,
+    b.ort ? `LOCATION:${t(b.ort)}` : "",
+    `DESCRIPTION:${t("Code " + b.code + ". Eintrittskarte: " + location.href + "\nPlätze werden bis " + (b.freihalten||15) + " Minuten vor Beginn freigehalten.")}`,
+    "BEGIN:VALARM","TRIGGER:-PT2H","ACTION:DISPLAY","DESCRIPTION:Mysterious Worlds – heute!","END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type:"text/calendar;charset=utf-8" })); a.download = `mysterious-worlds-${b.code}.ics`;
+  document.body.appendChild(a); a.click(); a.remove();
+};
+$("print").onclick = () => window.print();
+load();
+</script>
+</body>
+</html>

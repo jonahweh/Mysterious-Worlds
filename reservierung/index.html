@@ -239,6 +239,7 @@ footer a,a{color:var(--accent)}
       <label class="consent" id="both-wrap" hidden><input type="checkbox" id="both"><span id="both-label">Ich kann auch am anderen Abend.</span></label>
       <label>Hinweis <span class="opt">(optional, z. B. Rollstuhlplatz)</span><textarea id="hinweis" maxlength="300"></textarea></label>
       <div class="hp" aria-hidden="true"><label>Website<input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
+      <p class="small muted" style="margin:-6px 0 0"><b>Freie Platzwahl</b> – wer zuerst kommt, sucht zuerst aus. Reservierte Plätze werden bis <span class="hold-min">15</span> Minuten vor Beginn freigehalten, danach gehen sie an Warteliste und Abendkasse. Deine Eintrittskarte mit QR-Code kommt per Mail.</p>
       <label class="consent"><input type="checkbox" id="dsg" required><span>Ich bin einverstanden, dass Name, E-Mail und Anzahl der Plätze für die Reservierung gespeichert werden (siehe <a href="#datenschutz">Datenschutz</a>).</span></label>
       <div class="err" id="err" role="alert" hidden></div>
       <button class="btn" type="submit" id="submit">Plätze reservieren</button>
@@ -346,7 +347,7 @@ async function load(){
   if(!RESERVIERUNG.api){ applyState(); return; }
   try{
     const s = await api("GET");
-    if(s.ok) state = { ...state, ...s };
+    if(s.ok){ state = { ...state, ...s }; if(Number(s.freihalten) > 0) document.querySelectorAll(".hold-min").forEach(e => e.textContent = Number(s.freihalten)); }
   }catch(e){
     state.open = false;
     $("closed").querySelector("span").textContent = "Die Reservierung ist gerade nicht erreichbar. Bitte versuch es in ein paar Minuten noch einmal.";
@@ -424,8 +425,10 @@ function showDone(r, name, email){
       <span class="code">${esc(r.code)}</span>
       <dl><dt>Name</dt><dd>${esc(name)}</dd><dt>Abend</dt><dd>${when}</dd>${r.einlass?`<dt>Einlass</dt><dd>${esc(r.einlass)}</dd>`:""}<dt>Ort</dt><dd>${esc(r.ort || "folgt")}</dd><dt>Plätze</dt><dd>${r.plaetze}</dd></dl>
     </div>
-    <p>${r.mailed ? `Die Bestätigung ist unterwegs an <b>${esc(email)}</b>. Schau notfalls im Spam-Ordner nach.` : `<b>Wichtig:</b> Die Bestätigungsmail konnte gerade nicht verschickt werden. Mach am besten einen Screenshot von dieser Seite. Deine Plätze sind trotzdem reserviert.`}
-    Am Einlass reicht dein Name oder der Code. Kommen doch weniger Personen? Über den Link in der Mail kannst du auch einzelne Plätze stornieren.</p>`);
+    ${r.karte ? `<a class="btn" href="${esc(r.karte)}" style="text-decoration:none;display:block;text-align:center;margin:4px 0 2px">Eintrittskarte öffnen</a>` : ""}
+    <div class="notice"><b>Wichtig</b><span>Freie Platzwahl: Wer zuerst kommt, sucht zuerst aus. Reservierte Plätze werden bis ${Number(r.freihalten) || 15} Minuten vor Beginn freigehalten, danach gehen nicht abgeholte Plätze an die Warteliste und die Abendkasse.</span></div>
+    <p>${r.mailed ? `Die Eintrittskarte mit QR-Code ist unterwegs an <b>${esc(email)}</b>. Schau notfalls im Spam-Ordner nach.` : `<b>Wichtig:</b> Die Bestätigungsmail konnte gerade nicht verschickt werden. Öffne die Eintrittskarte und mach am besten einen Screenshot davon. Deine Plätze sind trotzdem reserviert.`}
+    Am Einlass zeigst du den QR-Code oder nennst deinen Namen. Kommen doch weniger Personen? Über den Link in der Mail kannst du auch einzelne Plätze stornieren.</p>`);
 }
 function showWaiting(r, email){
   finish(`<h2>Du stehst auf der Warteliste</h2>
