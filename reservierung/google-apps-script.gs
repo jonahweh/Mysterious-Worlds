@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 3 (mit Logo in der Mail)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -26,6 +26,7 @@ const NIGHTS = [
   { id: "2027-03-18", label: "Donnerstag, 18. März 2027", kurz: "Do 18.03." }
 ];
 const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
+const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
 const RES = "Reservierungen", SET = "Einstellungen";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am"];
 
@@ -186,8 +187,7 @@ function reserve_(d) {
         "\n\nDoch keine Zeit? Bitte storniere, damit jemand anderes den Platz bekommt:\n" + storno +
         "\n\nFragen? Antworte einfach auf diese Mail.\n\nDein Mysterious-Worlds-Team",
       htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;color:#1d1830">' +
-        '<p style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#625b78;margin:0">Musical</p>' +
-        '<h1 style="font-size:30px;margin:4px 0 16px;text-transform:uppercase">Mysterious <span style="color:#5b2bb5">Worlds</span></h1>' +
+        '<img src="' + LOGO + '" width="520" height="165" alt="Mysterious Worlds – Musical, 17. &amp; 18. März 2027" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;margin:0 0 18px;background:#1d1036;color:#ffd97a;font-size:22px;font-weight:bold;text-align:center">' +
         "<p>Hallo " + escH_(name) + ",</p><p>deine Plätze sind reserviert. Wir freuen uns auf dich!</p>" +
         '<table style="border-collapse:collapse;background:#f3f1f7;border-radius:6px;width:100%">' +
         '<tr><td style="padding:10px 14px;color:#625b78">Code</td><td style="padding:10px 14px;font-size:22px;font-weight:bold;letter-spacing:.08em;color:#5b2bb5">' + code + "</td></tr>" +
