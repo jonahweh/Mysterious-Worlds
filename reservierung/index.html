@@ -436,7 +436,8 @@ function showWaiting(r, email){
       <span class="code">Nr. ${r.position}</span>
       <dl><dt>Abend</dt><dd>${esc(r.label)}</dd><dt>Plätze</dt><dd>${r.plaetze}</dd></dl>
     </div>
-    <p>Sobald genug Plätze frei werden, rückst du <b>automatisch nach</b> und bekommst eine Bestätigung mit deinem Reservierungscode an <b>${esc(email)}</b>. Du musst nichts weiter tun. ${r.mailed ? "Eine Bestätigung, dass du auf der Warteliste stehst, ist schon unterwegs." : ""}</p>`);
+    <p>Sobald genug Plätze frei werden, rückst du <b>automatisch nach</b> und bekommst eine Bestätigung mit deinem Reservierungscode an <b>${esc(email)}</b>. Du musst nichts weiter tun. ${r.mailed ? "Eine Bestätigung, dass du auf der Warteliste stehst, ist schon unterwegs." : ""}</p>
+    ${r.position <= 5 ? `<div class="notice"><b>Tipp</b><span>Du stehst weit vorne. Es lohnt sich, ${r.abend === "beide" ? "an einem der beiden Abende" : "am Abend der Aufführung"} trotzdem zum Einlass zu kommen: Oft kommen nicht alle, die reserviert haben, und diese Plätze gehen kurz vor Beginn in der Reihenfolge der Warteliste weg. Melde dich einfach mit deinem Namen. Garantieren können wir einen Platz leider nicht.</span></div>` : ""}`);
 }
 
 /* Stornieren über den Link aus der Bestätigungsmail: ?storno=MW-XXXXX&t=… – auch einzelne Plätze */

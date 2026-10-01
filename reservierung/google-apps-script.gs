@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 5 (Warteliste, Einlass, Teil-Storno, Freigeben am Einlass)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 6 (Mails nur an Gäste, Wartelisten-Tipp)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -17,7 +17,8 @@
  * dann Bereitstellen → Bereitstellungen verwalten → Bearbeiten → Neue Version → Bereitstellen.
  *
  * Im Alltag (geht auch in der Google-Tabellen-App):
- * - Reservierung öffnen/schließen, Plätze, Beginn, Einlass, Ort, Mail-Adresse, Warteliste
+ * - Mails gehen nur an Gäste. Hinweise fürs Team (z. B. Mail fehlgeschlagen, gleicher Name) stehen in der Spalte „Team-Hinweis“.
+ * - Reservierung öffnen/schließen, Plätze, Beginn, Einlass, Ort, Antwortadresse, Warteliste
  *   und Einlass-PIN im Blatt "Einstellungen" ändern. Wirkt sofort, ohne neue Bereitstellung.
  * - Stornieren von Hand: in "Reservierungen" die Spalte Status auf "storniert" setzen
  *   (oder die Zahl bei Plätze verkleinern). Freie Plätze gehen automatisch an die Warteliste.
@@ -31,9 +32,9 @@ const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
 const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
 const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am",
-  "Angekommen", "Angekommen um", "Ursprünglich", "Quelle"];
+  "Angekommen", "Angekommen um", "Ursprünglich", "Quelle", "Team-Hinweis"];
 const WCOLS = ["Eingang", "ID", "Abend", "Plätze", "Name", "E-Mail", "Status", "Code", "Token", "Geändert am", "Hinweis"];
-const C = { eingang: 1, code: 2, abend: 3, plaetze: 4, name: 5, email: 6, hinweis: 7, status: 8, token: 9, storniert: 10, da: 11, daUm: 12, orig: 13, quelle: 14 };
+const C = { eingang: 1, code: 2, abend: 3, plaetze: 4, name: 5, email: 6, hinweis: 7, status: 8, token: 9, storniert: 10, da: 11, daUm: 12, orig: 13, quelle: 14, team: 15 };
 const W = { eingang: 1, id: 2, abend: 3, plaetze: 4, name: 5, email: 6, status: 7, code: 8, token: 9, geaendert: 10 };
 
 /* ---------- Tabelle finden (an eine Tabelle gebunden oder eigenständig) ---------- */
@@ -83,8 +84,11 @@ function setup() {
   ensureSetting_(s, "Beginn", "", "z. B. 19:00 Uhr – leer lassen = „folgt“");
   ensureSetting_(s, "Einlass", "", "z. B. ab 18:30 Uhr");
   ensureSetting_(s, "Ort", "", "z. B. Aula, mit Adresse");
-  ensureSetting_(s, "Benachrichtigung an", me, "An diese Adresse geht bei jeder Reservierung eine Mail");
+  ensureSetting_(s, "Benachrichtigung an", me, "");
   ensureSetting_(s, "Mail bei Stornierung", true, "", true);
+  // Seit Version 6 gehen keine Mails mehr ans Team (spart das Tageslimit); Hinweise stehen in der Spalte „Team-Hinweis“
+  setNote_(s, "Benachrichtigung an", "Antwortadresse: Antworten der Gäste auf ihre Mails landen hier. Es werden KEINE Mails an diese Adresse verschickt.");
+  setNote_(s, "Mail bei Stornierung", "wird nicht mehr verwendet – Hinweise stehen in „Reservierungen“, Spalte „Team-Hinweis“");
   ensureSetting_(s, "Warteliste aktiv", true, "Ist ein Abend voll, können sich Gäste eintragen und rücken automatisch nach", true);
   ensureSetting_(s, "Einlass-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Einlass-Seite …/einlass/ – nur an das Einlass-Team geben");
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
@@ -102,6 +106,11 @@ function ensureHeader_(sh, cols) {
   const have = sh.getLastRow() ? sh.getRange(1, 1, 1, lastCol).getValues()[0] : [];
   cols.forEach((c, i) => { if (!have[i]) sh.getRange(1, i + 1).setValue(c); });
   sh.getRange(1, 1, 1, cols.length).setFontWeight("bold").setBackground("#ece6fb");
+}
+function setNote_(s, label, note) {
+  const vals = s.getRange(1, 1, Math.max(s.getLastRow(), 1), 1).getValues();
+  const i = vals.findIndex(r => String(r[0]).trim() === label);
+  if (i >= 0) s.getRange(i + 1, 3).setValue(note);
 }
 function ensureSetting_(s, label, value, note, checkbox) {
   const vals = s.getLastRow() ? s.getRange(1, 1, s.getLastRow(), 1).getValues() : [];
@@ -207,8 +216,14 @@ function confirmMail_(s, b) {
       '<p style="color:#625b78;font-size:13px">Fragen? Antworte einfach auf diese Mail.</p></div>'
   });
 }
-function ownerMail_(s, subject, body) {
-  if (s.notify) send_({ to: s.notify, name: "Reservierungen Mysterious Worlds", subject: subject, body: body + "\n\nAlle Reservierungen: " + book_().getUrl() });
+// Statt Mails ans Team: Hinweis in der Tabelle (Spalte „Team-Hinweis“), kostet kein Mail-Kontingent
+function teamNote_(code, text) {
+  try {
+    const R = rows_(), r = R.rows.find(x => x.code === code);
+    if (!r) return;
+    const cell = R.sh.getRange(r.row, C.team), old = String(cell.getValues()[0][0] || "");
+    cell.setValue(old ? old + " · " + text : text);
+  } catch (e) { console.warn(e); }
 }
 
 /* ---------- Warteliste abarbeiten (nur innerhalb des Locks aufrufen) ---------- */
@@ -240,10 +255,7 @@ function processWaitlist_(s) {
 }
 function announce_(s, moved) {
   moved.forEach(m => {
-    const ok = confirmMail_(s, m);
-    ownerMail_(s, "Nachgerückt von der Warteliste: " + m.plaetze + " × " + nightOf_(m.abend).kurz + " – " + m.name,
-      "Von der Warteliste nachgerückt: " + m.code + "\n\nName: " + m.name + "\nE-Mail: " + m.email + "\nAbend: " + nightOf_(m.abend).label +
-      "\nPlätze: " + m.plaetze + "\nNoch frei an diesem Abend: " + m.free + (ok ? "" : "\n\nACHTUNG: Die Bestätigungsmail an den Gast konnte nicht verschickt werden (Tageslimit?). Bitte den Gast selbst informieren."));
+    if (!confirmMail_(s, m)) teamNote_(m.code, "Nachrück-Mail fehlgeschlagen (Tageslimit?) – Gast bitte selbst informieren");
   });
 }
 
@@ -315,7 +327,8 @@ function reserve_(d) {
     const codes = new Set(R.rows.map(r => r.code));
     let code; do { code = rand_("MW-", 5); } while (codes.has(code));
     booking = { name: g.name, email: g.email, code: code, token: token_(), abend: night.id, plaetze: g.plaetze, free: free - g.plaetze };
-    R.sh.appendRow([new Date(), code, "'" + night.id, g.plaetze, g.name, g.email, g.hinweis, "aktiv", booking.token, "", 0, "", "", "Website"]);
+    const note = sameName ? "Gleicher Name wie " + sameName.code + " (" + nightOf_(sameName.abend).kurz + ", " + sameName.plaetze + " Pl., " + sameName.email + ") – evtl. doppelt?" : "";
+    R.sh.appendRow([new Date(), code, "'" + night.id, g.plaetze, g.name, g.email, g.hinweis, "aktiv", booking.token, "", 0, "", "", "Website", note]);
     // Falls dieselbe Adresse noch auf der Warteliste steht: erledigt
     const Wl = wl_();
     Wl.rows.filter(w => w.status === "wartend" && w.email === g.email).forEach(w => { Wl.sh.getRange(w.row, W.status).setValue("erledigt"); Wl.sh.getRange(w.row, W.geaendert).setValue(new Date()); });
@@ -325,11 +338,7 @@ function reserve_(d) {
   announce_(s, moved);
   if (!res.ok) return res;
   const mailed = confirmMail_(s, booking);
-  ownerMail_(s, "Neue Reservierung: " + g.plaetze + " × " + night.kurz + " – " + g.name,
-    "Neue Reservierung " + booking.code + "\n\nName: " + g.name + "\nE-Mail: " + g.email + "\nAbend: " + night.label + "\nPlätze: " + g.plaetze +
-    (g.hinweis ? "\nHinweis: " + g.hinweis : "") + "\n\nNoch frei an diesem Abend: " + booking.free + " von " + s.cap[night.id] +
-    (sameName ? "\n\nHINWEIS: Unter dem gleichen Namen gibt es schon eine Reservierung (" + sameName.code + ", " + nightOf_(sameName.abend).kurz + ", " + sameName.plaetze + " Plätze, " + sameName.email + "). Evtl. doppelt mit anderer Mail-Adresse?" : "") +
-    (mailed ? "" : "\n\nACHTUNG: Die Bestätigungsmail an den Gast konnte nicht verschickt werden (Tageslimit?). Der Gast hat den Code auf der Seite gesehen."));
+  if (!mailed) teamNote_(booking.code, "Bestätigungsmail fehlgeschlagen (Tageslimit?) – Gast hat den Code auf der Seite gesehen");
   return { ok: true, code: booking.code, abend: night.id, label: night.label, plaetze: g.plaetze, mailed: mailed,
     beginn: s.beginn, einlass: s.einlass, ort: s.ort, storno: SEITE + "?storno=" + encodeURIComponent(booking.code) + "&t=" + booking.token };
 }
@@ -366,16 +375,21 @@ function waitlist_(d) {
   if (!res.ok) return res;
   const wann = abend === "beide" ? "Mittwoch oder Donnerstag (was zuerst frei wird)" : nightOf_(abend).label;
   const leave = SEITE + "?warteliste=" + encodeURIComponent(entry.id) + "&t=" + entry.token;
+  const vorne = entry.position <= 5;
+  const tipp = "Tipp: Du stehst weit vorne auf der Warteliste. Es lohnt sich, " + (abend === "beide" ? "an einem der beiden Abende" : "am Abend der Aufführung") +
+    " trotzdem zum Einlass zu kommen. Oft kommen nicht alle, die reserviert haben – diese Plätze gibt das Einlass-Team kurz vor Beginn in der Reihenfolge der Warteliste weiter, und du bist dann mit als Erstes dran. Melde dich am Einlass einfach mit deinem Namen. Einen Platz garantieren können wir dir dafür leider nicht.";
   const mailed = send_({
     to: g.email, name: "Mysterious Worlds", replyTo: s.notify || undefined,
     subject: "Du stehst auf der Warteliste – Mysterious Worlds",
     body: "Hallo " + g.name + ",\n\ndu stehst auf der Warteliste für " + wann + " (" + g.plaetze + " " + (g.plaetze === 1 ? "Platz" : "Plätze") + ", Position " + entry.position + ").\n\n" +
       "Sobald genug Plätze frei werden, rückst du automatisch nach und bekommst eine Bestätigung mit deinem Reservierungscode per Mail. Du musst nichts weiter tun.\n\n" +
+      (vorne ? tipp + "\n\n" : "") +
       "Kein Interesse mehr? Hier kannst du dich austragen:\n" + leave + "\n\nDein Mysterious-Worlds-Team",
     htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;color:#1d1830">' +
       '<img src="' + LOGO + '" width="520" height="165" alt="Mysterious Worlds" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;margin:0 0 18px;background:#1d1036;color:#ffd97a;font-size:22px;font-weight:bold;text-align:center">' +
       "<p>Hallo " + escH_(g.name) + ",</p><p>du stehst auf der <b>Warteliste</b> für <b>" + escH_(wann) + "</b> (" + g.plaetze + " " + (g.plaetze === 1 ? "Platz" : "Plätze") + ", Position " + entry.position + ").</p>" +
       "<p>Sobald genug Plätze frei werden, rückst du <b>automatisch nach</b> und bekommst eine Bestätigung mit deinem Reservierungscode per Mail. Du musst nichts weiter tun.</p>" +
+      (vorne ? '<p style="background:#fff3d6;border-left:4px solid #d4a93a;padding:10px 12px;border-radius:4px"><b>Tipp:</b> ' + escH_(tipp.replace(/^Tipp: /, "")) + "</p>" : "") +
       '<p>Kein Interesse mehr? <a href="' + leave + '" style="color:#5b2bb5">Hier austragen</a>.</p></div>'
   });
   return { ok: true, id: entry.id, position: entry.position, abend: abend, label: wann, plaetze: g.plaetze, mailed: mailed };
@@ -418,10 +432,6 @@ function cancel_(d) {
   announce_(s, moved);
   if (!res.ok || res.already) return res;
   const night = nightOf_(hit.abend), label = night ? night.label : hit.abend;
-  if (s.notifyStorno) ownerMail_(s, (rest ? "Teil-Stornierung: " + n + " von " + hit.plaetze : "Stornierung: " + n) + " × " + (night ? night.kurz : hit.abend) + " (" + hit.code + ")",
-    (rest ? "Bei der Reservierung " + hit.code + " (" + hit.name + ", " + label + ") wurden " + n + " von " + hit.plaetze + " Plätzen storniert. Es bleiben " + rest + " Plätze."
-      : "Die Reservierung " + hit.code + " (" + hit.name + ", " + n + " Plätze, " + label + ") wurde vom Gast storniert.") +
-    (moved.length ? "\n\nDie freien Plätze sind an die Warteliste gegangen (" + moved.length + " Nachrücker)." : "\n\nDie Plätze sind wieder frei."));
   return { ok: true, code: hit.code, cancelled: n, remaining: rest, label: label };
 }
 function leave_(d) {
