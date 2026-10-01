@@ -257,7 +257,10 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
 .track .rail{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:2px;background:var(--line)}
 .track .fill{position:absolute;left:0;top:12px;height:4px;border-radius:2px;background:var(--accent);width:0;transition:width 1.6s cubic-bezier(.3,.8,.3,1)}
 .station{position:absolute;top:0;transform:translateX(-50%);display:grid;justify-items:center;gap:6px;width:76px;text-align:center}
-.station i{width:28px;height:28px;border-radius:50%;background:var(--surface);border:3px solid var(--line);display:block}
+button.station{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.station:hover i{transform:scale(1.12)}
+button.station:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:6px}
+.station i{transition:transform .15s;width:28px;height:28px;border-radius:50%;background:var(--surface);border:3px solid var(--line);display:block}
 .station.done i{background:var(--accent);border-color:var(--accent)}
 .station.now i{border-color:var(--accent)}
 .station.final i{border-color:var(--w-wueste);background:var(--w-wueste2)}
@@ -307,6 +310,72 @@ details.month[open]{display:grid;gap:10px}
 .songcard .when s{opacity:.7}
 .legend-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin-bottom:14px}
 @media (max-width:520px){.station{width:46px}.station span{font-size:9.5px;hyphens:auto}}
+
+/* 12 · Weltenkarte */
+.mapwrap{display:grid;gap:16px}
+.mapintro{font-size:14px;color:var(--muted);margin:0}
+.map{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px;overflow:hidden;
+  background-image:radial-gradient(circle at 20% 15%,var(--accent-soft),transparent 45%),radial-gradient(circle at 85% 90%,var(--accent-soft),transparent 40%)}
+.map svg{display:block;width:100%;height:auto;overflow:visible}
+.map .bgstar{fill:var(--line)}
+.map .route{fill:none;stroke-width:4;stroke-linecap:round}
+.map .route.on{stroke:var(--accent)}
+.map .route.ahead{stroke:var(--accent);stroke-dasharray:2 10;opacity:.75}
+.map .route.off{stroke:var(--line);stroke-dasharray:2 10}
+.isle{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.isle:focus{outline:none}
+.isle .ring{fill:none;stroke:var(--ink);stroke-width:2.5;stroke-dasharray:6 6;opacity:0;transition:opacity .2s}
+.isle:hover .ring,.isle:focus-visible .ring,.isle.sel .ring{opacity:1}
+.isle.sel .ring{stroke:var(--accent);stroke-dasharray:none;stroke-width:3.5}
+.isle .lbl{font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em;fill:var(--ink);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.isle.fog .art{filter:grayscale(1);opacity:.42}
+.isle.fog .lbl{fill:var(--muted)}
+.isle .badge circle{fill:var(--accent)}
+.isle .badge path{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.isle.secret-hidden .art{opacity:.5}
+.isle.secret-hidden .q{font-family:var(--display);font-weight:800;font-size:46px;fill:var(--muted)}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{from{transform:scale(1);opacity:.75}to{transform:scale(1.4);opacity:0}}
+.mapstar{transform-box:fill-box;transform-origin:center;animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px) rotate(14deg)}}
+.isle .art .tw{animation:twk 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+
+.worldcard{--wc:var(--accent);background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--wc);border-radius:6px;padding:16px 18px;display:grid;gap:12px}
+.wc-head{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+.worldcard h3{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.02em;color:var(--wc)}
+.wc-sub{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wc-status{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:999px;border:1.5px solid var(--wc);color:var(--ink)}
+.wc-status.done{background:var(--wc);color:var(--surface)}
+.worldcard p{margin:0}
+.wc-cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.wc-cols h4{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0 0 6px}
+.wc-cols ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.wc-scene{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline;font-size:14px}
+.wc-scene .d{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wc-scene.over .t::before{content:"✓ ";color:var(--accent);font-weight:700}
+.wc-scene.cx .t{text-decoration:line-through;opacity:.6}
+.wc-nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:10px}
+.wc-nav .linkbtn{text-decoration:none}
+
+/* 13 · Easter Egg */
+h1{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+h1.wiggle{animation:wiggle .28s ease}
+@keyframes wiggle{25%{transform:rotate(-1.2deg)}75%{transform:rotate(1.2deg)}}
+.world.w-secret .lt{color:var(--ink);font-family:var(--display);letter-spacing:.04em;text-shadow:0 0 18px var(--w-wueste2),0 0 4px var(--w-wueste2);animation:lightup .9s ease both}
+@keyframes lightup{from{opacity:.1;text-shadow:none}}
+.world.w-secret .rope{animation:swing 2.4s ease-in-out infinite;transform-origin:50% 0;transform-box:fill-box}
+@keyframes swing{50%{transform:rotate(8deg)}}
+.spark{position:fixed;left:0;top:0;width:18px;height:18px;margin:-9px 0 0 -9px;pointer-events:none;z-index:60}
+.spark svg{display:block;width:100%;height:100%}
+.toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:55;width:min(560px,calc(100% - 32px));
+  background:#1d1830;color:#fff;border:2px solid var(--w-wueste2);border-radius:8px;padding:14px 16px;display:grid;gap:8px;box-shadow:0 10px 40px rgba(0,0,0,.35);animation:toastin .45s cubic-bezier(.3,1.4,.5,1) both}
+.toast b{font-family:var(--display);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.02em;color:#ffd97a}
+.toast .row{display:flex;gap:10px;flex-wrap:wrap}
+.toast .btn{background:#ffd23f;border-color:#ffd23f;color:#231c00}
+.toast .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.5)}
+@keyframes toastin{from{transform:translate(-50%,40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.pulse,.mapstar,.isle .art .tw,.world.w-secret .lt,.world.w-secret .rope,.toast,h1.wiggle{animation:none!important}}
+@media print{.toast,.spark,#view-karte{display:none!important}}
 
 /* 11 · Druckansicht */
 @media print{
@@ -369,6 +438,7 @@ details.month[open]{display:grid;gap:10px}
   <nav class="menu" role="tablist" aria-label="Ansicht wählen">
     <button class="tab" role="tab" id="tab-gesamt" data-view="gesamt" aria-controls="view-gesamt" aria-selected="true" tabindex="0">Gesamtplan</button>
     <button class="tab" role="tab" id="tab-rolle" data-view="rolle" aria-controls="view-rolle" aria-selected="false" tabindex="-1">Mein Probenplan</button>
+    <button class="tab" role="tab" id="tab-karte" data-view="karte" aria-controls="view-karte" aria-selected="false" tabindex="-1">Weltenkarte</button>
     <button class="tab" role="tab" id="tab-infos" data-view="infos" aria-controls="view-infos" aria-selected="false" tabindex="-1">Ferien &amp; Infos</button>
   </nav>
 
@@ -399,6 +469,14 @@ details.month[open]{display:grid;gap:10px}
     </div>
     <div class="songcard" id="role-songs" style="margin-top:18px" hidden></div>
     <div id="plan-role" style="display:grid;gap:18px;margin-top:18px"></div>
+  </section>
+
+  <section id="view-karte" role="tabpanel" aria-labelledby="tab-karte" hidden>
+    <div class="mapwrap">
+      <p class="mapintro">Die Reise durch alle Welten des Stücks. Helen, Vivian, James und Petra sind überall dabei. Tippe eine Welt an, um ihre Szenen, Figuren und Songs zu sehen. Geprobte Welten leuchten auf, der Stern zeigt den nächsten Halt.</p>
+      <div class="map" id="map"></div>
+      <div class="worldcard" id="worldcard" aria-live="polite"></div>
+    </div>
   </section>
 
   <section id="view-infos" role="tabpanel" aria-labelledby="tab-infos" hidden>
@@ -495,6 +573,40 @@ const PLAN = [
  {d:"2027-03-17",typ:"auf",sz:"Aufführung 1",songs:"",roles:[],note:"Uhrzeit und Ort folgen."},
  {d:"2027-03-18",typ:"auf",sz:"Aufführung 2",songs:"",roles:[],note:"Uhrzeit und Ort folgen."}
 ];
+
+/* ===== Welten für die Weltenkarte =====
+   Szenen und Termine kommen automatisch aus dem PLAN (Szene 1–4 → Unsere Welt, 5–9 → Wunderland, 10 → Ballsaal,
+   11 → Bibliothek, 12–13 → Böse Welt, ab 14 → High School). Figuren und Songs hier pflegen. */
+const WORLDS = [
+  { k:"heimat", name:"Unsere Welt", sub:"Franks Turm & der Turm des Oberzauberers", color:"var(--accent)", x:100, y:118,
+    text:"Hier beginnt alles: Ein Kessel wird gebraut, Phillip entdeckt seine Gabe als Weltenwanderer, und Onkel Frank hat schon ein Auge darauf geworfen.",
+    figuren:["phillip","frank","lutzi","oberzauberer","erzaehlerinnen"],
+    songs:["Mysterious Worlds (Opening + Reprise)","I Say A Little Prayer","Once Upon a December"] },
+  { k:"wunder", name:"Wunderland", sub:"Reich der Königinnen", color:"var(--w-wunder)", x:268, y:78,
+    text:"Eine grinsende Cheshire Katze, die Rote Königin mit ihrem Kartengefolge und eine Weiße Königin, die der Gruppe hilft.",
+    figuren:["katze","rotekoenigin","weissekoenigin","gibbins","gefolge"],
+    songs:["Three Little Birds","Candy Store","Respect","Like a Prayer","Medley Like a Prayer vs. Candy Store"] },
+  { k:"ball", name:"Ballsaal", sub:"Die lange Nacht der Tänze", color:"var(--w-ball1)", x:442, y:104,
+    text:"Kronleuchter, Walzer und eine Balldiva. Frank und Lutzi tauchen auch auf. Die längste Szene des Stücks, deshalb zwei Proben.",
+    figuren:["balldiva","ballgesellschaft","frank","lutzi"],
+    songs:["Lied der Balldiva","Walzer / Ballmusik"] },
+  { k:"biblio", name:"Bibliothek", sub:"Madis & Sigis Weltenbuch", color:"var(--w-sepia)", x:560, y:236,
+    text:"Zwischen staubigen Regalen treffen Phillip, Madi und Sigi aufeinander. Hier wird in Reimen gesprochen.",
+    figuren:["madeleine","sieglinde","phillip"],
+    songs:[] },
+  { k:"boese", name:"Böse Welt", sub:"Sturm & Gang", color:"var(--w-boese)", x:442, y:368,
+    text:"Gewitter, eine Gang und Big big Trouble. Und mittendrin wird James romantisch.",
+    figuren:["gang","ensemble"],
+    songs:["Elephant Love Medley","Beat It"] },
+  { k:"hs", name:"High School", sub:"Die 80er", color:"var(--w-neon1)", x:268, y:392,
+    text:"Neonlicht, Kassetten und Schließfächer. Diese Welt liegt noch im Nebel: Die Szenen ab 14 werden gerade geschrieben.",
+    figuren:[], songs:[] },
+  { k:"premiere", name:"Premiere", sub:"Mi 17. & Do 18. März 2027", color:"var(--w-wueste)", x:100, y:330,
+    text:"Das Ziel der Reise: Alle Welten kommen zusammen auf die Bühne. Uhrzeit und Ort folgen im Aushang.",
+    figuren:[], songs:[] }
+];
+const SECRET_WORLD = { k:"geheim", name:"Die Hinterbühne", sub:"Geheime Welt", color:"var(--w-wueste)", x:318, y:250,
+  text:"Seile, Sandsäcke, Requisitenchaos und Licht, das nur ihr seht. Ohne die Welt hinter dem Vorhang gäbe es keine einzige Welt davor. Glückwunsch, du hast sie gefunden!" };
 
 /* ===== Darstellung ===== */
 const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Musikprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
@@ -761,7 +873,7 @@ function renderRole(){
 const tabs = [...document.querySelectorAll(".tab")];
 function showView(v){
   tabs.forEach(t => { const on = t.dataset.view === v; t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
-  ["gesamt","rolle","infos"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
+  ["gesamt","rolle","karte","infos"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
 }
 tabs.forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
 document.querySelector("nav.menu").addEventListener("keydown", ev => {
@@ -841,19 +953,220 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
       : `${letters(w.cls==="w-home"?"Worlds":"Worlds")}<span class="decor">${w.decor}</span>`;
     nm.innerHTML = "Welt: <b>" + w.name + "</b>";
   };
+  const SECRET = { cls:"w-secret", name:"Geheime Welt · Die Hinterbühne", decor:
+    svg("left:-.5em;top:-.62em;width:.62em;height:.62em","0 0 40 40",`<rect x="6" y="4" width="16" height="13" rx="3" fill="var(--ink)" transform="rotate(28 14 10)"/><path fill="var(--w-wueste2)" opacity=".45" d="M18 16 L44 60 H70 Z"/>`) +
+    svg("right:-.42em;top:-.5em;width:.3em;height:.9em","0 0 16 48",`<g class="rope"><path stroke="var(--ink)" stroke-width="1.5" d="M8 0v30"/><rect x="2" y="28" width="12" height="14" rx="4" fill="var(--w-sepia)"/></g>`) +
+    svg("left:-2%;top:-4%;width:104%;height:40%","0 0 200 30",star(30,10,4,"var(--w-wueste2)",0)+star(160,6,5,"var(--w-wueste2)",.6)+star(110,22,3,"var(--w-wueste2)",1.2)) };
+  let hold = 0;
   show(W[0]);
+  window.TitleWorlds = { secret(){
+    hold = Date.now() + 10000;
+    const go = () => { show(SECRET); el.querySelectorAll(".lt").forEach((s,n) => s.style.animationDelay = (n*.09)+"s"); };
+    if(REDUCED) return go();
+    el.classList.add("swap"); setTimeout(go, 350);
+  }};
   if(REDUCED) return;
   setInterval(() => {
+    if(Date.now() < hold) return;
     el.classList.add("swap");
     setTimeout(() => { i = (i + 1) % W.length; show(W[i]); }, 350);
   }, 4200);
 })();
 
+/* ===== Weltenkarte ===== */
+const worldOfScene = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"hs";
+const SCENE_TYPES = ["fr","di","pl"];
+// Eine Probe kann mehrere Szenen aus verschiedenen Welten enthalten ("Szene 4 … · Szene 7 …")
+const scenePartsOf = e => (e.sz||"").split(" · ").map(t => {
+  const m = t.match(/Szene (\d+)/);
+  const w = /Opening/.test(t) ? "heimat" : m ? worldOfScene(+m[1]) : null;
+  return w && {e, w, t: t.trim()};
+}).filter(Boolean);
+const worldsIn = e => [...new Set(scenePartsOf(e).map(p => p.w))];
+const nextScene = PLAN.find(e => SCENE_TYPES.includes(e.typ) && !isOver(e) && !isCancelled(e.d));
+const nextWorlds = new Set(nextScene ? worldsIn(nextScene) : []);
+const PREMIERE = PLAN.find(e => e.typ==="auf");
+let secretFound = false;
+try{ secretFound = localStorage.getItem("mw-geheim") === "1"; }catch(e){}
+
+function worldInfo(k){
+  const parts = PLAN.filter(e => SCENE_TYPES.includes(e.typ)).flatMap(scenePartsOf).filter(p => p.w === k);
+  const real = parts.filter(p => p.e.typ !== "pl");
+  const over = parts.filter(p => isOver(p.e) && !isCancelled(p.e.d)).length;
+  let st;
+  if(k === "premiere") st = PREMIERE && isOver(PREMIERE) ? "done" : "goal";
+  else if(k === "geheim") st = "secret";
+  else if(!real.length) st = "nebel";
+  else if(over === parts.length) st = "done";
+  else if(nextWorlds.has(k)) st = "next";
+  else if(over) st = "started";
+  else st = "open";
+  return {parts, st};
+}
+const STATUS_TXT = {done:"Geprobt", next:"Nächster Halt", started:"Unterwegs", open:"Noch nicht besucht", nebel:"Im Nebel", goal:"Ziel der Reise", secret:"Geheim"};
+
+let selWorld = null;
+const allWorlds = () => secretFound ? [...WORLDS, SECRET_WORLD] : WORLDS;
+
+const ICONS = {
+  heimat: c => `<rect x="-12" y="-8" width="24" height="34" rx="2" fill="${c}"/><path fill="var(--w-wueste2)" d="M-19 -8 0 -38 19 -8Z"/><rect x="-4" y="0" width="8" height="11" rx="4" fill="var(--surface)"/><rect x="-16" y="24" width="32" height="5" rx="2" fill="${c}" opacity=".6"/><path class="tw" fill="var(--w-wueste2)" d="M24 -30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>`,
+  wunder: c => `<g transform="rotate(-14)"><rect x="-24" y="-16" width="26" height="36" rx="3" fill="var(--surface)" stroke="${c}" stroke-width="2.5"/><path fill="${c}" d="M-11 10c-5-4-8-6.5-8-9.5 0-2 1.6-3.5 3.6-3.5 1.9 0 3.4 1.3 4.4 3 1-1.7 2.5-3 4.4-3 2 0 3.6 1.5 3.6 3.5 0 3-3 5.5-8 9.5z"/></g><g transform="rotate(12)"><rect x="-2" y="-14" width="26" height="36" rx="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/><path fill="var(--ink)" d="M11 -4c3 4 7 6 7 9 0 2-1.5 3.2-3.2 3.2-1.1 0-2-.5-2.6-1.3l1 3.3h-4.4l1-3.3c-.6.8-1.5 1.3-2.6 1.3C4.5 8.2 3 7 3 5c0-3 4-5 8-9z"/></g><path fill="var(--w-wueste2)" stroke="var(--w-wueste)" stroke-width="1.5" d="M-14 -28l5 7 5-10 5 10 5-10 5 10 5-7v9h-30z"/>`,
+  ball: c => `<path fill="none" stroke="var(--w-wueste)" stroke-width="2.5" d="M0 -38v12M-24 -12q24 20 48 0M-24 -12v8M24 -12v8M0 -26v22M-12 -6v6M12 -6v6"/><circle cx="0" cy="-26" r="4" fill="var(--w-wueste2)"/>${[-24,-12,0,12,24].map((x,i)=>`<path fill="var(--w-wueste2)" d="M${x} ${i%2?-6:-10}q-3 -6 0 -10q3 4 0 10z"/><path fill="${c}" d="M${x} ${i%2?2:6}l-3 6 3 6 3-6z" opacity=".85"/>`).join("")}<path class="tw" fill="${c}" d="M-30 18l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>`,
+  biblio: c => `<path fill="${c}" d="M0 -10C-9 -17 -22 -17 -30 -13v31c8-4 21-4 30 3 9-7 22-7 30-3v-31C22 -17 9 -17 0 -10Z"/><path stroke="var(--surface)" stroke-width="2" fill="none" d="M0 -10v31M-24 -6q10-3 19 1M-24 2q10-3 19 1M5 -5q9-4 19-1M5 3q9-4 19-1"/><path class="tw" fill="${c}" d="M20 -30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>`,
+  boese: c => `<path fill="var(--w-night)" opacity=".85" d="M-26 -6a12 12 0 0 1 8-20 16 16 0 0 1 29-4 11 11 0 0 1 15 12 9 9 0 0 1-3 12z"/><path fill="var(--w-bolt)" stroke="var(--ink)" stroke-width="1" d="M4 -6 -8 14h9l-4 18 15-24h-9l5-8z"/>${[-20,-10,16,24].map((x,i)=>`<path stroke="var(--w-night)" stroke-width="2" opacity=".6" d="M${x} ${4+i%2*4}l-3 9"/>`).join("")}`,
+  hs: c => `<rect x="-28" y="-18" width="56" height="36" rx="5" fill="${c}"/><rect x="-20" y="-11" width="40" height="15" rx="3" fill="var(--surface)"/><circle cx="-9" cy="-3.5" r="4.5" fill="var(--w-neon2)"/><circle cx="9" cy="-3.5" r="4.5" fill="var(--w-neon2)"/><path fill="var(--ink)" opacity=".45" d="M-14 18l4-8h20l4 8z"/><path class="tw" fill="var(--w-neon2)" d="M28 -28l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>`,
+  premiere: c => `<rect x="-30" y="-26" width="60" height="6" rx="2" fill="${c}"/><path fill="var(--curtain-a)" d="M-30 -20h22q-4 18-14 38h-8z"/><path fill="var(--curtain-a)" d="M30 -20h-22q4 18 14 38h8z"/><rect x="-32" y="18" width="64" height="7" rx="2" fill="var(--ink)" opacity=".75"/><path class="tw" fill="var(--w-wueste2)" d="M0 -10l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/>`,
+  geheim: c => `<path fill="var(--w-wueste2)" opacity=".35" d="M-20 -22 L-34 26 H30 Z"/><rect x="-26" y="-34" width="14" height="12" rx="3" fill="var(--ink)" transform="rotate(20 -19 -28)"/><path stroke="var(--ink)" stroke-width="1.8" d="M22 -38v30"/><rect x="15" y="-8" width="14" height="16" rx="4" fill="var(--w-sepia)"/><path stroke="var(--ink)" stroke-width="2" d="M-6 26v-14l6-6 6 6v14M-6 14h12M-6 20h12" fill="none"/>`
+};
+
+function renderMap(){
+  const box = document.getElementById("map");
+  const list = WORLDS, info = Object.fromEntries(allWorlds().map(w => [w.k, worldInfo(w.k)]));
+  if(!selWorld) selWorld = (WORLDS.find(w => info[w.k].st === "next") || WORLDS.find(w => ["started","open"].includes(info[w.k].st)) || WORLDS.find(w => w.k === "premiere")).k;
+  // Route mit sanften Kurven
+  let route = "";
+  for(let i = 0; i < list.length - 1; i++){
+    const a = list[i], b = list[i+1], to = info[b.k].st, from = info[a.k].st;
+    const mx = (a.x+b.x)/2, my = (a.y+b.y)/2, dx = b.x-a.x, dy = b.y-a.y, len = Math.hypot(dx,dy) || 1;
+    const cx = mx - dy/len*28, cy = my + dx/len*28;
+    const cls = (to==="done"||to==="started"||(b.k==="premiere"&&to==="done")) ? "on" : (to==="next" || (from==="done" && to!=="nebel")) ? "ahead" : "off";
+    route += `<path class="route ${cls}" d="M${a.x} ${a.y}Q${cx} ${cy} ${b.x} ${b.y}"/>`;
+  }
+  const bg = [[30,40],[180,28],[360,30],[520,40],[610,120],[620,330],[560,430],[360,460],[160,460],[24,230],[200,240],[440,240],[330,140],[330,330]]
+    .map(([x,y],i)=>`<circle class="bgstar" cx="${x}" cy="${y}" r="${i%3?2:3}"/>`).join("");
+  const isle = w => {
+    const s = info[w.k].st, fog = ["open","nebel"].includes(s);
+    const art = `<g class="art"><circle r="52" fill="var(--surface)"/><circle r="52" fill="${w.color}" fill-opacity=".14" stroke="${w.color}" stroke-width="3"/>${ICONS[w.k](w.color)}</g>`;
+    const pulse = s==="next" ? `<circle class="pulse" r="56" fill="none" stroke="${w.color}" stroke-width="3"/>` : "";
+    const badge = s==="done" ? `<g class="badge" transform="translate(38 -38)"><circle r="12"/><path d="M-5 0l3.5 3.5 6.5-7"/></g>` : "";
+    return `<g class="isle${fog?" fog":""}${selWorld===w.k?" sel":""}" data-world="${w.k}" role="button" tabindex="0" aria-pressed="${selWorld===w.k}"
+      aria-label="${esc(w.name)}: ${STATUS_TXT[s]}" transform="translate(${w.x} ${w.y})${w.k==="geheim"?" scale(.8)":""}">
+      <circle class="ring" r="64"/>${pulse}${art}${badge}
+      <text class="lbl" y="92" text-anchor="middle">${esc(w.name)}</text></g>`;
+  };
+  const S = SECRET_WORLD;
+  const secret = secretFound
+    ? isle(S)
+    : `<g class="isle secret-hidden${selWorld==="geheim"?" sel":""}" data-world="geheim" role="button" tabindex="0" aria-label="Verborgene Welt" transform="translate(${S.x} ${S.y}) scale(.8)">
+        <circle class="ring" r="50"/><g class="art"><circle r="40" fill="var(--surface)" stroke="var(--muted)" stroke-width="2" stroke-dasharray="3 7"/></g>
+        <text class="q" y="16" text-anchor="middle">?</text></g>`;
+  const nx = WORLDS.find(w => info[w.k].st === "next") || (WORLDS.every(w => ["done","goal","nebel"].includes(info[w.k].st)) ? WORLDS.find(w => w.k==="premiere") : null);
+  const star = nx ? `<g transform="translate(${nx.x+46} ${nx.y-50})"><path class="mapstar" fill="var(--w-wueste2)" stroke="var(--w-wueste)" stroke-width="1.6" d="M0 -14l3.4 9.3 9.6.4-7.6 6 2.6 9.4L0 6.6l-8 5.5 2.6-9.4-7.6-6 9.6-.4z"/></g>` : "";
+  box.innerHTML = `<svg viewBox="0 0 640 500" role="group" aria-label="Weltenkarte">${bg}${route}${secret}${list.map(isle).join("")}${star}</svg>`;
+  renderWorldCard(info);
+}
+
+function renderWorldCard(info){
+  const card = document.getElementById("worldcard");
+  const order = allWorlds();
+  if(selWorld==="geheim" && !secretFound){
+    card.style.setProperty("--wc","var(--muted)");
+    card.innerHTML = `<div class="wc-head"><h3>???</h3><span class="wc-status">Verborgen</span></div>
+      <p>Auf dieser Karte fehlt noch eine Welt. Man munkelt, der Titel ganz oben verrät mehr, wenn man nur hartnäckig genug ist …</p>`;
+    return;
+  }
+  const w = order.find(x => x.k === selWorld) || order[0];
+  const i = order.indexOf(w), {parts, st} = info[w.k] || worldInfo(w.k);
+  card.style.setProperty("--wc", w.color);
+  const scenes = parts.length ? `<div><h4>Szenen & Proben</h4><ul>${parts.map(p => {
+      const cx = isCancelled(p.e.d), ov = isOver(p.e) && !cx;
+      return `<li class="wc-scene${ov?" over":""}${cx?" cx":""}"><span class="d">${WD[parse(p.e.d).getDay()]} ${dm(p.e.d)}</span><span class="t">${esc(p.t)}${cx?" (abgesagt)":""}</span></li>`;
+    }).join("")}</ul></div>`
+    : w.k==="premiere" ? `<div><h4>Termine</h4><ul>${PLAN.filter(e=>e.typ==="auf").map(e=>`<li class="wc-scene"><span class="d">${WD[parse(e.d).getDay()]} ${dm(e.d)}</span><span class="t">${esc(e.sz)}</span></li>`).join("")}</ul></div>` : "";
+  const fig = w.figuren && w.figuren.length ? `<div><h4>Hier triffst du</h4><div class="roles">${w.figuren.map(r=>`<button class="chip${selected.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div></div>` : "";
+  const songs = w.songs && w.songs.length ? `<div><h4>Songs</h4><ul>${w.songs.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>` : "";
+  const prev = order[(i-1+order.length)%order.length], next = order[(i+1)%order.length];
+  card.innerHTML = `<div class="wc-head"><div><div class="wc-sub">${esc(w.sub)}</div><h3>${esc(w.name)}</h3></div><span class="wc-status ${st==="done"?"done":""}">${STATUS_TXT[st]}${st==="next"&&nextScene?" · "+WD[parse(nextScene.d).getDay()]+" "+dm(nextScene.d):""}</span></div>
+    <p>${esc(w.text)}</p>
+    ${scenes||fig||songs ? `<div class="wc-cols">${scenes}${fig}${songs}</div>` : ""}
+    <div class="wc-nav"><button class="linkbtn" type="button" data-world-go="${prev.k}">‹ ${esc(prev.name)}</button><button class="linkbtn" type="button" data-world-go="${next.k}">${esc(next.name)} ›</button></div>`;
+}
+
+function selectWorld(k, focus){
+  selWorld = k; renderMap();
+  if(focus){ const g = document.querySelector(`.isle[data-world="${k}"]`); if(g) g.focus(); }
+}
+function openWorld(k){
+  selWorld = k; renderMap(); showView("karte");
+  document.querySelector("nav.menu").scrollIntoView(scrollOpts());
+}
+document.getElementById("map").addEventListener("click", ev => {
+  const g = ev.target.closest(".isle"); if(g) selectWorld(g.dataset.world);
+});
+document.getElementById("map").addEventListener("keydown", ev => {
+  const g = ev.target.closest(".isle"); if(!g) return;
+  const ks = [...allWorlds().map(w=>w.k), ...(secretFound?[]:["geheim"])], i = ks.indexOf(g.dataset.world);
+  if(ev.key==="Enter"||ev.key===" "){ ev.preventDefault(); selectWorld(g.dataset.world, true); }
+  else if(ev.key==="ArrowRight"||ev.key==="ArrowDown"){ ev.preventDefault(); selectWorld(ks[(i+1)%ks.length], true); }
+  else if(ev.key==="ArrowLeft"||ev.key==="ArrowUp"){ ev.preventDefault(); selectWorld(ks[(i-1+ks.length)%ks.length], true); }
+});
+document.getElementById("worldcard").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-world-go]"); if(b) selectWorld(b.dataset.worldGo);
+});
+
+/* ===== Easter Egg: 7× auf den Titel tippen (oder Konami-Code) ===== */
+(function(){
+  const h1 = document.querySelector("h1");
+  let taps = [];
+  h1.addEventListener("click", () => {
+    const now = Date.now();
+    taps = taps.filter(t => now - t < 2500); taps.push(now);
+    if(taps.length >= 7){ taps = []; discoverSecret(); return; }
+    if(taps.length >= 3 && !REDUCED){ h1.classList.remove("wiggle"); void h1.offsetWidth; h1.classList.add("wiggle"); }
+  });
+  const code = ["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+  let pos = 0;
+  document.addEventListener("keydown", ev => {
+    if(ev.target.closest && ev.target.closest(".isle, nav.menu")) { pos = 0; return; }
+    const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+    pos = k === code[pos] ? pos + 1 : (k === code[0] ? 1 : 0);
+    if(pos === code.length){ pos = 0; discoverSecret(); }
+  });
+})();
+
+function burst(){
+  if(REDUCED) return;
+  const r = document.querySelector("h1").getBoundingClientRect();
+  const cx = r.left + r.width/2, cy = r.top + r.height/2;
+  const cols = ["var(--w-wueste2)","var(--w-wunder)","var(--w-ball1)","var(--w-neon2)","var(--accent)","var(--w-boese-glow)"];
+  for(let i = 0; i < 34; i++){
+    const s = document.createElement("div"); s.className = "spark";
+    s.innerHTML = `<svg viewBox="0 0 24 24"><path fill="${cols[i%cols.length]}" d="M12 0l3 9 9 3-9 3-3 9-3-9-9-3 9-3z"/></svg>`;
+    document.body.appendChild(s);
+    const a = Math.random()*Math.PI*2, d = 90 + Math.random()*220, sc = .5 + Math.random()*1.1;
+    s.animate([
+      {transform:`translate(${cx}px,${cy}px) scale(.2) rotate(0deg)`, opacity:1},
+      {transform:`translate(${cx+Math.cos(a)*d}px,${cy+Math.sin(a)*d*.7+60}px) scale(${sc}) rotate(${200+Math.random()*300}deg)`, opacity:0}
+    ], {duration:1100+Math.random()*700, easing:"cubic-bezier(.2,.7,.3,1)", fill:"forwards"}).onfinish = () => s.remove();
+  }
+}
+
+function discoverSecret(){
+  const first = !secretFound;
+  secretFound = true;
+  try{ localStorage.setItem("mw-geheim","1"); }catch(e){}
+  burst();
+  if(window.TitleWorlds) TitleWorlds.secret();
+  if(selWorld === "geheim" || first) selWorld = "geheim";
+  renderMap();
+  const old = document.querySelector(".toast"); if(old) old.remove();
+  const t = document.createElement("div");
+  t.className = "toast"; t.setAttribute("role","status");
+  t.innerHTML = `<b>✦ Geheime Welt entdeckt</b><span>${first ? "Du hast die Hinterbühne gefunden – die Welt hinter dem Vorhang. Auf der Weltenkarte ist sie jetzt eingezeichnet." : "Willkommen zurück auf der Hinterbühne."}</span>
+    <div class="row"><button class="btn" type="button" data-toast="karte">Zur Weltenkarte</button><button class="btn ghost" type="button" data-toast="zu">Schließen</button></div>`;
+  document.body.appendChild(t);
+  const close = () => t.remove();
+  t.addEventListener("click", ev => {
+    const b = ev.target.closest("[data-toast]"); if(!b) return;
+    if(b.dataset.toast === "karte") openWorld("geheim");
+    close();
+  });
+  setTimeout(close, 12000);
+}
+
 /* Probenreise */
 (function(){
   const sceneEntries = PLAN.filter(e => ["fr","di","pl"].includes(e.typ));
-  const worldOf = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"hs";
-  const worldsIn = e => { const ns = [...(e.sz||"").matchAll(/Szene (\d+)/g)].map(m=>+m[1]); if(/Opening/.test(e.sz)) ns.push(1); return ns.map(worldOf); };
   const isDone = e => isOver(e) && !isCancelled(e.d);
   const done = sceneEntries.filter(isDone).length, total = sceneEntries.length;
   const reserved = sceneEntries.filter(e => e.typ==="pl" && !isOver(e)).length;
@@ -869,7 +1182,8 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
       if(es.length && es.every(isDone)) cls = "done";
       else if(es.some(isDone)) cls = "now";
     }
-    const st = document.createElement("div");
+    const st = document.createElement("button");
+    st.type = "button"; st.dataset.world = k; st.title = "Auf der Weltenkarte ansehen";
     st.className = "station " + cls; st.style.left = pos + "%";
     st.innerHTML = `<i></i><span>${label}</span>`;
     track.appendChild(st);
@@ -878,6 +1192,7 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
   trav.className = "traveler";
   trav.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--w-wueste2)" stroke="var(--w-wueste)" stroke-width="1.2" d="M12 1.5l2.6 7.1 7.4.3-5.8 4.6 2 7.2L12 16.6l-6.2 4.1 2-7.2L2 8.9l7.4-.3z"/></svg>';
   track.appendChild(trav);
+  track.addEventListener("click", ev => { const s = ev.target.closest(".station"); if(s) openWorld(s.dataset.world); });
   const fill = document.getElementById("track-fill");
   const setPos = () => { fill.style.width = (pct*100) + "%"; trav.style.left = (pct*100) + "%"; };
   if(REDUCED) setPos(); else requestAnimationFrame(() => requestAnimationFrame(setPos));
@@ -910,9 +1225,12 @@ function applyHash(){
     const rs = h.slice(6).split(".").filter(r => ROLES[r]);
     if(rs.length){ selected = new Set(rs); saveRoles(); renderRole(); showView("rolle"); return; }
   }
+  if(h.startsWith("welt-")){ const k = h.slice(5); if(WORLDS.some(w=>w.k===k) || (k==="geheim" && secretFound)){ openWorld(k); return; } }
+  if(h === "weltenkarte" || h === "karte"){ showView("karte"); return; }
   if(h === "infos") showView("infos");
   else if(h === "mein-plan") showView("rolle");
 }
+renderMap();
 renderRole();
 applyHash();
 window.addEventListener("hashchange", applyHash);
