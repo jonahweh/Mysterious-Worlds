@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 4 (Warteliste, Einlass, Teil-Storno)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 5 (Warteliste, Einlass, Teil-Storno, Freigeben am Einlass)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -273,7 +273,7 @@ function doPost(e) {
   if (d.website) return out_({ ok: true, code: "MW-OK", id: "W-OK" }); // Honeypot gegen Spam-Bots
   const a = d.action || "reserve";
   const fn = { reserve: reserve_, waitlist: waitlist_, cancel: cancel_, lookup: lookup_, leave: leave_,
-    admin_list: adminList_, checkin: checkin_, walkin: walkin_ }[a];
+    admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_ }[a];
   if (!fn) return out_({ ok: false, error: "Unbekannte Aktion." });
   return out_(fn(d));
 }
@@ -455,11 +455,82 @@ function adminData_(s, abend) {
   const guests = list.filter(r => r.quelle !== "Abendkasse");
   const walk = list.filter(r => r.quelle === "Abendkasse").reduce((a, r) => a + r.plaetze, 0);
   const reserved = guests.reduce((a, r) => a + r.plaetze, 0), arrived = guests.reduce((a, r) => a + Math.min(r.da, r.plaetze), 0);
+  const waiting = wl_().rows.filter(w => w.status === "wartend" && (w.abend === abend || w.abend === "beide"))
+    .map((w, i) => ({ id: w.id, nr: i + 1, name: w.name, plaetze: w.plaetze, hinweis: w.hinweis, beide: w.abend === "beide" }));
   return {
     ok: true, abend: abend, label: nightOf_(abend).label, cap: s.cap[abend], reserved: reserved, arrived: arrived, walkins: walk,
-    guests: guests.map(r => ({ code: r.code, name: r.name, plaetze: r.plaetze, da: Math.min(r.da, r.plaetze), hinweis: r.hinweis, quelle: r.quelle }))
-      .sort((a, b) => a.name.localeCompare(b.name, "de"))
+    guests: guests.map(r => ({ code: r.code, name: r.name, plaetze: r.plaetze, da: Math.min(r.da, r.plaetze), orig: r.orig, hinweis: r.hinweis, quelle: r.quelle }))
+      .sort((a, b) => a.name.localeCompare(b.name, "de")),
+    waiting: waiting
   };
+}
+// Am Einlass: nicht abgeholte Plätze einer Reservierung freigeben (Plätze = Angekommene; niemand da = storniert)
+function releaseRow_(R, r) {
+  const da = Math.min(r.da, r.plaetze);
+  if (da >= r.plaetze) return 0;
+  if (da === 0) {
+    R.sh.getRange(r.row, C.status).setValue("storniert");
+    R.sh.getRange(r.row, C.storniert).setValue(new Date());
+  } else {
+    R.sh.getRange(r.row, C.plaetze).setValue(da);
+    if (!r.orig) R.sh.getRange(r.row, C.orig).setValue(r.plaetze);
+  }
+  return r.plaetze - da;
+}
+function release_(d) {
+  const s = settings_(), p = pinOk_(s, d.pin);
+  if (!p.ok) return p;
+  let freed = 0;
+  const res = locked_(() => {
+    const R = rows_();
+    const r = R.rows.find(x => x.code === String(d.code || "").trim().toUpperCase() && x.status === "aktiv" && x.quelle !== "Abendkasse");
+    if (!r) return { ok: false, error: "Reservierung nicht gefunden (oder schon storniert)." };
+    freed = releaseRow_(R, r);
+    SpreadsheetApp.flush();
+    return { ok: true, abend: r.abend };
+  });
+  return res.ok ? Object.assign(adminData_(s, res.abend), { freed: freed }) : res;
+}
+function releaseAll_(d) {
+  const s = settings_(), p = pinOk_(s, d.pin);
+  if (!p.ok) return p;
+  const night = nightOf_(d.abend);
+  if (!night) return { ok: false, error: "Unbekannter Abend." };
+  let freed = 0;
+  const res = locked_(() => {
+    const R = rows_();
+    R.rows.filter(r => r.abend === night.id && r.status === "aktiv" && r.quelle !== "Abendkasse").forEach(r => { freed += releaseRow_(R, r); });
+    SpreadsheetApp.flush();
+    return { ok: true };
+  });
+  return res.ok ? Object.assign(adminData_(s, night.id), { freed: freed }) : res;
+}
+// Am Einlass: wartende Person direkt einlassen (wird als Reservierung mit Quelle „Warteliste“ angelegt, ohne Mail)
+function admit_(d) {
+  const s = settings_(), p = pinOk_(s, d.pin);
+  if (!p.ok) return p;
+  const night = nightOf_(d.abend);
+  if (!night) return { ok: false, error: "Unbekannter Abend." };
+  const res = locked_(() => {
+    const Wl = wl_();
+    const w = Wl.rows.find(x => x.id === String(d.id || "").trim().toUpperCase());
+    if (!w || w.status !== "wartend") return { ok: false, error: "Dieser Eintrag steht nicht mehr auf der Warteliste." };
+    if (w.abend !== "beide" && w.abend !== night.id) return { ok: false, error: "Dieser Eintrag gilt für einen anderen Abend." };
+    const R = rows_();
+    const mine = R.rows.find(r => r.status === "aktiv" && r.email === w.email && r.quelle !== "Abendkasse");
+    if (mine) {
+      Wl.sh.getRange(w.row, W.status).setValue("erledigt"); Wl.sh.getRange(w.row, W.geaendert).setValue(new Date());
+      return { ok: false, error: w.name + " hat schon eine Reservierung (" + mine.code + ", " + nightOf_(mine.abend).kurz + "). Bitte dort abhaken." };
+    }
+    const n = Math.max(1, Math.min(w.plaetze, Math.floor(Number(d.plaetze) || w.plaetze)));
+    const codes = new Set(R.rows.map(r => r.code));
+    let code; do { code = rand_("MW-", 5); } while (codes.has(code));
+    R.sh.appendRow([new Date(), code, "'" + night.id, n, w.name, w.email, w.hinweis, "aktiv", token_(), "", n, new Date(), "", "Warteliste"]);
+    Wl.sh.getRange(w.row, W.status, 1, 4).setValues([["nachgerückt", code, w.token, new Date()]]);
+    SpreadsheetApp.flush();
+    return { ok: true };
+  });
+  return res.ok ? adminData_(s, night.id) : res;
 }
 function adminList_(d) {
   const s = settings_(), p = pinOk_(s, d.pin);

@@ -83,6 +83,21 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .step button{border:0;background:var(--surface2);width:48px;height:48px;font-size:22px;font-weight:700}
 .step button:disabled{opacity:.35}
 .empty{color:var(--muted);text-align:center;padding:20px}
+.rel{border:1px solid var(--warn);background:transparent;color:var(--warn);border-radius:10px;padding:10px 12px;font-weight:700;font-size:15px}
+.rel.armed,.wl .go.armed,.relall.armed{background:var(--warn);color:#120e1c;border-color:var(--warn)}
+.relall{width:100%;border:1px dashed var(--warn);background:transparent;color:var(--warn);border-radius:12px;padding:12px;font-weight:700;font-size:15px}
+.relall small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.wlbox{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.wlbox summary{cursor:pointer;font-weight:700;list-style:none}
+.wlbox summary::-webkit-details-marker{display:none}
+.wlbox summary::before{content:"▸ ";color:var(--accent)}
+.wlbox[open] summary::before{content:"▾ "}
+.wlbox summary small{font-weight:400;color:var(--muted)}
+.wl{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;border-top:1px solid var(--line);padding-top:8px}
+.wl .nr{font-family:var(--display);font-weight:800;font-size:22px;color:var(--accent);min-width:34px}
+.wl b{display:block}.wl span{font-size:13px;color:var(--muted)}
+.wl .go{border:1px solid var(--accent);background:transparent;color:var(--accent);border-radius:10px;padding:10px 12px;font-weight:700}
+.wl .note{grid-column:2/-1;font-size:13px;background:rgba(255,210,63,.12);border-left:3px solid var(--gold);padding:3px 8px;border-radius:4px}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--bad);color:#120e1c;font-weight:700;padding:10px 16px;border-radius:10px;z-index:20;max-width:calc(100% - 32px)}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -119,6 +134,9 @@ header{display:flex;justify-content:space-between;align-items:center;gap:10px}
         <div class="step"><button type="button" id="w-minus" aria-label="Einen weniger">−</button><button type="button" id="w-count" disabled style="width:56px;opacity:1;font-family:var(--display);font-size:24px">0</button><button type="button" id="w-plus" aria-label="Einen mehr">+</button></div>
       </div>
     </div>
+
+    <button type="button" class="relall" id="relall" hidden></button>
+    <details class="wlbox" id="wlbox" hidden><summary id="wlsum"></summary><div id="wllist"></div></details>
 
     <div class="search">
       <input id="q" type="search" placeholder="Name oder Code suchen …" autocomplete="off" aria-label="Gast suchen">
@@ -203,6 +221,20 @@ function render(){
   $("w-count").textContent = data.walkins;
   $("w-minus").disabled = data.walkins <= 0;
   document.querySelectorAll(".filters button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+  const missing = data.guests.reduce((s, g) => s + g.plaetze - g.da, 0);
+  const ra = $("relall"); ra.hidden = !missing;
+  if(!ra.classList.contains("armed")) ra.innerHTML = `Nicht abgeholte Plätze freigeben (${missing})<small>Kurz vor Beginn: Alle noch nicht da gemeldeten Plätze werden frei – für Warteliste und Abendkasse.</small>`;
+  ra.dataset.confirm = `Sicher? ${missing} ${missing===1?"Platz":"Plätze"} von Reservierten freigeben`;
+  const wq = norm($("q").value.trim());
+  const wait = (data.waiting || []).filter(w => !wq || norm(w.name).includes(wq));
+  $("wlbox").hidden = !(data.waiting || []).length;
+  $("wlsum").innerHTML = `Warteliste für diesen Abend (${(data.waiting||[]).length}) <small>· ${(data.waiting||[]).reduce((s,w)=>s+w.plaetze,0)} Plätze</small>`;
+  $("wllist").innerHTML = wait.map(w => {
+    const tight = w.plaetze > free;
+    return `<div class="wl"><span class="nr">${w.nr}</span><div><b>${esc(w.name)}</b><span>${w.plaetze} ${w.plaetze===1?"Platz":"Plätze"}${w.beide ? " · Mi oder Do" : ""}</span></div>
+      <button type="button" class="go" data-admit="${esc(w.id)}" ${tight ? `data-confirm="Saal voll – trotzdem einlassen?"` : ""}>Einlassen</button>
+      ${w.hinweis ? `<div class="note">${esc(w.hinweis)}</div>` : ""}</div>`;
+  }).join("") || `<p class="empty" style="padding:8px">Niemand gefunden.</p>`;
   const q = norm($("q").value.trim());
   const list = data.guests.filter(g => (!q || norm(g.name).includes(q) || norm(g.code).includes(q))
     && (q || filter === "alle" || (filter === "offen" ? g.da < g.plaetze : g.da > 0)));
@@ -215,7 +247,10 @@ function render(){
       <div class="act">
         <button type="button" class="all" data-set="${g.da >= g.plaetze ? 0 : g.plaetze}">${g.da >= g.plaetze ? "✓ Alle da · rückgängig" : g.plaetze === 1 ? "Ist da" : `Alle ${g.plaetze} da`}</button>
         ${g.plaetze > 1 ? `<div class="step"><button type="button" data-set="${g.da-1}" ${g.da<=0?"disabled":""} aria-label="Eine Person weniger">−</button><button type="button" data-set="${g.da+1}" ${g.da>=g.plaetze?"disabled":""} aria-label="Eine Person mehr">+</button></div>` : ""}
-      </div></div>`;
+      </div>
+      ${g.da > 0 && g.da < g.plaetze ? `<div class="act"><button type="button" class="rel" data-release="${esc(g.code)}" data-confirm="Sicher? ${g.plaetze-g.da} ${g.plaetze-g.da===1?"Platz":"Plätze"} freigeben">Rest freigeben – ${g.plaetze-g.da} ${g.plaetze-g.da===1?"Platz":"Plätze"} kommen nicht</button></div>` : ""}
+      ${g.orig && g.orig > g.plaetze ? `<div class="who"><span>ursprünglich ${g.orig} reserviert</span></div>` : ""}
+      </div>`;
   }).join("") : `<p class="empty">${q ? "Niemand gefunden. Tippfehler? Auch der Code (MW-…) funktioniert." : filter === "offen" ? "Alle Reservierten sind da. 🎭" : "Keine Einträge."}</p>`;
 }
 
@@ -244,6 +279,42 @@ $("list").addEventListener("click", async ev => {
     toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung"));
   }
 });
+/* Zwei-Schritt-Bestätigung für Aktionen, die Plätze verändern */
+function armed(btn){
+  if(!btn.dataset.confirm || btn.classList.contains("armed")) return true;
+  btn.dataset.label = btn.innerHTML; btn.classList.add("armed"); btn.textContent = btn.dataset.confirm;
+  setTimeout(() => { if(btn.isConnected && btn.classList.contains("armed")){ btn.classList.remove("armed"); btn.innerHTML = btn.dataset.label; } }, 4000);
+  return false;
+}
+async function act(body, okMsg){
+  busy++;
+  try{
+    const r = await call(body);
+    if(!r.ok) throw new Error(r.error);
+    busy--; if(busy === 0) apply(r);
+    if(okMsg) note(okMsg(r));
+  }catch(e){ busy--; toast("Nicht gespeichert: " + (e.message && !/HTTP|fetch/i.test(e.message) ? e.message : "keine Verbindung")); render(); }
+}
+function note(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.style.background = "var(--ok)"; t.setAttribute("role","status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
+}
+$("list").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-release]"); if(!b || !armed(b)) return;
+  b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+  act({ action:"release", code: b.dataset.release }, r => `${r.freed} ${r.freed===1?"Platz":"Plätze"} freigegeben`);
+}, true);
+$("relall").addEventListener("click", ev => {
+  const b = ev.currentTarget; if(!armed(b)) return;
+  b.classList.remove("armed"); b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+  act({ action:"release_all", abend }, r => `${r.freed} ${r.freed===1?"Platz":"Plätze"} freigegeben`).then(() => { b.disabled = false; });
+});
+$("wllist").addEventListener("click", ev => {
+  const b = ev.target.closest("[data-admit]"); if(!b || !armed(b)) return;
+  b.disabled = true; b.innerHTML = '<span class="spin"></span>';
+  act({ action:"admit", abend, id: b.dataset.admit }, () => "Eingelassen – steht jetzt in der Gästeliste");
+});
+
 async function walk(delta){
   data.walkins = Math.max(0, data.walkins + delta); render();
   busy++;
