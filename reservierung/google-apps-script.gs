@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 7 (Eintrittskarte mit QR-Code)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 8 (Probenabsagen)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -7,19 +7,21 @@
  *    (Alternativ am Computer: Google-Tabelle → Erweiterungen → Apps Script.)
  * 2. Oben die Funktion "setup" auswählen → Ausführen → Zugriff erlauben.
  *    Das Script legt die Tabelle "Mysterious Worlds – Reservierungen" mit den Blättern
- *    "Reservierungen", "Warteliste" und "Einstellungen" selbst an (Link steht im Ausführungsprotokoll).
+ *    "Reservierungen", "Warteliste", "Absagen" und "Einstellungen" selbst an (Link steht im Ausführungsprotokoll).
  * 3. Bereitstellen → Neue Bereitstellung → Typ "Web-App".
  *    Ausführen als: Ich · Zugriff: Jeder → Bereitstellen.
  *    Die Web-App-URL (endet auf /exec) kommt in die Reservierungsseite.
  *
  * Update von einer älteren Version: Code ersetzen, speichern, "setup" EINMAL ausführen
- * (ergänzt neue Spalten, das Blatt "Warteliste" und die Einlass-PIN, löscht nichts),
+ * (ergänzt neue Spalten, die Blätter "Warteliste" und "Absagen" sowie die PINs, löscht nichts),
  * dann Bereitstellen → Bereitstellungen verwalten → Bearbeiten → Neue Version → Bereitstellen.
  *
  * Im Alltag (geht auch in der Google-Tabellen-App):
  * - Mails gehen nur an Gäste. Hinweise fürs Team (z. B. Mail fehlgeschlagen, gleicher Name) stehen in der Spalte „Team-Hinweis“.
  * - Reservierung öffnen/schließen, Plätze, Beginn, Einlass, Ort, Antwortadresse, Warteliste
  *   und Einlass-PIN im Blatt "Einstellungen" ändern. Wirkt sofort, ohne neue Bereitstellung.
+ * - Probenabsagen der Mitwirkenden (aus dem Probenplan) stehen im Blatt "Absagen".
+ *   Übersicht im Probenplan unter …/probenplan/#leitung mit der Leitungs-PIN.
  * - Stornieren von Hand: in "Reservierungen" die Spalte Status auf "storniert" setzen
  *   (oder die Zahl bei Plätze verkleinern). Freie Plätze gehen automatisch an die Warteliste.
  */
@@ -31,10 +33,11 @@ const NIGHTS = [
 const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
 const KARTE = "https://jonahweh.github.io/Mysterious-Worlds/karte/";
 const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
-const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste";
+const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste", ABS = "Absagen";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am",
   "Angekommen", "Angekommen um", "Ursprünglich", "Quelle", "Team-Hinweis"];
 const WCOLS = ["Eingang", "ID", "Abend", "Plätze", "Name", "E-Mail", "Status", "Code", "Token", "Geändert am", "Hinweis"];
+const ACOLS = ["Eingang", "ID", "Probe", "Name", "Rolle(n)", "Art", "Uhrzeit", "Grund", "Status", "Token", "Geändert am"];
 const C = { eingang: 1, code: 2, abend: 3, plaetze: 4, name: 5, email: 6, hinweis: 7, status: 8, token: 9, storniert: 10, da: 11, daUm: 12, orig: 13, quelle: 14, team: 15 };
 const W = { eingang: 1, id: 2, abend: 3, plaetze: 4, name: 5, email: 6, status: 7, code: 8, token: 9, geaendert: 10 };
 
@@ -74,6 +77,15 @@ function setup() {
   w.getRange("A:A").setNumberFormat("dd.mm.yyyy hh:mm");
   w.getRange("C2:C").setNumberFormat("@");
   w.getRange("G2:G").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["wartend", "nachgerückt", "ausgetragen", "erledigt"], true).build());
+  // Absagen (Probenplan)
+  let ab = ss.getSheetByName(ABS);
+  if (!ab) ab = ss.insertSheet(ABS);
+  ensureHeader_(ab, ACOLS);
+  ab.setFrozenRows(1);
+  ab.getRange("A:A").setNumberFormat("dd.mm.yyyy hh:mm");
+  ab.getRange("C2:C").setNumberFormat("@");
+  ab.getRange("G2:G").setNumberFormat("@");
+  ab.getRange("I2:I").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["aktiv", "zurückgezogen"], true).build());
   // Einstellungen
   let s = ss.getSheetByName(SET);
   if (!s) s = ss.insertSheet(SET);
@@ -93,6 +105,8 @@ function setup() {
   ensureSetting_(s, "Freihaltezeit (Minuten vor Beginn)", 15, "Bis dahin bleiben reservierte Plätze reserviert; steht in Mail, Eintrittskarte und Reservierungsseite");
   ensureSetting_(s, "Warteliste aktiv", true, "Ist ein Abend voll, können sich Gäste eintragen und rücken automatisch nach", true);
   ensureSetting_(s, "Einlass-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Einlass-Seite …/einlass/ – nur an das Einlass-Team geben");
+  ensureSetting_(s, "Leitungs-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Absagen-Übersicht im Probenplan (…/probenplan/#leitung) – nur für die Leitung");
+  ensureSetting_(s, "Absagen möglich", true, "Mitwirkende können sich im Probenplan von Proben abmelden", true);
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
     `=SUMIFS(${RES}!D:D,${RES}!C:C,"${n.id}",${RES}!H:H,"aktiv")`, "wird automatisch berechnet"));
   ensureSetting_(s, "Auf der Warteliste (Plätze)", `=SUMIFS(${WL}!D:D,${WL}!G:G,"wartend")`, "wird automatisch berechnet");
@@ -101,7 +115,7 @@ function setup() {
   s.setColumnWidth(1, 230); s.setColumnWidth(2, 260); s.setColumnWidth(3, 420);
   try { ss.setActiveSheet(s); } catch (e) {}
   console.log("Fertig! Deine Tabelle: " + ss.getUrl());
-  console.log("Einlass-PIN: " + settings_().pin + " (steht auch im Blatt „Einstellungen“)");
+  console.log("Einlass-PIN: " + settings_().pin + " · Leitungs-PIN: " + settings_().leitPin + " (stehen auch im Blatt „Einstellungen“)");
 }
 function ensureHeader_(sh, cols) {
   const lastCol = Math.max(sh.getLastColumn(), 1);
@@ -140,7 +154,9 @@ function settings_() {
     notifyStorno: m["Mail bei Stornierung"] !== false,
     warteliste: m["Warteliste aktiv"] !== false,
     freihalten: Math.max(0, Number(m["Freihaltezeit (Minuten vor Beginn)"]) || 15),
-    pin: String(m["Einlass-PIN"] === undefined ? "" : m["Einlass-PIN"]).trim()
+    pin: String(m["Einlass-PIN"] === undefined ? "" : m["Einlass-PIN"]).trim(),
+    leitPin: String(m["Leitungs-PIN"] === undefined ? "" : m["Leitungs-PIN"]).trim(),
+    absagen: m["Absagen möglich"] !== false
   };
 }
 const nightId_ = d => (d instanceof Date) ? Utilities.formatDate(d, "Europe/Berlin", "yyyy-MM-dd") : String(d).slice(0, 10);
@@ -296,7 +312,8 @@ function doPost(e) {
   if (d.website) return out_({ ok: true, code: "MW-OK", id: "W-OK" }); // Honeypot gegen Spam-Bots
   const a = d.action || "reserve";
   const fn = { reserve: reserve_, waitlist: waitlist_, cancel: cancel_, lookup: lookup_, leave: leave_,
-    admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_, admin_find: adminFind_ }[a];
+    admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_, admin_find: adminFind_,
+    absence_add: absenceAdd_, absence_mine: absenceMine_, absence_cancel: absenceCancel_, absence_list: absenceList_ }[a];
   if (!fn) return out_({ ok: false, error: "Unbekannte Aktion." });
   return out_(fn(d));
 }
@@ -605,4 +622,79 @@ function adminFind_(d) {
   const n = nightOf_(r.abend);
   return { ok: true, found: true, guest: { code: r.code, name: r.name, abend: r.abend, kurz: n ? n.kurz : r.abend, label: n ? n.label : r.abend,
     plaetze: r.plaetze, da: Math.min(r.da, r.plaetze), status: r.status, hinweis: r.hinweis, quelle: r.quelle, orig: r.orig } };
+}
+
+
+/* ---------- Probenabsagen (aus dem Probenplan) ---------- */
+// Keine Mails: Mitwirkende sehen ihre Absagen im Probenplan, die Leitung in der Übersicht (#leitung) und im Blatt „Absagen“.
+const ART_ = { fehlt: "fehlt", spaeter: "kommt später", frueher: "geht früher" };
+function absRows_() {
+  const sh = book_().getSheetByName(ABS);
+  if (!sh) throw new Error("Blatt „Absagen“ fehlt: bitte einmal setup ausführen.");
+  const v = sh.getDataRange().getValues();
+  return { sh: sh, rows: v.slice(1).map((r, i) => ({
+    row: i + 2, eingang: r[0], id: String(r[1]), probe: nightId_(r[2]), name: String(r[3]), rollen: String(r[4] || ""),
+    art: String(r[5] || ""), zeit: r[6] instanceof Date ? Utilities.formatDate(r[6], "Europe/Berlin", "HH:mm") : String(r[6] || ""),
+    grund: String(r[7] || ""), status: String(r[8]), token: String(r[9])
+  })).filter(r => r.id) };
+}
+const absOut_ = r => ({ id: r.id, probe: r.probe, art: Object.keys(ART_).find(k => ART_[k] === r.art) || "fehlt", zeit: r.zeit, status: r.status });
+function absenceAdd_(d) {
+  const s = settings_();
+  if (!s.absagen) return { ok: false, error: "Absagen über den Probenplan sind gerade ausgeschaltet. Bitte melde dich direkt bei der Leitung." };
+  const name = String(d.name || "").trim().replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 60) return { ok: false, error: "Bitte gib deinen Namen an." };
+  const rollen = String(d.rollen || "").trim().slice(0, 200);
+  const art = ART_[d.art] ? d.art : "fehlt";
+  const zeit = art === "fehlt" ? "" : String(d.zeit || "").trim();
+  if (art !== "fehlt" && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(zeit)) return { ok: false, error: "Bitte gib eine Uhrzeit an (z. B. 14:30)." };
+  const grund = String(d.grund || "").trim().slice(0, 200);
+  const today = today_();
+  const proben = [...new Set((Array.isArray(d.proben) ? d.proben : []).map(String))].filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x) && x >= today).sort();
+  if (!proben.length) return { ok: false, error: "Bitte wähle mindestens eine Probe aus, die noch kommt." };
+  if (proben.length > 40) return { ok: false, error: "Zu viele Termine auf einmal." };
+  return locked_(() => {
+    const A = absRows_(), key = norm_(name), out = [];
+    proben.forEach(p => {
+      const old = A.rows.find(r => r.status === "aktiv" && r.probe === p && norm_(r.name) === key);
+      if (old) { // gleiche Person, gleiche Probe: Eintrag aktualisieren statt doppelt
+        A.sh.getRange(old.row, 5, 1, 4).setValues([[rollen, ART_[art], "'" + zeit, grund]]);
+        A.sh.getRange(old.row, 11).setValue(new Date());
+        out.push({ id: old.id, token: old.token, probe: p, art: art, zeit: zeit, status: "aktiv" });
+        return;
+      }
+      let id; do { id = rand_("A-", 6); } while (A.rows.some(r => r.id === id) || out.some(o => o.id === id));
+      const token = token_();
+      A.sh.appendRow([new Date(), id, "'" + p, name, rollen, ART_[art], "'" + zeit, grund, "aktiv", token, ""]);
+      out.push({ id: id, token: token, probe: p, art: art, zeit: zeit, status: "aktiv" });
+    });
+    return { ok: true, items: out };
+  });
+}
+// Eigene Absagen abgleichen (z. B. wenn die Leitung eine im Blatt gelöscht oder zurückgesetzt hat)
+function absenceMine_(d) {
+  const want = (Array.isArray(d.items) ? d.items : []).slice(0, 200);
+  const rows = absRows_().rows;
+  return { ok: true, items: want.map(w => { const r = rows.find(x => x.id === String(w.id) && x.token === String(w.token));
+    return r ? absOut_(r) : { id: String(w.id), status: "gelöscht" }; }) };
+}
+function absenceCancel_(d) {
+  return locked_(() => {
+    const A = absRows_(), r = A.rows.find(x => x.id === String(d.id || "") && x.token === String(d.token || ""));
+    if (!r) return { ok: false, error: "Absage nicht gefunden." };
+    A.sh.getRange(r.row, 9).setValue("zurückgezogen");
+    A.sh.getRange(r.row, 11).setValue(new Date());
+    return { ok: true, id: r.id };
+  });
+}
+function absenceList_(d) {
+  const s = settings_();
+  if (!s.leitPin) return { ok: false, error: "Im Blatt „Einstellungen“ ist keine Leitungs-PIN gesetzt (setup ausführen)." };
+  const p = pinOk_({ pin: s.leitPin }, d.pin);
+  if (!p.ok) return p;
+  const von = String(d.von || today_());
+  const list = absRows_().rows.filter(r => r.status === "aktiv" && r.probe >= von)
+    .map(r => ({ id: r.id, probe: r.probe, name: r.name, rollen: r.rollen, art: absOut_(r).art, zeit: r.zeit, grund: r.grund }))
+    .sort((a, b) => a.probe.localeCompare(b.probe) || a.name.localeCompare(b.name, "de"));
+  return { ok: true, von: von, items: list };
 }

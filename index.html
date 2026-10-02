@@ -20,7 +20,7 @@
    Alte Probenplan-Links mit Sprungmarke (#rolle-…, #infos, #mein-plan, #weltenkarte, #welt-…) landen weiter im Probenplan. */
 (function(){
   var h = location.hash || "";
-  var plan = /^#(rolle-|welt-|infos$|mein-plan$|weltenkarte$|karte$)/.test(h);
+  var plan = /^#(rolle-|welt-|infos$|mein-plan$|weltenkarte$|karte$|leitung$)/.test(h);
   location.replace((plan ? "probenplan/" : "reservierung/") + location.search + h);
 })();
 </script>

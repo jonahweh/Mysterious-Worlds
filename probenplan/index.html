@@ -376,6 +376,56 @@ h1.wiggle{animation:wiggle .28s ease}
 @media (prefers-reduced-motion:reduce){.pulse,.mapstar,.isle .art .tw,.world.w-secret .lt,.world.w-secret .rope,.toast,h1.wiggle{animation:none!important}}
 @media print{.toast,.spark,#view-karte{display:none!important}}
 
+/* Probenabsagen */
+.absrow{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.absbtn{border:1.5px dashed var(--ausfall);background:transparent;color:var(--ausfall);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px;cursor:pointer}
+.absbtn:hover{background:color-mix(in srgb,var(--ausfall) 10%,transparent)}
+.absmine{font-size:13px;font-weight:600;color:var(--ink);background:color-mix(in srgb,var(--verschoben) 16%,transparent);border-left:3px solid var(--verschoben);border-radius:4px;padding:4px 10px}
+.absundo{border:none;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0;font-size:13px;font-weight:600}
+.absundo.armed{color:var(--ausfall)}
+.absdlg{border:none;border-radius:14px;padding:0;width:min(520px,calc(100% - 24px));max-height:calc(100dvh - 24px);background:var(--surface);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.absdlg::backdrop{background:rgba(15,10,30,.55)}
+.absdlg form{display:grid;gap:14px;padding:20px}
+.absdlg h2{font-family:var(--display);font-weight:800;font-size:28px;text-transform:uppercase;line-height:1}
+.absdlg label{display:grid;gap:4px;font-weight:600;font-size:14px}
+.absdlg label span{font-weight:400;color:var(--muted)}
+.absdlg input[type=text],.absdlg input[type=time],.absdlg input:not([type]){font:inherit;font-size:16px;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+.absdlg input:focus{outline:none;border-color:var(--accent)}
+.absdlg fieldset{border:1px solid var(--line);border-radius:10px;padding:8px 12px 12px;margin:0;display:grid;gap:6px}
+.absdlg legend{font-weight:600;font-size:14px;padding:0 4px}
+.absdates{display:grid;gap:2px;max-height:220px;overflow:auto}
+.absdates label,.absart label{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:14px;padding:5px 2px;cursor:pointer}
+.absdates input,.absart input{width:18px;height:18px;margin:2px 0 0;accent-color:var(--accent);flex:none}
+.absdates b{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.absart{display:grid;gap:2px}
+.abszeit{display:flex;gap:10px;align-items:center;padding-left:28px}
+.abszeit input{width:auto!important}
+.absdlg .err{color:var(--ausfall);font-weight:600;font-size:14px}
+.absact{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.absnote{font-size:12px;color:var(--muted);margin:0}
+.abstoast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);font-weight:600;padding:10px 16px;border-radius:10px;max-width:calc(100% - 32px)}
+/* Leitung */
+.leit{display:grid;gap:14px}
+.leit-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.leit-head h2{font-family:var(--display);font-weight:800;font-size:32px;text-transform:uppercase}
+.leit-pin{display:grid;gap:10px;max-width:340px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.leit-pin input{font:inherit;font-size:22px;letter-spacing:.2em;text-align:center;background:var(--bg);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:10px}
+.leit-card{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--ausfall);border-radius:8px;padding:12px 14px;display:grid;gap:8px}
+.leit-card h3{font-size:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:baseline}
+.leit-card h3 .mono{font-family:var(--mono);font-size:13px;color:var(--muted);font-weight:500}
+#leit-body{display:grid;gap:10px}
+.leit-card .cnt{margin-left:auto;font-family:var(--display);font-weight:800;font-size:20px;color:var(--ausfall);white-space:nowrap}
+.leit-what{font-size:13px;color:var(--muted)}
+.leit-row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;border-top:1px solid var(--line);padding-top:6px;font-size:14px}
+.leit-row b{font-size:15px}
+.leit-row .art{font-weight:700;color:var(--ausfall);text-align:right;white-space:nowrap}
+.leit-row .art.teil{color:var(--verschoben)}
+.leit-row .sub{grid-column:1/-1;color:var(--muted);font-size:13px}
+.leit-row .off{font-size:12px;color:var(--muted);font-style:italic}
+.leit-free{font-size:13px;color:var(--muted)}
+footer a{color:var(--muted)}
+@media print{.absrow,.absdlg,.abstoast{display:none!important}}
+
 /* 11 · Druckansicht */
 @media print{
   :root:not(#p){--bg:#fff;--surface:#fff;--ink:#000;--muted:#333;--line:#999;--accent:#000;--accent-soft:#eee;
@@ -517,10 +567,50 @@ h1.wiggle{animation:wiggle .28s ease}
     </div>
   </section>
 
-  <footer>Mysterious Worlds · Probenplan. Aus Datenschutzgründen stehen hier nur Rollennamen, keine Namen von Mitwirkenden.</footer>
+  <section id="view-leitung" hidden aria-labelledby="leit-h">
+    <div class="leit">
+      <div class="leit-head"><h2 id="leit-h">Absagen · Leitung</h2>
+        <span><button class="linkbtn" type="button" id="leit-reload" hidden>Aktualisieren</button> <button class="linkbtn" type="button" id="leit-out" hidden>Abmelden</button> <button class="linkbtn" type="button" data-goto="gesamt">Zum Plan</button></span></div>
+      <form class="leit-pin" id="leit-pin">
+        <b>Leitungs-PIN</b>
+        <span class="note">Steht in der Reservierungs-Tabelle im Blatt „Einstellungen“.</span>
+        <input id="leit-pinval" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Leitungs-PIN">
+        <span class="err" id="leit-err" role="alert" style="color:var(--ausfall);font-weight:600"></span>
+        <button class="btn" type="submit">Absagen anzeigen</button>
+      </form>
+      <div id="leit-body" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <footer>Mysterious Worlds · Probenplan. Aus Datenschutzgründen stehen hier nur Rollennamen, keine Namen von Mitwirkenden. · <a href="#leitung">Leitung</a></footer>
 </div>
 
+<dialog class="absdlg" id="absdlg" aria-labelledby="abs-h">
+  <form id="absform" novalidate>
+    <h2 id="abs-h">Ich kann nicht</h2>
+    <p class="absnote" style="font-size:14px">Deine Absage geht direkt an die Leitung. Die anderen sehen sie nicht.</p>
+    <label>Dein Name<input type="text" id="abs-name" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname"></label>
+    <p class="absnote" id="abs-roles"></p>
+    <fieldset><legend>Welche Proben?</legend><div class="absdates" id="abs-dates"></div></fieldset>
+    <fieldset><legend>Wie?</legend>
+      <div class="absart" id="abs-art">
+        <label><input type="radio" name="art" value="fehlt" checked>Ich fehle ganz</label>
+        <label><input type="radio" name="art" value="spaeter">Ich komme später</label>
+        <label><input type="radio" name="art" value="frueher">Ich muss früher gehen</label>
+      </div>
+      <div class="abszeit" id="abs-zeitbox" hidden><span id="abs-zeitlbl">ab</span><input type="time" id="abs-zeit" step="300" aria-label="Uhrzeit"><span>Uhr</span></div>
+      <p class="absnote" id="abs-zeithint" hidden style="padding-left:28px">Gilt für alle ausgewählten Proben.</p>
+    </fieldset>
+    <label>Grund <span>(freiwillig, z. B. Klausur, Familienfeier)</span><input type="text" id="abs-grund" maxlength="200"></label>
+    <p class="absnote">Bitte keine Gesundheitsdetails, „krank“ reicht völlig. Gespeichert wird in der Google-Tabelle des Musical-Teams, sehen kann es nur die Leitung. Nach der letzten Aufführung wird alles gelöscht.</p>
+    <div class="err" id="abs-err" role="alert" hidden></div>
+    <div class="absact"><button type="button" class="btn ghost" id="abs-cancel">Abbrechen</button><button type="submit" class="btn" id="abs-send">Absage senden</button></div>
+  </form>
+</dialog>
+
 <script>
+/* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
+const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
 const STAND = "2026-09-30";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
@@ -703,7 +793,8 @@ function renderNext(){
     const what = !mine ? "Für dich stehen gerade keine weiteren Proben im Plan."
       : mine === nextEntry ? "Das ist auch deine nächste Probe."
       : `<span><b>${WD[parse(mine.d).getDay()]} ${dm(mine.d)}, ${timeOf(mine)}</b> · ${esc(shortWhat(mine))}</span>`;
-    html += `<div class="forme">${who}${what}<button class="linkbtn" type="button" data-goto="rolle">Mein Probenplan</button></div>`;
+    const absNext = mine ? absRowHTML(mine) : "";
+    html += `<div class="forme">${who}${what}<button class="linkbtn" type="button" data-goto="rolle">Mein Probenplan</button>${absNext}</div>`;
   } else {
     html += `<div class="forme"><span>Tipp: Wähle deine Rolle, dann steht hier auch deine persönliche nächste Probe.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></div>`;
   }
@@ -734,6 +825,7 @@ function entryHTML(e, me){
       ${ch.map(a=>`<div class="change-inline">${esc(a.titel)}${a.text?": "+esc(a.text):""}</div>`).join("")}
       ${roles}
       ${e.note?`<div class="note">${esc(e.note)}</div>`:""}
+      ${me ? absRowHTML(e) : ""}
     </div></article>`;
 }
 
@@ -863,7 +955,7 @@ function renderRole(){
   const nextMine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
   sum.innerHTML = `<b>${esc(roleNames(selected))}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
     (nextMine ? ` Deine nächste Probe: <b>${WD[parse(nextMine.d).getDay()]} ${dm(nextMine.d)}, ${timeOf(nextMine)}</b>.` : "") +
-    ` Platzhalter für neue Szenen stehen mit drin, bis ihre Besetzung feststeht.`;
+    ` Platzhalter für neue Szenen stehen mit drin, bis ihre Besetzung feststeht. Kannst du mal nicht? Tipp bei der Probe auf <b>„Ich kann nicht“</b>.`;
   hint.innerHTML = `Direktlink zu deinem Plan: an den Link der Seite <code>#rolle-${[...selected].join(".")}</code> anhängen.`;
   renderList(mine, out, selected);
 }
@@ -872,7 +964,8 @@ function renderRole(){
 const tabs = [...document.querySelectorAll(".tab")];
 function showView(v){
   tabs.forEach(t => { const on = t.dataset.view === v; t.setAttribute("aria-selected", String(on)); t.tabIndex = on ? 0 : -1; });
-  ["gesamt","rolle","karte","infos"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
+  ["gesamt","rolle","karte","infos","leitung"].forEach(k => document.getElementById("view-"+k).hidden = k !== v);
+  if(v === "leitung") openLeitung();
 }
 tabs.forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
 document.querySelector("nav.menu").addEventListener("keydown", ev => {
@@ -1226,9 +1319,170 @@ function applyHash(){
   }
   if(h.startsWith("welt-")){ const k = h.slice(5); if(WORLDS.some(w=>w.k===k) || (k==="geheim" && secretFound)){ openWorld(k); return; } }
   if(h === "weltenkarte" || h === "karte"){ showView("karte"); return; }
+  if(h === "leitung"){ showView("leitung"); document.getElementById("view-leitung").scrollIntoView(); return; }
   if(h === "infos") showView("infos");
   else if(h === "mein-plan") showView("rolle");
 }
+/* ===== Probenabsagen ===== */
+const ABS_TYPES = ["fr","di","mi","pl"];
+const ART_TXT = { fehlt:"fehlt", spaeter:"kommt später", frueher:"geht früher" };
+const lsGet = (k, d) => { try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } };
+const lsSet = (k, v) => { try{ v === null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+let myAbs = lsGet("mw-absagen", []).filter(a => a && a.id && a.probe);
+const saveAbs = () => lsSet("mw-absagen", myAbs);
+const absFor = d => myAbs.find(a => a.probe === d && a.status === "aktiv");
+const canAbsent = e => ABS_TYPES.includes(e.typ) && !isOver(e) && !isCancelled(e.d);
+async function api(body){
+  const r = await fetch(API, { method:"POST", body: JSON.stringify(body) });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+function absToast(msg){
+  const t = document.createElement("div"); t.className = "abstoast"; t.setAttribute("role","status"); t.textContent = msg;
+  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+}
+const artLine = a => a.art === "fehlt" ? "Du hast abgesagt" : a.art === "spaeter" ? `Du kommst später (ab ${a.zeit} Uhr)` : `Du gehst früher (um ${a.zeit} Uhr)`;
+function absRowHTML(e){
+  if(!canAbsent(e)) return "";
+  const a = absFor(e.d);
+  if(a) return `<div class="absrow"><span class="absmine">✓ ${esc(artLine(a))}</span><button type="button" class="absundo" data-abs-undo="${esc(a.id)}">Zurückziehen</button><button type="button" class="absundo" data-abs="${e.d}">Ändern</button></div>`;
+  return `<div class="absrow"><button type="button" class="absbtn" data-abs="${e.d}">Ich kann nicht</button></div>`;
+}
+function rerenderAbs(){ renderRole(); }
+
+const dlg = document.getElementById("absdlg"), $a = id => document.getElementById(id);
+let dlgFor = null;
+function openAbsence(d){
+  dlgFor = d;
+  $a("abs-name").value = lsGet("mw-name", "");
+  $a("abs-roles").innerHTML = selected.size ? `Für: <b>${esc(roleNames(selected))}</b> (änderst du oben bei „Welche Rolle(n) spielst du?“)` : "";
+  const hits = hitsOf(selected);
+  const list = PLAN.filter(e => canAbsent(e) && (hits(e) || e.typ === "pl" || e.d === d));
+  $a("abs-dates").innerHTML = list.map(e => `<label><input type="checkbox" value="${e.d}" ${e.d === d ? "checked" : ""}><span><b>${WD[parse(e.d).getDay()]} ${dm(e.d)}</b> · ${esc(TYPE[e.typ])}${shortWhat(e) ? " · " + esc(shortWhat(e)) : ""}${absFor(e.d) ? " <i>(schon abgesagt)</i>" : ""}</span></label>`).join("");
+  const cur = absFor(d);
+  dlg.querySelectorAll('input[name=art]').forEach(r => r.checked = r.value === (cur ? cur.art : "fehlt"));
+  $a("abs-zeit").value = cur && cur.zeit ? cur.zeit : "";
+  $a("abs-grund").value = "";
+  $a("abs-err").hidden = true;
+  $a("abs-send").disabled = false; $a("abs-send").textContent = "Absage senden";
+  updArt();
+  if(dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
+  setTimeout(() => (!$a("abs-name").value ? $a("abs-name") : $a("abs-send")).focus(), 30);
+}
+function updArt(){
+  const art = dlg.querySelector('input[name=art]:checked').value, e = PLAN.find(x => x.d === dlgFor);
+  $a("abs-zeitbox").hidden = art === "fehlt";
+  $a("abs-zeithint").hidden = art === "fehlt" || $a("abs-dates").querySelectorAll("input:checked").length < 2;
+  $a("abs-zeitlbl").textContent = art === "spaeter" ? "Ich komme um" : "Ich gehe um";
+  if(art !== "fehlt" && !$a("abs-zeit").value && e){
+    const [s, en] = slotOf(e), add = (hm, m) => { const [h, mi] = hm.split(":").map(Number), x = h * 60 + mi + m; return String(Math.floor(x / 60)).padStart(2,"0") + ":" + String(x % 60).padStart(2,"0"); };
+    $a("abs-zeit").value = art === "spaeter" ? add(s, 30) : add(en, -30);
+  }
+}
+$a("abs-dates").addEventListener("change", updArt);
+$a("abs-art").addEventListener("change", () => { $a("abs-zeit").value = ""; updArt(); });
+const closeDlg = () => { if(dlg.close) dlg.close(); else dlg.removeAttribute("open"); };
+$a("abs-cancel").onclick = closeDlg;
+dlg.addEventListener("click", ev => { if(ev.target === dlg) closeDlg(); });
+$a("absform").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const err = m => { $a("abs-err").textContent = m; $a("abs-err").hidden = false; };
+  const name = $a("abs-name").value.trim().replace(/\s+/g, " ");
+  const proben = [...$a("abs-dates").querySelectorAll("input:checked")].map(i => i.value);
+  const art = dlg.querySelector('input[name=art]:checked').value, zeit = $a("abs-zeit").value;
+  if(name.length < 2) return err("Bitte gib deinen Namen an, damit die Leitung weiß, wer fehlt.");
+  if(!proben.length) return err("Bitte wähle mindestens eine Probe aus.");
+  if(art !== "fehlt" && !zeit) return err("Bitte gib die Uhrzeit an.");
+  $a("abs-err").hidden = true; $a("abs-send").disabled = true; $a("abs-send").textContent = "Wird gesendet …";
+  try{
+    const r = await api({ action:"absence_add", name, rollen: roleNames(selected), proben, art, zeit, grund: $a("abs-grund").value.trim() });
+    if(!r.ok) throw new Error(r.error || "Fehler");
+    lsSet("mw-name", name);
+    r.items.forEach(it => { myAbs = myAbs.filter(a => a.id !== it.id && !(a.probe === it.probe && a.status === "aktiv")); myAbs.push(it); });
+    saveAbs(); closeDlg(); rerenderAbs();
+    absToast(proben.length === 1 ? "Absage gesendet – danke fürs Bescheidgeben!" : `${proben.length} Absagen gesendet – danke fürs Bescheidgeben!`);
+  }catch(e){
+    $a("abs-send").disabled = false; $a("abs-send").textContent = "Absage senden";
+    err(e.message && !/HTTP|fetch|Failed|Load/i.test(e.message) ? e.message : "Keine Verbindung. Bitte versuch es gleich nochmal oder sag der Leitung direkt Bescheid.");
+  }
+});
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-abs]");
+  if(b){ openAbsence(b.dataset.abs); return; }
+  const u = ev.target.closest("[data-abs-undo]"); if(!u) return;
+  if(!u.classList.contains("armed")){ u.classList.add("armed"); u.textContent = "Wirklich zurückziehen?"; setTimeout(() => { if(u.isConnected){ u.classList.remove("armed"); u.textContent = "Zurückziehen"; } }, 4000); return; }
+  const a = myAbs.find(x => x.id === u.dataset.absUndo); if(!a) return;
+  u.disabled = true; u.textContent = "…";
+  try{
+    const r = await api({ action:"absence_cancel", id: a.id, token: a.token });
+    if(!r.ok && !/nicht gefunden/.test(r.error || "")) throw new Error(r.error);
+    myAbs = myAbs.filter(x => x.id !== a.id); saveAbs(); rerenderAbs(); absToast("Absage zurückgezogen – schön, dass du kommst!");
+  }catch(e){ u.disabled = false; u.textContent = "Zurückziehen"; absToast("Nicht geklappt – keine Verbindung."); }
+});
+// Beim Öffnen abgleichen: vorbei, zurückgezogen oder von der Leitung gelöscht → aus der Anzeige nehmen
+(async function syncAbs(){
+  myAbs = myAbs.filter(a => a.probe >= todayISO());
+  saveAbs();
+  if(!myAbs.length) return;
+  try{
+    const r = await api({ action:"absence_mine", items: myAbs.map(a => ({ id:a.id, token:a.token })) });
+    if(!r.ok) return;
+    myAbs = myAbs.map(a => { const n = r.items.find(x => x.id === a.id); return n && n.status === "aktiv" ? { ...a, ...n } : null; }).filter(Boolean);
+    saveAbs(); rerenderAbs();
+  }catch(e){}
+})();
+function todayISO(){ return today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0"); }
+
+/* ===== Leitung: Übersicht aller Absagen (nur mit Leitungs-PIN) ===== */
+let leitPin = lsGet("mw-leit-pin", ""), leitBusy = false;
+function openLeitung(){
+  $a("leit-pin").hidden = !!leitPin; $a("leit-out").hidden = !leitPin; $a("leit-reload").hidden = !leitPin;
+  if(leitPin) loadLeitung(); else { $a("leit-body").innerHTML = ""; setTimeout(() => $a("leit-pinval").focus(), 30); }
+}
+$a("leit-pin").addEventListener("submit", ev => { ev.preventDefault(); const v = $a("leit-pinval").value.trim(); if(!v) return; leitPin = v; loadLeitung(true); });
+$a("leit-out").onclick = () => { leitPin = ""; lsSet("mw-leit-pin", null); $a("leit-pinval").value = ""; openLeitung(); };
+$a("leit-reload").onclick = () => loadLeitung();
+async function loadLeitung(fromPin){
+  if(leitBusy) return; leitBusy = true;
+  $a("leit-err").textContent = "";
+  $a("leit-body").innerHTML = '<p class="note">Lade Absagen …</p>';
+  try{
+    const r = await api({ action:"absence_list", pin: leitPin, von: todayISO() });
+    if(!r.ok){
+      if(r.badPin || r.locked){ leitPin = ""; lsSet("mw-leit-pin", null); openLeitung(); $a("leit-err").textContent = r.error; return; }
+      $a("leit-body").innerHTML = `<p class="note">${esc(r.error || "Fehler beim Laden.")}</p>`; return;
+    }
+    lsSet("mw-leit-pin", leitPin); $a("leit-pin").hidden = true; $a("leit-out").hidden = false; $a("leit-reload").hidden = false;
+    renderLeitung(r.items);
+  }catch(e){
+    $a("leit-body").innerHTML = '<p class="note">Keine Verbindung. Bitte später nochmal „Aktualisieren“.</p>';
+    if(fromPin){ $a("leit-err").textContent = "Keine Verbindung."; }
+  }finally{ leitBusy = false; }
+}
+function renderLeitung(items){
+  const nameToKey = {}; Object.entries(ROLES).forEach(([k, n]) => nameToKey[n.toLowerCase()] = k);
+  const keysOf = s => String(s || "").split(",").map(x => nameToKey[x.trim().toLowerCase()]).filter(Boolean);
+  const upcoming = PLAN.filter(e => ABS_TYPES.includes(e.typ) && !isOver(e));
+  const cards = [], free = [];
+  upcoming.forEach(e => {
+    const list = items.filter(a => a.probe === e.d);
+    if(!list.length){ if(!isCancelled(e.d)) free.push(`${WD[parse(e.d).getDay()]} ${dm(e.d)}`); return; }
+    const rows = list.map(a => {
+      const ks = keysOf(a.rollen), inIt = !ks.length || e.typ === "pl" || ks.some(k => e.roles.includes(k));
+      const art = a.art === "fehlt" ? "fehlt" : a.art === "spaeter" ? `ab ${esc(a.zeit)}` : `bis ${esc(a.zeit)}`;
+      return `<div class="leit-row"><b>${esc(a.name)}</b><span class="art${a.art === "fehlt" ? "" : " teil"}">${art}</span>
+        <span class="sub">${esc(a.rollen || "Rolle unbekannt")}${a.grund ? " · " + esc(a.grund) : ""}${inIt ? "" : ' <span class="off">(ist für diese Probe nicht eingeplant)</span>'}</span></div>`;
+    }).join("");
+    const full = list.filter(a => a.art === "fehlt").length;
+    cards.push(`<div class="leit-card"><h3>${WD[parse(e.d).getDay()]} ${dm(e.d)} <span class="mono">${TYPE[e.typ]} · ${timeOf(e)}</span>${isCancelled(e.d) ? ' <span class="mono" style="color:var(--ausfall)">fällt aus</span>' : ""}<span class="cnt">${[full ? full + " fehlt" : "", list.length > full ? (list.length - full) + " teilweise" : ""].filter(Boolean).join(" · ")}</span></h3>
+      <div class="leit-what">${esc(shortWhat(e) || "")}</div>${rows}</div>`);
+  });
+  const known = new Set(upcoming.map(e => e.d)), extra = items.filter(a => !known.has(a.probe));
+  if(extra.length) cards.push(`<div class="leit-card"><h3>Andere Termine</h3>${extra.map(a => `<div class="leit-row"><b>${esc(a.name)}</b><span class="art">${dm(a.probe)}</span><span class="sub">${esc(ART_TXT[a.art])}${a.zeit ? " " + esc(a.zeit) : ""} · ${esc(a.rollen)}${a.grund ? " · " + esc(a.grund) : ""}</span></div>`).join("")}</div>`);
+  $a("leit-body").innerHTML = `<p class="note">${items.length ? `${items.length} ${items.length === 1 ? "Absage" : "Absagen"} für kommende Proben. Alles steht auch im Blatt „Absagen“ der Tabelle.` : "Für die kommenden Proben hat sich niemand abgemeldet. 🎭"} Stand ${new Date().toLocaleTimeString("de-DE", {hour:"2-digit", minute:"2-digit"})}.</p>
+    ${cards.join("")}${free.length ? `<p class="leit-free"><b>Ohne Absagen:</b> ${free.join(" · ")}</p>` : ""}`;
+}
+
 renderMap();
 renderRole();
 applyHash();
