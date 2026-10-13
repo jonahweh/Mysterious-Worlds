@@ -496,7 +496,7 @@ footer a{color:var(--muted)}
     <div class="legend">
       <span><i class="sw" style="background:var(--fr)"></i>Fr 13:55–15:25 Szenenprobe</span>
       <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
-      <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–16:10 Chor &amp; Solisten</span>
+      <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–16:10 Chor mit Frau Geyer</span>
       <span><i class="sw" style="background:var(--pl)"></i>Platzhalter (Szene noch offen)</span>
     </div>
     <button class="btn ghost" type="button" data-print>Plan drucken</button>
@@ -543,7 +543,7 @@ footer a{color:var(--muted)}
         <ul>
           <li><b>Freitag</b> <span class="mono">13:55–15:25</span> · Szenenprobe (Regeltermin)</li>
           <li><b>Dienstag</b> <span class="mono">13:55–15:25</span> · Zusatzprobe, nur wenn im Plan</li>
-          <li><b>Mittwoch</b> <span class="mono">14:40–16:10</span> · Chor &amp; Solisten</li>
+          <li><b>Mittwoch</b> <span class="mono">14:40–16:10</span> · Chor mit Frau Geyer</li>
         </ul>
       </div>
       <div class="info-card">
@@ -562,7 +562,7 @@ footer a{color:var(--muted)}
       </div>
       <div class="info-card">
         <h3>So funktioniert der Plan</h3>
-        <p class="note">Jeder Song wird am Mittwoch vor der Szenenprobe geübt, in der er vorkommt. Szenen ab 14 werden noch geschrieben; ihre Termine sind als Platzhalter reserviert.</p>
+        <p class="note">Die Chorproben am Mittwoch organisiert Frau Geyer: Welche Lieder dran sind und wer kommen soll, sagt sie. Szenen ab 14 werden noch geschrieben; ihre Termine sind als Platzhalter reserviert.</p>
       </div>
     </div>
   </section>
@@ -632,32 +632,32 @@ const G = ["helen","vivian","james","petra"];
 // typ: fr | di | mi | pl | fe
 const PLAN = [
  {d:"2026-10-16",typ:"fr",sz:"Szene 4: Oberzauberer wird informiert · Szene 7: Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","gibbins","gefolge","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
- {d:"2026-10-21",typ:"mi",sz:"",songs:"Mysterious Worlds (Opening + Reprise) · I Say A Little Prayer",roles:["frank","erzaehlerinnen","ensemble","helen","vivian","petra"],note:""},
+ {d:"2026-10-21",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-10-23",typ:"fr",sz:"Opening: Mysterious Worlds · Szene 1: Kessel brauen (mit Reprise)",songs:"Mysterious Worlds, Reprise",roles:["frank","lutzi","erzaehlerinnen","ensemble"],note:""},
  {d:"2026-10-27",typ:"di",sz:"Szene 2: Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:"Kleine Besetzung, daher Dienstag."},
- {d:"2026-10-28",typ:"mi",sz:"",songs:"Once Upon a December (Ausschnitt) · Three Little Birds",roles:["frank","phillip","katze"],note:""},
+ {d:"2026-10-28",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-10-30",typ:"fr",sz:"Szene 3: Franks Turm mit Phillip · Szene 5: Cheshire Katze",songs:"Once Upon a December, Three Little Birds",roles:["frank","lutzi","phillip","katze","erzaehlerinnen"],note:"Phillip ist in beiden Szenen dabei."},
  {d:"2026-11-02",bis:"2026-11-06",typ:"fe",sz:"Herbstferien – keine Proben"},
  {d:"2026-11-10",typ:"di",sz:"Szene 11: Madi und Sigi",songs:"",roles:["phillip","madeleine","sieglinde"],note:"Gereimte Wechselpassagen im Rhythmus proben."},
- {d:"2026-11-11",typ:"mi",sz:"",songs:"Candy Store · Respect · Lied der Balldiva",roles:["rotekoenigin","gefolge","petra","balldiva","ensemble"],note:""},
+ {d:"2026-11-11",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-11-13",typ:"fr",sz:"Szene 6: Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","gefolge","weissekoenigin"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
  {d:"2026-11-17",typ:"di",sz:"Szene 7a: Gibbins soll ausspionieren · Szene 7b: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","phillip"],note:"Phillip nur für den Schluss von Respect."},
  {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – Mittwochsprobe entfällt"},
  {d:"2026-11-20",typ:"fr",sz:"Szene 10, Teil 1: Ankunft im Ballsaal",songs:"Lied der Balldiva, Walzer",roles:[...G,"phillip","balldiva","ballgesellschaft"],note:""},
  {d:"2026-11-24",typ:"di",sz:"Szene 10, Teil 2: Frank & Lutzi auf dem Ball bis Szenenende",songs:"Walzer / Ballmusik",roles:[...G,"phillip","balldiva","ballgesellschaft","frank","lutzi"],note:"Längste Szene, daher zwei Termine."},
- {d:"2026-11-25",typ:"mi",sz:"",songs:"Like a Prayer",roles:["weissekoenigin","ensemble"],note:""},
+ {d:"2026-11-25",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-11-27",typ:"fr",sz:"Szene 8: Wiedersehen mit Phillip & Wanderung",songs:"Like a Prayer",roles:[...G,"phillip","weissekoenigin"],note:"Dunkel-Passage und Lichtwechsel genau proben."},
- {d:"2026-12-02",typ:"mi",sz:"",songs:"Medley Like a Prayer vs. Candy Store · Elephant Love Medley",roles:["weissekoenigin","rotekoenigin","phillip","helen","james"],note:""},
+ {d:"2026-12-02",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-12-04",typ:"fr",sz:"Szene 9: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:[...G,"phillip","weissekoenigin","rotekoenigin","frank"],note:"Frank nur als Stimme/Melodie am Ende."},
  {d:"2026-12-08",typ:"di",sz:"Szene 12: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:["helen","james","petra","vivian"],note:"Petra und Vivian nur am Szenenanfang."},
- {d:"2026-12-09",typ:"mi",sz:"",songs:"Beat It",roles:["ensemble","gang",...G],note:""},
+ {d:"2026-12-09",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-12-11",typ:"fr",sz:"Szene 13: Big big Trouble",songs:"Beat It",roles:[...G,"gang","ensemble"],note:""},
- {d:"2026-12-16",typ:"mi",sz:"",songs:"Songs der Folgeszenen",roles:[],note:"Besetzung folgt, sobald die Szenen feststehen."},
+ {d:"2026-12-16",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2026-12-18",typ:"pl",sz:"Szene 14 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter."},
- {d:"2026-12-23",typ:"mi",sz:"",songs:"Wiederholung: Mysterious Worlds · Beat It",roles:["ensemble","erzaehlerinnen","gang"],note:"Letzter Schultag vor den Ferien."},
+ {d:"2026-12-23",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:"Letzter Schultag vor den Ferien."},
  {d:"2026-12-24",bis:"2027-01-08",typ:"fe",sz:"Weihnachtsferien – keine Proben"},
  {d:"2027-01-12",typ:"pl",sz:"Szene 15 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter, Dienstag 13:55–15:25."},
- {d:"2027-01-13",typ:"mi",sz:"",songs:"Songs der Folgeszenen · Wiederholung aller Songs",roles:[],note:""},
+ {d:"2027-01-13",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
  {d:"2027-01-15",typ:"pl",sz:"Szene 16 (wird noch geschrieben) oder Nachholtermin",songs:"",roles:[],note:"Falls keine weitere Szene kommt: Puffer für ausgefallene Proben."},
  {d:"2027-03-17",typ:"auf",sz:"Aufführung 1",songs:"",roles:[],note:"Uhrzeit und Ort folgen."},
  {d:"2027-03-18",typ:"auf",sz:"Aufführung 2",songs:"",roles:[],note:"Uhrzeit und Ort folgen."}
@@ -698,7 +698,7 @@ const SECRET_WORLD = { k:"geheim", name:"Die Hinterbühne", sub:"Geheime Welt", 
   text:"Seile, Sandsäcke, Requisitenchaos und Licht, das nur ihr seht. Ohne die Welt hinter dem Vorhang gäbe es keine einzige Welt davor. Glückwunsch, du hast sie gefunden!" };
 
 /* ===== Darstellung ===== */
-const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Musikprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
+const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Chorprobe",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
 const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
@@ -809,10 +809,10 @@ function entryHTML(e, me){
   }
   const x = parse(e.d), ch = changesFor(e.d), cancelled = ch.some(a=>a.art==="ausfall");
   const past = isOver(e), isNext = nextEntry && nextEntry.d===e.d;
-  const title = e.sz || "Musikprobe";
+  const title = e.sz || "Chorprobe";
   const roles = e.roles.length
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
-    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : "Besetzung folgt."}</div>`;
+    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : e.typ==="mi" ? "Welche Lieder geprobt werden und wer kommen soll, sagt Frau Geyer." : "Besetzung folgt."}</div>`;
   return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
     ${cancelled?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}
     <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
@@ -846,22 +846,17 @@ function renderList(entries, el, me){
   }).join("") || '<p class="note">Keine Termine.</p>';
 }
 
-/* Songs pro Rolle: aus den Mittwochsproben, dazu die Szenenprobe, in der der Song vorkommt */
+/* Songs pro Rolle: aus den Szenenproben (Fr/Di), zu denen die Rolle eingeteilt ist. Die Chorproben am Mittwoch plant Frau Geyer. */
 const songKey = s => s.replace(/\s*\(.*?\)\s*$/,"").trim().toLowerCase();
 function songsFor(sel){
   const hits = hitsOf(sel), map = new Map();
-  PLAN.filter(e => e.typ==="mi" && hits(e)).forEach(e => {
-    const rep = /^Wiederholung:/.test(e.songs);
-    e.songs.replace(/^Wiederholung:\s*/,"").split(" · ").forEach(raw => {
-      const name = raw.trim();
-      if(!name || /^Songs der|^Wiederholung aller/.test(name)) return;
-      const k = songKey(name);
-      if(!map.has(k)) map.set(k, {name: name.replace(/\s*\(.*?\)\s*$/,""), mi:[], rep:[], sz:[]});
-      (rep ? map.get(k).rep : map.get(k).mi).push(e);
-    });
-  });
   PLAN.filter(e => (e.typ==="fr" || e.typ==="di") && hits(e) && e.songs).forEach(e => {
-    e.songs.split(/,\s*|\s·\s/).map(songKey).forEach(k => { if(map.has(k)) map.get(k).sz.push(e); });
+    e.songs.split(/,\s*|\s·\s/).forEach(raw => {
+      const name = raw.trim(); if(!name) return;
+      const k = songKey(name);
+      if(!map.has(k)) map.set(k, {name: name.replace(/\s*\(.*?\)\s*$/,""), sz:[]});
+      map.get(k).sz.push(e);
+    });
   });
   return [...map.values()];
 }
@@ -872,9 +867,9 @@ function renderSongs(){
   if(!list.length){ box.innerHTML = ""; return; }
   const d = (label, e) => { const t = `${label} ${WD[parse(e.d).getDay()]} ${dm(e.d)}`; return isOver(e) ? `<s>${t}</s>` : t; };
   box.innerHTML = `<h3>Deine Songs</h3><ul>${list.map(s => `<li><b>${esc(s.name)}</b><span class="when">${[
-      ...s.mi.map(e => d("Musikprobe", e)), ...s.sz.map(e => d("in der Szenenprobe", e)), ...s.rep.map(e => d("Wiederholung", e))
+      ...s.sz.map(e => d("Szenenprobe", e))
     ].join(" · ")}</span></li>`).join("")}</ul>
-    <p class="note">Aus den Mittwochsproben, zu denen deine Rolle eingeteilt ist. Neue Songs kommen dazu, sobald die Szenen ab 14 feststehen.</p>`;
+    <p class="note">Songs aus den Szenenproben, zu denen deine Rolle eingeteilt ist. Was im Chor am Mittwoch geprobt wird, sagt Frau Geyer.</p>`;
 }
 
 /* Kalender-Export (.ics) */
@@ -902,10 +897,10 @@ function icsFor(sel){
     "BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD",
     "END:VTIMEZONE"];
   let count = 0;
-  PLAN.filter(e => e.typ==="auf" || (e.typ!=="fe" && hits(e))).forEach(e => {
+  PLAN.filter(e => e.typ==="auf" || e.typ==="mi" || (e.typ!=="fe" && hits(e))).forEach(e => {
     const cancelled = isCancelled(e.d);
     const scenes = [...(e.sz||"").matchAll(/Opening|Szene \d+[a-z]?(?:, Teil \d)?/g)].map(m => m[0]);
-    const what = e.typ==="auf" ? e.sz : e.typ==="mi" ? "Musikprobe" : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
+    const what = e.typ==="auf" ? e.sz : e.typ==="mi" ? "Chorprobe mit Frau Geyer" : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
     const desc = [e.sz, e.songs && "Songs: " + e.songs, e.roles.length && "Rollen: " + e.roles.map(r => ROLES[r]).join(", "), e.note,
       ...changesFor(e.d).map(a => "Aushang: " + a.titel + (a.text ? " – " + a.text : "")),
       "Aktueller Stand und Änderungen: " + url].filter(Boolean).join("\n");
@@ -949,7 +944,7 @@ function renderRole(){
     return;
   }
   const hits = hitsOf(selected);
-  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || e.typ === "auf" || hits(e));
+  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || e.typ === "mi" || e.typ === "auf" || hits(e));
   const n = PLAN.filter(hits).length;
   const upcoming = PLAN.filter(e => hits(e) && !isOver(e)).length;
   const nextMine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
@@ -1357,7 +1352,7 @@ function openAbsence(d){
   $a("abs-name").value = lsGet("mw-name", "");
   $a("abs-roles").innerHTML = selected.size ? `Für: <b>${esc(roleNames(selected))}</b> (änderst du oben bei „Welche Rolle(n) spielst du?“)` : "";
   const hits = hitsOf(selected);
-  const list = PLAN.filter(e => canAbsent(e) && (hits(e) || e.typ === "pl" || e.d === d));
+  const list = PLAN.filter(e => canAbsent(e) && (hits(e) || e.typ === "pl" || e.typ === "mi" || e.d === d));
   $a("abs-dates").innerHTML = list.map(e => `<label><input type="checkbox" value="${e.d}" ${e.d === d ? "checked" : ""}><span><b>${WD[parse(e.d).getDay()]} ${dm(e.d)}</b> · ${esc(TYPE[e.typ])}${shortWhat(e) ? " · " + esc(shortWhat(e)) : ""}${absFor(e.d) ? " <i>(schon abgesagt)</i>" : ""}</span></label>`).join("");
   const cur = absFor(d);
   dlg.querySelectorAll('input[name=art]').forEach(r => r.checked = r.value === (cur ? cur.art : "fehlt"));
@@ -1468,7 +1463,7 @@ function renderLeitung(items){
     const list = items.filter(a => a.probe === e.d);
     if(!list.length){ if(!isCancelled(e.d)) free.push(`${WD[parse(e.d).getDay()]} ${dm(e.d)}`); return; }
     const rows = list.map(a => {
-      const ks = keysOf(a.rollen), inIt = !ks.length || e.typ === "pl" || ks.some(k => e.roles.includes(k));
+      const ks = keysOf(a.rollen), inIt = !ks.length || e.typ === "pl" || e.typ === "mi" || ks.some(k => e.roles.includes(k));
       const art = a.art === "fehlt" ? "fehlt" : a.art === "spaeter" ? `ab ${esc(a.zeit)}` : `bis ${esc(a.zeit)}`;
       return `<div class="leit-row"><b>${esc(a.name)}</b><span class="art${a.art === "fehlt" ? "" : " teil"}">${art}</span>
         <span class="sub">${esc(a.rollen || "Rolle unbekannt")}${a.grund ? " · " + esc(a.grund) : ""}${inIt ? "" : ' <span class="off">(ist für diese Probe nicht eingeplant)</span>'}</span></div>`;
