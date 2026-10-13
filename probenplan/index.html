@@ -403,6 +403,7 @@ h1.wiggle{animation:wiggle .28s ease}
 .absdlg .err{color:var(--ausfall);font-weight:600;font-size:14px}
 .absact{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .absnote{font-size:12px;color:var(--muted);margin:0}
+.abschor{margin:0;font-size:13px;background:color-mix(in srgb,var(--signal) 30%,transparent);border-left:3px solid var(--signal-line);border-radius:4px;padding:6px 10px}
 .abstoast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);font-weight:600;padding:10px 16px;border-radius:10px;max-width:calc(100% - 32px)}
 /* Leitung */
 .leit{display:grid;gap:14px}
@@ -603,6 +604,7 @@ footer a{color:var(--muted)}
     </fieldset>
     <label>Grund <span>(freiwillig, z. B. Klausur, Familienfeier)</span><input type="text" id="abs-grund" maxlength="200"></label>
     <p class="absnote">Bitte keine Gesundheitsdetails, „krank“ reicht völlig. Gespeichert wird in der Google-Tabelle des Musical-Teams, sehen kann es nur die Leitung. Nach der letzten Aufführung wird alles gelöscht.</p>
+    <p class="abschor" id="abs-chor" hidden><b>Chorprobe dabei:</b> Bitte melde dich für die Chorprobe <b>zusätzlich auf ISGY-intern</b> bei Frau Geyer ab. Die Absage hier sieht nur die Musical-Leitung.</p>
     <div class="err" id="abs-err" role="alert" hidden></div>
     <div class="absact"><button type="button" class="btn ghost" id="abs-cancel">Abbrechen</button><button type="submit" class="btn" id="abs-send">Absage senden</button></div>
   </form>
@@ -812,7 +814,7 @@ function entryHTML(e, me){
   const title = e.sz || "Chorprobe";
   const roles = e.roles.length
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
-    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : e.typ==="mi" ? "Welche Lieder geprobt werden und wer kommen soll, sagt Frau Geyer." : "Besetzung folgt."}</div>`;
+    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : e.typ==="mi" ? "Welche Lieder geprobt werden und wer kommen soll, sagt Frau Geyer. Wer nicht kann, meldet sich hier <b>und</b> auf ISGY-intern ab." : "Besetzung folgt."}</div>`;
   return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
     ${cancelled?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}
     <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
@@ -1334,7 +1336,7 @@ async function api(body){
 }
 function absToast(msg){
   const t = document.createElement("div"); t.className = "abstoast"; t.setAttribute("role","status"); t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 3500);
+  document.body.appendChild(t); setTimeout(() => t.remove(), msg.length > 60 ? 7000 : 3500);
 }
 const artLine = a => a.art === "fehlt" ? "Du hast abgesagt" : a.art === "spaeter" ? `Du kommst später (ab ${a.zeit} Uhr)` : `Du gehst früher (um ${a.zeit} Uhr)`;
 function absRowHTML(e){
@@ -1368,6 +1370,7 @@ function updArt(){
   const art = dlg.querySelector('input[name=art]:checked').value, e = PLAN.find(x => x.d === dlgFor);
   $a("abs-zeitbox").hidden = art === "fehlt";
   $a("abs-zeithint").hidden = art === "fehlt" || $a("abs-dates").querySelectorAll("input:checked").length < 2;
+  $a("abs-chor").hidden = ![...$a("abs-dates").querySelectorAll("input:checked")].some(i => (PLAN.find(x => x.d === i.value) || {}).typ === "mi");
   $a("abs-zeitlbl").textContent = art === "spaeter" ? "Ich komme um" : "Ich gehe um";
   if(art !== "fehlt" && !$a("abs-zeit").value && e){
     const [s, en] = slotOf(e), add = (hm, m) => { const [h, mi] = hm.split(":").map(Number), x = h * 60 + mi + m; return String(Math.floor(x / 60)).padStart(2,"0") + ":" + String(x % 60).padStart(2,"0"); };
@@ -1395,7 +1398,8 @@ $a("absform").addEventListener("submit", async ev => {
     lsSet("mw-name", name);
     r.items.forEach(it => { myAbs = myAbs.filter(a => a.id !== it.id && !(a.probe === it.probe && a.status === "aktiv")); myAbs.push(it); });
     saveAbs(); closeDlg(); rerenderAbs();
-    absToast(proben.length === 1 ? "Absage gesendet – danke fürs Bescheidgeben!" : `${proben.length} Absagen gesendet – danke fürs Bescheidgeben!`);
+    const chor = proben.some(d => (PLAN.find(x => x.d === d) || {}).typ === "mi");
+    absToast((proben.length === 1 ? "Absage gesendet – danke!" : `${proben.length} Absagen gesendet – danke!`) + (chor ? " Für die Chorprobe bitte auch auf ISGY-intern abmelden." : ""));
   }catch(e){
     $a("abs-send").disabled = false; $a("abs-send").textContent = "Absage senden";
     err(e.message && !/HTTP|fetch|Failed|Load/i.test(e.message) ? e.message : "Keine Verbindung. Bitte versuch es gleich nochmal oder sag der Leitung direkt Bescheid.");
