@@ -498,8 +498,7 @@ footer a{color:var(--muted)}
       <span><i class="sw" style="background:var(--fr)"></i>Fr 13:55–15:25 Szenenprobe</span>
       <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
       <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–16:10 Chor mit Frau Geyer</span>
-      <span><i class="sw" style="background:var(--pl)"></i>Platzhalter (Szene noch offen)</span>
-    </div>
+          </div>
     <button class="btn ghost" type="button" data-print>Plan drucken</button>
     </div>
     <div id="plan-all" style="display:grid;gap:18px"></div>
@@ -563,7 +562,7 @@ footer a{color:var(--muted)}
       </div>
       <div class="info-card">
         <h3>So funktioniert der Plan</h3>
-        <p class="note">Die Chorproben am Mittwoch organisiert Frau Geyer: Welche Lieder dran sind und wer kommen soll, sagt sie. Szenen ab 14 werden noch geschrieben; ihre Termine sind als Platzhalter reserviert.</p>
+        <p class="note">Die Chorproben am Mittwoch organisiert Frau Geyer: Sie gelten für alle Mitwirkenden, welche Lieder dran sind, sagt Frau Geyer. In den Szenenproben stehen nur die Rollen, die in der Szene Text haben. Szene 6 (Finale) wird noch geschrieben.</p>
       </div>
     </div>
   </section>
@@ -617,7 +616,7 @@ const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyc
 const STAND = "2026-09-30";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
-  { art:"info", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober", text:"Die erste Probe ist Freitag, 16.10., 13:55 Uhr. Geprobt werden Szene 4 und Szene 7.", ausgehaengt:"2026-09-30" }
+  { art:"info", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober", text:"Die erste Probe ist Freitag, 16.10., 13:55 Uhr. Geprobt werden Szene 1d (4) und Szene 2c (7a).", ausgehaengt:"2026-09-30" }
 ];
 
 /* ===== Rollen ===== */
@@ -626,72 +625,73 @@ const ROLES = {
   oberzauberer:"Oberzauberer", rotekoenigin:"Rote Königin", weissekoenigin:"Weiße Königin", katze:"Cheshire Katze",
   gibbins:"Gibbins", balldiva:"Balldiva", madeleine:"Madeleine", sieglinde:"Sieglinde",
   erzaehlerinnen:"Erzählerinnen", gefolge:"Gefolge / Karten", ballgesellschaft:"Ballgesellschaft & Dressers",
-  gang:"Gang", ensemble:"Ensemble / Chor"
+  gang:"Gang", frankjr:"Junger Frank", ozjr:"Junger Oberzauberer", lehrerin:"Lehrerin", schueler:"Schüler (80er)",
+  ensemble:"Ensemble / Chor"
 };
 const G = ["helen","vivian","james","petra"];
 
 /* ===== Plan ===== */
 // typ: fr | di | mi | pl | fe
 const PLAN = [
- {d:"2026-10-16",typ:"fr",sz:"Szene 4: Oberzauberer wird informiert · Szene 7: Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","gibbins","gefolge","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
+ {d:"2026-10-16",typ:"fr",sz:"Szene 1d (4): Oberzauberer über Phillips Verschwinden informieren · Szene 2c (7a): Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
  {d:"2026-10-21",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-10-23",typ:"fr",sz:"Opening: Mysterious Worlds · Szene 1: Kessel brauen (mit Reprise)",songs:"Mysterious Worlds, Reprise",roles:["frank","lutzi","erzaehlerinnen","ensemble"],note:""},
- {d:"2026-10-27",typ:"di",sz:"Szene 2: Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:"Kleine Besetzung, daher Dienstag."},
+ {d:"2026-10-23",typ:"fr",sz:"Opening: Mysterious Worlds · Szene 1a (1): Kessel brauen (mit Reprise)",songs:"Mysterious Worlds, Reprise",roles:["frank","lutzi","erzaehlerinnen"],note:""},
+ {d:"2026-10-27",typ:"di",sz:"Szene 1b (2): Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:"Kleine Besetzung, daher Dienstag."},
  {d:"2026-10-28",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-10-30",typ:"fr",sz:"Szene 3: Franks Turm mit Phillip · Szene 5: Cheshire Katze",songs:"Once Upon a December, Three Little Birds",roles:["frank","lutzi","phillip","katze","erzaehlerinnen"],note:"Phillip ist in beiden Szenen dabei."},
+ {d:"2026-10-30",typ:"fr",sz:"Szene 1c (3): Franks Turm mit Phillip · Szene 2a (5): Cheshire Katze",songs:"Once Upon a December, Three Little Birds",roles:["frank","lutzi","phillip","katze","erzaehlerinnen"],note:"Phillip ist in beiden Szenen dabei."},
  {d:"2026-11-02",bis:"2026-11-06",typ:"fe",sz:"Herbstferien – keine Proben"},
- {d:"2026-11-10",typ:"di",sz:"Szene 11: Madi und Sigi",songs:"",roles:["phillip","madeleine","sieglinde"],note:"Gereimte Wechselpassagen im Rhythmus proben."},
+ {d:"2026-11-10",typ:"di",sz:"Szene 3c (11): Madi und Sigi",songs:"",roles:["phillip","madeleine","sieglinde"],note:"Gereimte Wechselpassagen im Rhythmus proben."},
  {d:"2026-11-11",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-11-13",typ:"fr",sz:"Szene 6: Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","gefolge","weissekoenigin"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
- {d:"2026-11-17",typ:"di",sz:"Szene 7a: Gibbins soll ausspionieren · Szene 7b: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","phillip"],note:"Phillip nur für den Schluss von Respect."},
+ {d:"2026-11-13",typ:"fr",sz:"Szene 2b (6): Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","weissekoenigin","gibbins"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
+ {d:"2026-11-17",typ:"di",sz:"Szene 2d (7b): Gibbins soll ausspionieren · Szene 2e (7c): Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","erzaehlerinnen"],note:""},
  {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – Mittwochsprobe entfällt"},
- {d:"2026-11-20",typ:"fr",sz:"Szene 10, Teil 1: Ankunft im Ballsaal",songs:"Lied der Balldiva, Walzer",roles:[...G,"phillip","balldiva","ballgesellschaft"],note:""},
- {d:"2026-11-24",typ:"di",sz:"Szene 10, Teil 2: Frank & Lutzi auf dem Ball bis Szenenende",songs:"Walzer / Ballmusik",roles:[...G,"phillip","balldiva","ballgesellschaft","frank","lutzi"],note:"Längste Szene, daher zwei Termine."},
+ {d:"2026-11-20",typ:"fr",sz:"Szene 3a (10): Ballsaal · Szene 3b: Balldiva, bis Frank & Lutzi auftauchen",songs:"Lied der Balldiva, Walzer",roles:[...G,"phillip","balldiva"],note:""},
+ {d:"2026-11-24",typ:"di",sz:"Szene 3b: Balldiva, ab Frank & Lutzi bis Szenenende",songs:"Walzer / Ballmusik",roles:["balldiva","frank","lutzi","phillip"],note:"Längste Szene, daher zwei Termine."},
  {d:"2026-11-25",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-11-27",typ:"fr",sz:"Szene 8: Wiedersehen mit Phillip & Wanderung",songs:"Like a Prayer",roles:[...G,"phillip","weissekoenigin"],note:"Dunkel-Passage und Lichtwechsel genau proben."},
+ {d:"2026-11-27",typ:"fr",sz:"Szene 2f (8): Wiedersehen mit Phillip & Wanderung",songs:"Like a Prayer",roles:[...G,"phillip"],note:"Dunkel-Passage und Lichtwechsel genau proben."},
  {d:"2026-12-02",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-12-04",typ:"fr",sz:"Szene 9: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:[...G,"phillip","weissekoenigin","rotekoenigin","frank"],note:"Frank nur als Stimme/Melodie am Ende."},
- {d:"2026-12-08",typ:"di",sz:"Szene 12: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:["helen","james","petra","vivian"],note:"Petra und Vivian nur am Szenenanfang."},
+ {d:"2026-12-04",typ:"fr",sz:"Szene 2g (9): Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:["petra","vivian","james","phillip","weissekoenigin","rotekoenigin"],note:""},
+ {d:"2026-12-08",typ:"di",sz:"Szene 4a (12): Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:[...G,"erzaehlerinnen"],note:"Petra und Vivian nur am Szenenanfang."},
  {d:"2026-12-09",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-12-11",typ:"fr",sz:"Szene 13: Big big Trouble",songs:"Beat It",roles:[...G,"gang","ensemble"],note:""},
+ {d:"2026-12-11",typ:"fr",sz:"Szene 4b (13): Big big Trouble",songs:"Beat It",roles:[...G,"gang"],note:""},
  {d:"2026-12-16",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2026-12-18",typ:"pl",sz:"Szene 14 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter."},
+ {d:"2026-12-18",typ:"fr",sz:"Szene 4c (14b): Entkommen",songs:"",roles:["helen","petra","vivian","phillip","frank","erzaehlerinnen"],note:""},
  {d:"2026-12-23",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:"Letzter Schultag vor den Ferien."},
  {d:"2026-12-24",bis:"2027-01-08",typ:"fe",sz:"Weihnachtsferien – keine Proben"},
- {d:"2027-01-12",typ:"pl",sz:"Szene 15 (wird noch geschrieben)",songs:"",roles:[],note:"Platzhalter, Dienstag 13:55–15:25."},
+ {d:"2027-01-12",typ:"di",sz:"Szene 5a (15): 80er-Highschool-Welt",songs:"Show Me the Meaning of Being Lonely",roles:[...G,"phillip","frankjr","ozjr","lehrerin","schueler","erzaehlerinnen"],note:""},
  {d:"2027-01-13",typ:"mi",sz:"Chor mit Frau Geyer",songs:"",roles:[],note:""},
- {d:"2027-01-15",typ:"pl",sz:"Szene 16 (wird noch geschrieben) oder Nachholtermin",songs:"",roles:[],note:"Falls keine weitere Szene kommt: Puffer für ausgefallene Proben."},
+ {d:"2027-01-15",typ:"fr",sz:"Szene 5b (16): Der Nährboden für Franks Unzufriedenheit",songs:"One Last Time, From Now On",roles:[...G,"phillip","frank","oberzauberer"],note:"Szene 6 (Finale) wird noch geschrieben, der Termin dafür kommt in den Aushang."},
  {d:"2027-03-17",typ:"auf",sz:"Aufführung 1",songs:"",roles:[],note:"Uhrzeit und Ort folgen."},
  {d:"2027-03-18",typ:"auf",sz:"Aufführung 2",songs:"",roles:[],note:"Uhrzeit und Ort folgen."}
 ];
 
 /* ===== Welten für die Weltenkarte =====
-   Szenen und Termine kommen automatisch aus dem PLAN (Szene 1–4 → Unsere Welt, 5–9 → Wunderland, 10 → Ballsaal,
-   11 → Bibliothek, 12–13 → Böse Welt, ab 14 → High School). Figuren und Songs hier pflegen. */
+   Szenen und Termine kommen automatisch aus dem PLAN (Szene 1x → Unsere Welt, 2x → Wunderland, 3a/3b → Ballsaal,
+   3c → Bibliothek, 4x → Böse Welt, 5x → High School). Figuren und Songs hier pflegen. */
 const WORLDS = [
   { k:"heimat", name:"Unsere Welt", sub:"Franks Turm & der Turm des Oberzauberers", color:"var(--accent)", x:100, y:118,
     text:"Hier beginnt alles: Ein Kessel wird gebraut, Phillip entdeckt seine Gabe als Weltenwanderer, und Onkel Frank hat schon ein Auge darauf geworfen.",
     figuren:["phillip","frank","lutzi","oberzauberer","erzaehlerinnen"],
     songs:["Mysterious Worlds (Opening + Reprise)","I Say A Little Prayer","Once Upon a December"] },
   { k:"wunder", name:"Wunderland", sub:"Reich der Königinnen", color:"var(--w-wunder)", x:268, y:78,
-    text:"Eine grinsende Cheshire Katze, die Rote Königin mit ihrem Kartengefolge und eine Weiße Königin, die der Gruppe hilft.",
-    figuren:["katze","rotekoenigin","weissekoenigin","gibbins","gefolge"],
+    text:"Eine grinsende Cheshire Katze, die Rote Königin, ihr Spion Gibbins und eine Weiße Königin, die der Gruppe hilft.",
+    figuren:["katze","rotekoenigin","weissekoenigin","gibbins"],
     songs:["Three Little Birds","Candy Store","Respect","Like a Prayer","Medley Like a Prayer vs. Candy Store"] },
   { k:"ball", name:"Ballsaal", sub:"Die lange Nacht der Tänze", color:"var(--w-ball1)", x:442, y:104,
     text:"Kronleuchter, Walzer und eine Balldiva. Frank und Lutzi tauchen auch auf. Die längste Szene des Stücks, deshalb zwei Proben.",
-    figuren:["balldiva","ballgesellschaft","frank","lutzi"],
+    figuren:["balldiva","frank","lutzi"],
     songs:["Lied der Balldiva","Walzer / Ballmusik"] },
   { k:"biblio", name:"Bibliothek", sub:"Madis & Sigis Weltenbuch", color:"var(--w-sepia)", x:560, y:236,
     text:"Zwischen staubigen Regalen treffen Phillip, Madi und Sigi aufeinander. Hier wird in Reimen gesprochen.",
     figuren:["madeleine","sieglinde","phillip"],
     songs:[] },
   { k:"boese", name:"Böse Welt", sub:"Sturm & Gang", color:"var(--w-boese)", x:442, y:368,
-    text:"Gewitter, eine Gang und Big big Trouble. Und mittendrin wird James romantisch.",
-    figuren:["gang","ensemble"],
+    text:"Gewitter, eine Gang und Big big Trouble. Mittendrin wird James romantisch, und dann heißt es: entkommen!",
+    figuren:["gang"],
     songs:["Elephant Love Medley","Beat It"] },
   { k:"hs", name:"High School", sub:"Die 80er", color:"var(--w-neon1)", x:268, y:392,
-    text:"Neonlicht, Kassetten und Schließfächer. Diese Welt liegt noch im Nebel: Die Szenen ab 14 werden gerade geschrieben.",
-    figuren:[], songs:[] },
+    text:"Neonlicht, Pausengong und Chemieunterricht: Die Freunde landen in der Vergangenheit und treffen den jungen Frank und seinen Bruder.",
+    figuren:["frankjr","ozjr","lehrerin","schueler","frank","oberzauberer"], songs:["Show Me the Meaning of Being Lonely","One Last Time","From Now On"] },
   { k:"premiere", name:"Premiere", sub:"Mi 17. & Do 18. März 2027", color:"var(--w-wueste)", x:100, y:330,
     text:"Das Ziel der Reise: Alle Welten kommen zusammen auf die Bühne. Uhrzeit und Ort folgen im Aushang.",
     figuren:[], songs:[] }
@@ -725,7 +725,7 @@ PLAN.forEach(e => { if(!Array.isArray(e.roles)) e.roles = []; });
 function loadRoles(){ try{ return (localStorage.getItem("mw-rollen") || "").split(".").filter(r => ROLES[r]); }catch(e){ return []; } }
 function saveRoles(){ try{ localStorage.setItem("mw-rollen", [...selected].join(".")); }catch(e){} }
 let selected = new Set(loadRoles());
-const hitsOf = sel => e => e.roles.some(r => sel.has(r));
+const hitsOf = sel => e => e.typ === "mi" || e.roles.some(r => sel.has(r)); // Chorproben gelten für alle
 const roleNames = sel => [...sel].map(r => ROLES[r]).join(", ");
 
 /* Aushang: was ist neu seit dem letzten Besuch, was ist alt */
@@ -814,7 +814,8 @@ function entryHTML(e, me){
   const title = e.sz || "Chorprobe";
   const roles = e.roles.length
     ? `<div class="roles">${e.roles.map(r=>`<button class="chip${me && me.has(r)?" me":""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div>`
-    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : e.typ==="mi" ? "Welche Lieder geprobt werden und wer kommen soll, sagt Frau Geyer. Wer nicht kann, meldet sich hier <b>und</b> auf ISGY-intern ab." : "Besetzung folgt."}</div>`;
+    : e.typ==="mi" ? `<div class="roles"><span class="chip all${me ? " me" : ""}">Alle Mitwirkenden</span></div><div class="note">Welche Lieder geprobt werden, sagt Frau Geyer. Wer nicht kann, meldet sich hier <b>und</b> auf ISGY-intern ab.</div>`
+    : `<div class="note">${e.typ==="auf" ? "Alle Mitwirkenden" : "Besetzung folgt."}</div>`;
   return `<article class="entry t-${e.typ}${past?" past":""}${isNext?" is-next":""}" id="d${e.d.replace(/-/g,"")}">
     ${cancelled?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}
     <div class="date"><span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span></div>
@@ -952,7 +953,7 @@ function renderRole(){
   const nextMine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
   sum.innerHTML = `<b>${esc(roleNames(selected))}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
     (nextMine ? ` Deine nächste Probe: <b>${WD[parse(nextMine.d).getDay()]} ${dm(nextMine.d)}, ${timeOf(nextMine)}</b>.` : "") +
-    ` Platzhalter für neue Szenen stehen mit drin, bis ihre Besetzung feststeht. Kannst du mal nicht? Tipp bei der Probe auf <b>„Ich kann nicht“</b>.`;
+    ` Drin sind die Szenen, in denen deine Rolle Text hat, und alle Chorproben. Kannst du mal nicht? Tipp bei der Probe auf <b>„Ich kann nicht“</b>.`;
   hint.innerHTML = `Direktlink zu deinem Plan: an den Link der Seite <code>#rolle-${[...selected].join(".")}</code> anhängen.`;
   renderList(mine, out, selected);
 }
@@ -981,7 +982,7 @@ grid.addEventListener("click", ev => {
 document.getElementById("role-reset").addEventListener("click", () => { selected.clear(); saveRoles(); renderRole(); });
 document.getElementById("ics-btn").addEventListener("click", downloadICS);
 document.addEventListener("click", ev => {
-  const c = ev.target.closest(".chip");
+  const c = ev.target.closest(".chip[data-role]");
   if(c){
     selected = new Set([c.dataset.role]); saveRoles(); renderRole(); showView("rolle");
     document.getElementById("view-rolle").scrollIntoView(scrollOpts()); return;
@@ -1063,12 +1064,13 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 })();
 
 /* ===== Weltenkarte ===== */
-const worldOfScene = n => n<=4?"heimat":n<=9?"wunder":n===10?"ball":n===11?"biblio":n<=13?"boese":"hs";
+// Szenen nach Gesamtfassung v.1: Akt 1 Unsere Welt, 2 Wunderland, 3a/3b Ballsaal, 3c Bibliothek, 4 Böse Welt, 5 High School
+const worldOfScene = (akt, b) => ({1:"heimat",2:"wunder",3: b==="c" ? "biblio" : "ball",4:"boese",5:"hs"})[akt] || null;
 const SCENE_TYPES = ["fr","di","pl"];
 // Eine Probe kann mehrere Szenen aus verschiedenen Welten enthalten ("Szene 4 … · Szene 7 …")
 const scenePartsOf = e => (e.sz||"").split(" · ").map(t => {
-  const m = t.match(/Szene (\d+)/);
-  const w = /Opening/.test(t) ? "heimat" : m ? worldOfScene(+m[1]) : null;
+  const m = t.match(/Szene (\d)([a-z]?)/);
+  const w = /Opening/.test(t) ? "heimat" : m ? worldOfScene(+m[1], m[2]) : null;
   return w && {e, w, t: t.trim()};
 }).filter(Boolean);
 const worldsIn = e => [...new Set(scenePartsOf(e).map(p => p.w))];
