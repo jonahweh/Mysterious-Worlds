@@ -292,7 +292,7 @@ function render(){
     });
     if(mode === "stichwort" && hasRole && !body) body = `<p class="note">In dieser Szene hat deine Rolle keinen Text.</p>`;
     html += `<section class="scene" style="--wc:${s.wc}">
-      <div class="sc-num">${esc(s.id === "op" ? "Vor Szene 1a" : s.num)}${s.old ? " · bisher " + esc(s.old) : ""}</div>
+      <div class="sc-num">${esc(s.id === "op" ? "Vor Szene 1a" : s.num)}</div>
       <h2>${esc(s.title)}</h2>
       <p class="cast"><b>Auf der Bühne:</b> ${esc(s.cast)}</p>
       ${label ? `<p class="part">${esc(label)}</p>` : ""}
