@@ -377,6 +377,9 @@ h1.wiggle{animation:wiggle .28s ease}
 @media print{.toast,.spark,#view-karte{display:none!important}}
 
 /* Probenabsagen */
+.textlink{display:inline-block;justify-self:start;width:max-content;margin-top:8px;font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;border:1.5px solid var(--accent);border-radius:999px;padding:4px 12px}
+.textlink:hover{background:var(--accent-soft)}
+@media print{.textlink{display:none}}
 .absrow{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .absbtn{border:1.5px dashed var(--ausfall);background:transparent;color:var(--ausfall);border-radius:999px;padding:5px 12px;font-weight:600;font-size:13px;cursor:pointer}
 .absbtn:hover{background:color-mix(in srgb,var(--ausfall) 10%,transparent)}
@@ -550,6 +553,11 @@ footer a{color:var(--muted)}
         <h3>Anleitung zur Website</h3>
         <p class="note">Alles auf einen Blick: Probenplan, eigene Rolle, Kalender, Absagen und Reservierung – in vier Seiten erklärt.</p>
         <p><a class="btn" href="../downloads/mysterious-worlds-website-anleitung.pdf" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none">Anleitung als PDF öffnen</a></p>
+      </div>
+      <div class="info-card">
+        <h3>Szenentext zum Lernen</h3>
+        <p class="note">Bei jeder Szenenprobe steht „Text lesen“. Dort findest du den Text genau der Szenen, die geprobt werden. Deine Rolle ist markiert, „Nur Stichworte“ zeigt deine Sätze mit dem Satz davor und „Abfragen“ verdeckt deinen Text zum Üben. Das Team-Passwort bekommst du von der Leitung.</p>
+        <p><a class="btn ghost" href="szenen/" style="display:inline-block;text-decoration:none">Szenentext öffnen</a></p>
       </div>
       <div class="info-card">
         <h3>Ferien &amp; schulfrei</h3>
@@ -833,8 +841,29 @@ function entryHTML(e, me){
       ${ch.map(a=>`<div class="change-inline">${esc(a.titel)}${a.text?": "+esc(a.text):""}</div>`).join("")}
       ${roles}
       ${e.note?`<div class="note">${esc(e.note)}</div>`:""}
+      ${textLinkHTML(e, me)}
       ${me ? absRowHTML(e) : ""}
     </div></article>`;
+}
+
+/* Szenentext zur Probe (passwortgeschützt unter szenen/) */
+function scenesOf(e){
+  if(!e.sz || e.typ === "mi" || e.typ === "auf") return [];
+  const ids = [];
+  if(/Opening/.test(e.sz)) ids.push("op");
+  for(const m of e.sz.matchAll(/Szene (\d[a-z]?)\b[^·]*/g)){
+    let id = m[1];
+    if(id === "3b" && /bis Frank/.test(m[0])) id = "3b-1";
+    else if(id === "3b" && /ab Frank/.test(m[0])) id = "3b-2";
+    ids.push(id);
+  }
+  return ids;
+}
+function textLinkHTML(e, me){
+  const ids = scenesOf(e); if(!ids.length) return "";
+  const p = new URLSearchParams({s: ids.join("."), t: `${WD[parse(e.d).getDay()]} ${dm(e.d)}: ${e.sz}`});
+  if(me && me.size) p.set("r", [...me].join("."));
+  return `<a class="textlink" href="szenen/#${p.toString()}">📖 Text lesen</a>`;
 }
 
 // Monate, deren Termine alle vorbei sind, werden eingeklappt
