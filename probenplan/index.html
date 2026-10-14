@@ -157,6 +157,7 @@ nav.menu{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:v
 .role-grid{display:flex;flex-wrap:wrap;gap:6px}
 .rolebtn{border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 13px;cursor:pointer;font-weight:500;font-size:14px}
 .rolebtn:hover{border-color:var(--accent)}
+.rolegroup{flex-basis:100%;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
 .rolebtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
 .picker-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .reset{border:none;background:none;color:var(--accent);text-decoration:underline;cursor:pointer;padding:0;font-size:14px}
@@ -650,8 +651,10 @@ const ROLES = {
   gibbins:"Gibbins", balldiva:"Balldiva", madeleine:"Madeleine", sieglinde:"Sieglinde",
   erzaehlerinnen:"Erzählerinnen", gefolge:"Gefolge / Karten", ballgesellschaft:"Ballgesellschaft & Dressers",
   gang:"Gang", frankjr:"Junger Frank", ozjr:"Junger Oberzauberer", lehrerin:"Lehrerin", schueler:"Schüler (80er)",
-  ensemble:"Ensemble / Chor"
+  ensemble:"Ensemble / Chor",
+  geyer:"Frau Geyer", bretl:"Frau Bretl"
 };
+const TEACHERS = ["geyer","bretl"]; // Lehrkräfte: sehen ihre Einzelproben und die Termine für alle
 const G = ["helen","vivian","james","petra"];
 
 /* ===== Plan ===== */
@@ -733,7 +736,9 @@ const timeOf = e => e.typ==="auf" ? "Uhrzeit folgt" : e.typ==="fa" ? `${WD[parse
 const FOR_ALL = ["mi","pt","fa"];
 const forAll = e => FOR_ALL.includes(e.typ);
 const LK = {Ge:"Frau Geyer", Br:"Frau Bretl"};
-const einzelRoles = e => (e.einzel || []).flatMap(x => x.roles || []);
+const LK_ROLE = {Ge:"geyer", Br:"bretl"};
+const ezR = x => [...(x.roles || []), ...(LK_ROLE[x.lk] ? [LK_ROLE[x.lk]] : [])];
+const einzelRoles = e => (e.einzel || []).flatMap(ezR);
 const rolesOf = e => [...e.roles, ...einzelRoles(e)];
 const at = (s,hm) => { const x = parse(s), [h,m] = hm.split(":").map(Number); x.setHours(h,m,0,0); return x; };
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -754,7 +759,7 @@ const fixRole = r => r === "katze" ? "gibbins" : r; // Cheshire Katze und Gibbin
 function loadRoles(){ try{ return [...new Set((localStorage.getItem("mw-rollen") || "").split(".").map(fixRole).filter(r => ROLES[r]))]; }catch(e){ return []; } }
 function saveRoles(){ try{ localStorage.setItem("mw-rollen", [...selected].join(".")); }catch(e){} }
 let selected = new Set(loadRoles());
-const hitsOf = sel => e => forAll(e) || rolesOf(e).some(r => sel.has(r)); // Gesamtproben, Probenfahrt und Probensamstag gelten für alle
+const hitsOf = sel => e => (forAll(e) && (e.typ !== "mi" || [...sel].some(r => r !== "bretl"))) || rolesOf(e).some(r => sel.has(r)); // Gesamtproben, Probenfahrt und Probensamstag gelten für alle
 const roleNames = sel => [...sel].map(r => ROLES[r]).join(", ");
 
 /* Aushang: was ist neu seit dem letzten Besuch, was ist alt */
@@ -871,7 +876,7 @@ function einzelHTML(e, me){
   return e.einzel.map(x => x.frei
     ? `<div class="einzel"><span class="ez-k">Einzelproben</span><span>Freigehalten für Songs, die noch mehr Übung brauchen. Wer dran ist, steht im Aushang.</span></div>`
     : `<div class="einzel"><span class="ez-k">Parallel: Einzelprobe</span><span><b>${esc(x.song)}</b> mit ${esc(LK[x.lk] || x.lk)}</span>
-        <div class="roles">${x.roles.map(r => `<button class="chip${me && me.has(r) ? " me" : ""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div></div>`).join("");
+        <div class="roles">${ezR(x).map(r => `<button class="chip${me && me.has(r) ? " me" : ""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div></div>`).join("");
 }
 /* Szenentext zur Probe (passwortgeschützt unter szenen/) */
 function scenesOf(e){
@@ -922,7 +927,7 @@ function songsFor(sel){
       map.get(k).sz.push(e);
     });
   });
-  PLAN.forEach(e => (e.einzel || []).filter(x => !x.frei && x.roles.some(r => sel.has(r))).forEach(x => {
+  PLAN.forEach(e => (e.einzel || []).filter(x => !x.frei && ezR(x).some(r => sel.has(r))).forEach(x => {
     const k = songKey(x.song);
     if(!map.has(k)) map.set(k, {name: x.song.replace(/\s*\(.*?\)\s*$/,""), sz:[], ez:[]});
     (map.get(k).ez = map.get(k).ez || []).push(e);
@@ -966,13 +971,14 @@ function icsFor(sel){
     "BEGIN:STANDARD","TZOFFSETFROM:+0200","TZOFFSETTO:+0100","TZNAME:CET","DTSTART:19701025T030000","RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU","END:STANDARD",
     "END:VTIMEZONE"];
   let count = 0;
-  PLAN.filter(e => e.typ==="auf" || forAll(e) || (e.typ!=="fe" && hits(e))).forEach(e => {
+  PLAN.filter(e => e.typ==="auf" || (e.typ!=="fe" && hits(e))).forEach(e => {
     const cancelled = isCancelled(e.d);
     const scenes = [...(e.sz||"").matchAll(/Opening|Szene \d+[a-z]?(?:, Teil \d)?/g)].map(m => m[0]);
     const onlyEz = !forAll(e) && !e.roles.some(r => sel.has(r)) && einzelRoles(e).some(r => sel.has(r));
-    const ezMine = (e.einzel || []).filter(x => !x.frei && x.roles.some(r => sel.has(r)));
+    const ezMine = (e.einzel || []).filter(x => !x.frei && ezR(x).some(r => sel.has(r)));
+    const leads = ezMine.filter(x => sel.has(LK_ROLE[x.lk]));
     const what = e.typ==="auf" || e.typ==="pt" || e.typ==="fa" ? e.sz : e.typ==="mi" ? "Gesamtprobe (Chor mit Frau Geyer)"
-      : onlyEz ? "Einzelprobe " + ezMine.map(x => x.song).join(" + ")
+      : onlyEz ? "Einzelprobe " + ezMine.map(x => x.song).join(" + ") + (leads.length ? " (leiten)" : "")
       : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
     const desc = [e.sz, e.songs && "Songs: " + e.songs, e.roles.length && "Rollen: " + e.roles.map(r => ROLES[r]).join(", "), e.note,
       ...(e.einzel || []).map(x => x.frei ? "Einzelproben: freigehalten für Songs mit mehr Übungsbedarf" : `Parallel Einzelprobe: ${x.song} mit ${LK[x.lk] || x.lk} (${x.roles.map(r => ROLES[r]).join(", ")})`),
@@ -1001,8 +1007,9 @@ function downloadICS(){
 
 /* Rollen-Menü */
 const grid = document.getElementById("role-grid");
-grid.innerHTML = Object.entries(ROLES).map(([k,v]) =>
-  `<button type="button" class="rolebtn" data-pick="${k}" aria-pressed="false">${esc(v)}</button>`).join("");
+const roleBtn = ([k,v]) => `<button type="button" class="rolebtn" data-pick="${k}" aria-pressed="false">${esc(v)}</button>`;
+grid.innerHTML = Object.entries(ROLES).filter(([k]) => !TEACHERS.includes(k)).map(roleBtn).join("") +
+  `<span class="rolegroup">Lehrkräfte</span>` + Object.entries(ROLES).filter(([k]) => TEACHERS.includes(k)).map(roleBtn).join("");
 
 function renderRole(){
   const out = document.getElementById("plan-role"), sum = document.getElementById("role-summary");
@@ -1018,13 +1025,15 @@ function renderRole(){
     return;
   }
   const hits = hitsOf(selected);
-  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || forAll(e) || e.typ === "auf" || hits(e));
+  const mine = PLAN.filter(e => e.typ === "fe" || e.typ === "pl" || e.typ === "auf" || hits(e));
   const n = PLAN.filter(hits).length;
   const upcoming = PLAN.filter(e => hits(e) && !isOver(e)).length;
   const nextMine = PLAN.find(e => hits(e) && !isOver(e) && !isCancelled(e.d));
   sum.innerHTML = `<b>${esc(roleNames(selected))}</b>: ${n} Termine, davon ${upcoming} noch vor dir.` +
     (nextMine ? ` Deine nächste Probe: <b>${WD[parse(nextMine.d).getDay()]} ${dm(nextMine.d)}, ${timeOf(nextMine)}</b>.` : "") +
-    ` Drin sind die Szenen, in denen deine Rolle Text hat, deine Einzelproben, alle Gesamtproben, die Probenfahrt und der Probensamstag. Kannst du mal nicht? Tipp bei der Probe auf <b>„Ich kann nicht“</b>.`;
+    ([...selected].every(r => TEACHERS.includes(r))
+      ? ` Drin sind die Einzelproben, die du leitest${selected.has("geyer") ? ", die Gesamtproben" : ""}, die Probenfahrt und der Probensamstag. Die Einzelproben laufen parallel zur Stückprobe.`
+      : ` Drin sind die Szenen, in denen deine Rolle Text hat, deine Einzelproben, alle Gesamtproben, die Probenfahrt und der Probensamstag. Kannst du mal nicht? Tipp bei der Probe auf <b>„Ich kann nicht“</b>.`);
   hint.innerHTML = `Direktlink zu deinem Plan: an den Link der Seite <code>#rolle-${[...selected].join(".")}</code> anhängen.`;
   renderList(mine, out, selected);
 }
