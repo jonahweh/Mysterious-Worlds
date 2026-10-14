@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 8 (Probenabsagen)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 9 (Impressum in Mails, automatische Löschung)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -32,6 +32,9 @@ const NIGHTS = [
 ];
 const SEITE = "https://jonahweh.github.io/Mysterious-Worlds/reservierung/";
 const KARTE = "https://jonahweh.github.io/Mysterious-Worlds/karte/";
+const IMPRESSUM = "https://jonahweh.github.io/Mysterious-Worlds/impressum/";
+const DATENSCHUTZ = "https://jonahweh.github.io/Mysterious-Worlds/datenschutz/";
+const SUPPORT = "jonah.weh@outlook.com"; // Ansprechpartner für Fragen (steht auch im Impressum)
 const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
 const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste", ABS = "Absagen";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am",
@@ -106,6 +109,8 @@ function setup() {
   ensureSetting_(s, "Warteliste aktiv", true, "Ist ein Abend voll, können sich Gäste eintragen und rücken automatisch nach", true);
   ensureSetting_(s, "Einlass-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Einlass-Seite …/einlass/ – nur an das Einlass-Team geben");
   ensureSetting_(s, "Leitungs-PIN", String(100000 + Math.floor(Math.random() * 900000)), "PIN für die Absagen-Übersicht im Probenplan (…/probenplan/#leitung) – nur für die Leitung");
+  ensureSetting_(s, "Daten löschen am", "2027-04-15", "Ab diesem Tag löscht das Script automatisch alle Reservierungen, Wartelisten-Einträge und Probenabsagen (Datenschutz). Format JJJJ-MM-TT");
+  ensureSetting_(s, "Gelöscht am", "", "wird automatisch eingetragen");
   ensureSetting_(s, "Absagen möglich", true, "Mitwirkende können sich im Probenplan von Proben abmelden", true);
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
     `=SUMIFS(${RES}!D:D,${RES}!C:C,"${n.id}",${RES}!H:H,"aktiv")`, "wird automatisch berechnet"));
@@ -115,6 +120,10 @@ function setup() {
   s.setColumnWidth(1, 230); s.setColumnWidth(2, 260); s.setColumnWidth(3, 420);
   try { ss.setActiveSheet(s); } catch (e) {}
   console.log("Fertig! Deine Tabelle: " + ss.getUrl());
+  // täglicher Auftrag für die automatische Löschung (nur einmal anlegen)
+  if (!ScriptApp.getProjectTriggers().some(tr => tr.getHandlerFunction() === "taeglich")) {
+    ScriptApp.newTrigger("taeglich").timeBased().everyDays(1).atHour(3).create();
+  }
   console.log("Einlass-PIN: " + settings_().pin + " · Leitungs-PIN: " + settings_().leitPin + " (stehen auch im Blatt „Einstellungen“)");
 }
 function ensureHeader_(sh, cols) {
@@ -156,7 +165,9 @@ function settings_() {
     freihalten: Math.max(0, Number(m["Freihaltezeit (Minuten vor Beginn)"]) || 15),
     pin: String(m["Einlass-PIN"] === undefined ? "" : m["Einlass-PIN"]).trim(),
     leitPin: String(m["Leitungs-PIN"] === undefined ? "" : m["Leitungs-PIN"]).trim(),
-    absagen: m["Absagen möglich"] !== false
+    absagen: m["Absagen möglich"] !== false,
+    loeschen: nightId_(m["Daten löschen am"] || "2027-04-15"),
+    geloescht: m["Gelöscht am"] ? String(m["Gelöscht am"]) : ""
   };
 }
 const nightId_ = d => (d instanceof Date) ? Utilities.formatDate(d, "Europe/Berlin", "yyyy-MM-dd") : String(d).slice(0, 10);
@@ -208,6 +219,9 @@ const waitlistOpenFor_ = id => today_() < id;
 function send_(o) {
   try { MailApp.sendEmail(o); return true; } catch (err) { console.warn("Mail fehlgeschlagen: " + err); return false; }
 }
+// Fußzeile aller Gäste-Mails: Veranstalter, Kontakt, Impressum, Datenschutz
+const footText_ = () => "\n\n--\nMysterious Worlds – eine Veranstaltung des Gymnasiums Ismaning\nFragen: " + SUPPORT + "\nImpressum: " + IMPRESSUM + "\nDatenschutz: " + DATENSCHUTZ;
+const footHtml_ = () => '<p style="color:#625b78;font-size:12px;border-top:1px solid #dcd6e8;margin-top:22px;padding-top:10px">Mysterious Worlds – eine Veranstaltung des Gymnasiums Ismaning<br>Fragen? Antworte auf diese Mail oder schreib an <a href="mailto:' + SUPPORT + '" style="color:#5b2bb5">' + SUPPORT + '</a><br><a href="' + IMPRESSUM + '" style="color:#625b78">Impressum</a> · <a href="' + DATENSCHUTZ + '" style="color:#625b78">Datenschutz</a></p>';
 function ticketUrl_(code, token) { return KARTE + "?c=" + encodeURIComponent(code) + "&t=" + token; }
 const holdText_ = s => "Reservierte Plätze werden bis " + s.freihalten + " Minuten vor Beginn freigehalten. Wer später kommt, hat keinen Anspruch mehr auf den Platz: Nicht abgeholte Plätze gehen dann an die Warteliste und die Abendkasse.";
 function confirmMail_(s, b) {
@@ -220,14 +234,14 @@ function confirmMail_(s, b) {
     : "deine Plätze sind reserviert. Wir freuen uns auf dich!";
   const personen = b.plaetze + " " + (b.plaetze === 1 ? "Person" : "Personen");
   return send_({
-    to: b.email, name: "Mysterious Worlds", replyTo: s.notify || undefined,
+    to: b.email, name: "Mysterious Worlds", replyTo: s.notify || SUPPORT,
     subject: (b.nachgerueckt ? "Du bist nachgerückt! Deine Eintrittskarte " : "Deine Eintrittskarte ") + b.code + " – Mysterious Worlds",
     body: "Hallo " + b.name + ",\n\n" + intro + "\n\nDeine Eintrittskarte mit QR-Code:\n" + karte +
       "\n\nCode: " + b.code + "\nAbend: " + wann + "\nOrt: " + (s.ort || "folgt") + "\nFür: " + personen +
       "\n\nDer Eintritt ist frei. Am Einlass zeigst du den QR-Code auf deiner Eintrittskarte oder nennst deinen Namen. Es gibt keine festen Plätze: Wer zuerst kommt, sucht zuerst aus." +
       "\n\nWICHTIG: " + holdText_(s) +
       "\n\nDoch keine Zeit, oder kommen weniger Personen? Bitte storniere (auch einzelne Plätze), damit andere nachrücken können:\n" + storno +
-      "\n\nFragen? Antworte einfach auf diese Mail.\n\nDein Mysterious-Worlds-Team",
+      "\n\nFragen? Antworte einfach auf diese Mail.\n\nDein Mysterious-Worlds-Team" + footText_(),
     htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;color:#1d1830">' +
       '<img src="' + LOGO + '" width="520" height="165" alt="Mysterious Worlds – Musical, 17. &amp; 18. März 2027" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;margin:0 0 18px;background:#1d1036;color:#ffd97a;font-size:22px;font-weight:bold;text-align:center">' +
       "<p>Hallo " + escH_(b.name) + ",</p><p>" + intro + "</p>" +
@@ -240,7 +254,7 @@ function confirmMail_(s, b) {
       "<p>Der Eintritt ist frei. Am Einlass zeigst du den QR-Code auf deiner Eintrittskarte oder nennst deinen Namen. Es gibt keine festen Plätze: <b>Wer zuerst kommt, sucht zuerst aus.</b></p>" +
       '<p style="background:#fff3d6;border-left:4px solid #d4a93a;padding:10px 12px;border-radius:4px"><b>Wichtig:</b> ' + escH_(holdText_(s)) + "</p>" +
       '<p>Doch keine Zeit, oder kommen weniger Personen? Bitte <a href="' + storno + '" style="color:#5b2bb5">storniere hier</a> – auch einzelne Plätze –, damit andere nachrücken können.</p>' +
-      '<p style="color:#625b78;font-size:13px">Fragen? Antworte einfach auf diese Mail.</p></div>'
+      footHtml_() + '</div>'
   });
 }
 // Statt Mails ans Team: Hinweis in der Tabelle (Spalte „Team-Hinweis“), kostet kein Mail-Kontingent
@@ -288,6 +302,7 @@ function announce_(s, moved) {
 
 /* ---------- Status (GET) ---------- */
 function doGet() {
+  datenLoeschen_();
   const s = settings_();
   let moved = [];
   if (s.open && s.warteliste) {
@@ -407,18 +422,18 @@ function waitlist_(d) {
   const tipp = "Tipp: Du stehst weit vorne auf der Warteliste. Es lohnt sich, " + (abend === "beide" ? "an einem der beiden Abende" : "am Abend der Aufführung") +
     " trotzdem zum Einlass zu kommen. Oft kommen nicht alle, die reserviert haben – diese Plätze gibt das Einlass-Team kurz vor Beginn in der Reihenfolge der Warteliste weiter, und du bist dann mit als Erstes dran. Melde dich am Einlass einfach mit deinem Namen. Einen Platz garantieren können wir dir dafür leider nicht.";
   const mailed = send_({
-    to: g.email, name: "Mysterious Worlds", replyTo: s.notify || undefined,
+    to: g.email, name: "Mysterious Worlds", replyTo: s.notify || SUPPORT,
     subject: "Du stehst auf der Warteliste – Mysterious Worlds",
     body: "Hallo " + g.name + ",\n\ndu stehst auf der Warteliste für " + wann + " (" + g.plaetze + " " + (g.plaetze === 1 ? "Platz" : "Plätze") + ", Position " + entry.position + ").\n\n" +
       "Sobald genug Plätze frei werden, rückst du automatisch nach und bekommst eine Bestätigung mit deinem Reservierungscode per Mail. Du musst nichts weiter tun.\n\n" +
       (vorne ? tipp + "\n\n" : "") +
-      "Kein Interesse mehr? Hier kannst du dich austragen:\n" + leave + "\n\nDein Mysterious-Worlds-Team",
+      "Kein Interesse mehr? Hier kannst du dich austragen:\n" + leave + "\n\nDein Mysterious-Worlds-Team" + footText_(),
     htmlBody: '<div style="font-family:Arial,sans-serif;max-width:520px;color:#1d1830">' +
       '<img src="' + LOGO + '" width="520" height="165" alt="Mysterious Worlds" style="display:block;width:100%;max-width:520px;height:auto;border:0;border-radius:8px;margin:0 0 18px;background:#1d1036;color:#ffd97a;font-size:22px;font-weight:bold;text-align:center">' +
       "<p>Hallo " + escH_(g.name) + ",</p><p>du stehst auf der <b>Warteliste</b> für <b>" + escH_(wann) + "</b> (" + g.plaetze + " " + (g.plaetze === 1 ? "Platz" : "Plätze") + ", Position " + entry.position + ").</p>" +
       "<p>Sobald genug Plätze frei werden, rückst du <b>automatisch nach</b> und bekommst eine Bestätigung mit deinem Reservierungscode per Mail. Du musst nichts weiter tun.</p>" +
       (vorne ? '<p style="background:#fff3d6;border-left:4px solid #d4a93a;padding:10px 12px;border-radius:4px"><b>Tipp:</b> ' + escH_(tipp.replace(/^Tipp: /, "")) + "</p>" : "") +
-      '<p>Kein Interesse mehr? <a href="' + leave + '" style="color:#5b2bb5">Hier austragen</a>.</p></div>'
+      '<p>Kein Interesse mehr? <a href="' + leave + '" style="color:#5b2bb5">Hier austragen</a>.</p>' + footHtml_() + '</div>'
   });
   return { ok: true, id: entry.id, position: entry.position, abend: abend, label: wann, plaetze: g.plaetze, mailed: mailed };
 }
@@ -697,4 +712,27 @@ function absenceList_(d) {
     .map(r => ({ id: r.id, probe: r.probe, name: r.name, rollen: r.rollen, art: absOut_(r).art, zeit: r.zeit, grund: r.grund }))
     .sort((a, b) => a.probe.localeCompare(b.probe) || a.name.localeCompare(b.name, "de"));
   return { ok: true, von: von, items: list };
+}
+
+
+/* ---------- Automatische Löschung (Datenschutz) ---------- */
+// Läuft täglich per Trigger (von setup angelegt) und zusätzlich bei jedem Seitenaufruf.
+function taeglich() { datenLoeschen_(); }
+function datenLoeschen_() {
+  const s = settings_();
+  if (s.geloescht || today_() < s.loeschen) return false;
+  return locked_(() => {
+    const ss = book_();
+    [RES, WL, ABS].forEach(name => {
+      const sh = ss.getSheetByName(name);
+      if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
+    });
+    const st = ss.getSheetByName(SET), vals = st.getRange(1, 1, st.getLastRow(), 1).getValues();
+    const i = vals.findIndex(r => String(r[0]).trim() === "Gelöscht am");
+    if (i >= 0) st.getRange(i + 1, 2).setValue(Utilities.formatDate(new Date(), "Europe/Berlin", "dd.MM.yyyy HH:mm"));
+    const j = vals.findIndex(r => String(r[0]).trim() === "Reservierung offen");
+    if (j >= 0) st.getRange(j + 1, 2).setValue(false);
+    console.log("Alle Gäste- und Absagedaten wurden gelöscht.");
+    return true;
+  });
 }
