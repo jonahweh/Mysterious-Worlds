@@ -74,7 +74,7 @@ footer{font-size:12px;color:var(--muted);text-align:center}
   </div>
   <p class="tip" id="tip" hidden>Tipp: Mach einen Screenshot oder leg die Seite auf deinen Home-Bildschirm, dann hast du die Karte auch ohne Netz. Am Einlass den Bildschirm hell stellen.</p>
   <p class="offline" id="offline" hidden></p>
-  <footer>Mysterious Worlds · Musical 2026/27 · Eintritt frei</footer>
+  <footer>Mysterious Worlds · Musical 2026/27 · Gymnasium Ismaning<br>Hilfe: <a data-mail="outlook.com|jonah.weh" href="#" style="color:#b8a2ff">jonah.weh [at] outlook.com</a> · <a href="../impressum/" style="color:inherit">Impressum</a> · <a href="../datenschutz/" style="color:inherit">Datenschutz</a></footer>
 </main>
 <script src="../vendor/qrcode-generator.js"></script>
 <script>
@@ -170,6 +170,7 @@ $("cal").onclick = () => {
 };
 $("print").onclick = () => window.print();
 load();
+document.querySelectorAll("[data-mail]").forEach(a => { const m = a.dataset.mail.split("|").reverse().join("@"); a.href = "mailto:" + m; a.textContent = m; });
 </script>
 </body>
 </html>

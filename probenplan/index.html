@@ -582,7 +582,7 @@ footer a{color:var(--muted)}
     </div>
   </section>
 
-  <footer>Mysterious Worlds · Probenplan. Aus Datenschutzgründen stehen hier nur Rollennamen, keine Namen von Mitwirkenden. · <a href="#leitung">Leitung</a></footer>
+  <footer>Mysterious Worlds · Probenplan · Eine Veranstaltung des Gymnasiums Ismaning. Aus Datenschutzgründen stehen hier nur Rollennamen, keine Namen von Mitwirkenden.<br>Fragen zur Website: <a data-mail="outlook.com|jonah.weh" href="#">jonah.weh [at] outlook.com</a> · <a href="../impressum/">Impressum</a> · <a href="../datenschutz/">Datenschutz</a> · <a href="#leitung">Leitung</a></footer>
 </div>
 
 <dialog class="absdlg" id="absdlg" aria-labelledby="abs-h">
@@ -1488,6 +1488,7 @@ renderMap();
 renderRole();
 applyHash();
 window.addEventListener("hashchange", applyHash);
+document.querySelectorAll("[data-mail]").forEach(a => { const m = a.dataset.mail.split("|").reverse().join("@"); a.href = "mailto:" + m; a.textContent = m; });
 </script>
 
 </body>

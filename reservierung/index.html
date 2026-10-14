@@ -171,6 +171,7 @@ textarea{min-height:70px;resize:vertical}
 details.dsg{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:14px}
 details.dsg summary{cursor:pointer;font-weight:600}
 details.dsg p{margin-top:8px}
+details.dsg ul.cond{margin:8px 0 0;padding-left:20px;display:grid;gap:6px}
 footer{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 16px;justify-content:space-between}
 footer a,a{color:var(--accent)}
 .load{display:inline-block;width:16px;height:16px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:8px}
@@ -240,7 +241,7 @@ footer a,a{color:var(--accent)}
       <label>Hinweis <span class="opt">(optional, z. B. Rollstuhlplatz)</span><textarea id="hinweis" maxlength="300"></textarea></label>
       <div class="hp" aria-hidden="true"><label>Website<input type="text" id="website" tabindex="-1" autocomplete="off"></label></div>
       <p class="small muted" style="margin:-6px 0 0"><b>Freie Platzwahl</b> – wer zuerst kommt, sucht zuerst aus. Reservierte Plätze werden bis <span class="hold-min">15</span> Minuten vor Beginn freigehalten, danach gehen sie an Warteliste und Abendkasse. Deine Eintrittskarte mit QR-Code kommt per Mail.</p>
-      <label class="consent"><input type="checkbox" id="dsg" required><span>Ich bin einverstanden, dass Name, E-Mail und Anzahl der Plätze für die Reservierung gespeichert werden (siehe <a href="#datenschutz">Datenschutz</a>).</span></label>
+      <label class="consent"><input type="checkbox" id="dsg" required><span>Ich habe die <a href="#bedingungen" data-open="bedingungen">Reservierungsbedingungen</a> und die <a href="../datenschutz/">Datenschutzhinweise</a> gelesen.</span></label>
       <div class="err" id="err" role="alert" hidden></div>
       <button class="btn" type="submit" id="submit">Plätze reservieren</button>
     </form>
@@ -248,16 +249,26 @@ footer a,a{color:var(--accent)}
 
   <section class="sec" id="done" hidden aria-live="polite"></section>
 
-  <details class="dsg" id="datenschutz">
-    <summary>Datenschutz</summary>
-    <p>Für die Reservierung speichern wir deinen Namen, deine E-Mail-Adresse, die Anzahl der Plätze, den gewählten Abend und einen optionalen Hinweis. Die Daten werden nur genutzt, um die Plätze zu verwalten, dir die Bestätigung zu schicken und dich bei Änderungen zu informieren.</p>
-    <p>Gespeichert wird in einer Google-Tabelle des Musical-Teams (Google ist dabei technischer Dienstleister). Wir geben die Daten an niemanden weiter und löschen sie spätestens vier Wochen nach der letzten Aufführung.</p>
-    <p>Du kannst deine Reservierung jederzeit über den Link in der Bestätigungsmail stornieren. Für Auskunft oder Löschung antworte einfach auf die Bestätigungsmail.</p>
+  <details class="dsg" id="bedingungen">
+    <summary>Reservierungsbedingungen</summary>
+    <ul class="cond">
+      <li><b>Veranstalter</b> ist das Gymnasium Ismaning. Der Eintritt ist frei, die Reservierung kostenlos.</li>
+      <li>Pro Reservierung höchstens <b>6 Plätze</b>, pro E-Mail-Adresse nur <b>ein Abend</b>.</li>
+      <li><b>Freie Platzwahl:</b> Es gibt keine festen Plätze. Wer zuerst kommt, sucht zuerst aus.</li>
+      <li>Reservierte Plätze werden bis <b><span class="hold-min">15</span> Minuten vor Beginn</b> freigehalten. Wer später kommt, hat keinen Anspruch mehr auf den Platz. Nicht abgeholte Plätze gehen an die Warteliste und die Abendkasse.</li>
+      <li>Am Einlass zeigst du den QR-Code deiner Eintrittskarte oder nennst deinen Namen. Eine Karte gilt für die reservierte Anzahl an Personen.</li>
+      <li>Kannst du nicht kommen oder kommen weniger Personen? Bitte storniere über den Link in deiner Bestätigungsmail, damit andere nachrücken können.</li>
+      <li>Ein Platz auf der <b>Warteliste</b> ist keine Reservierung. Wer nachrückt, bekommt eine eigene Bestätigung per Mail.</li>
+      <li>Die Schule fertigt bei den Aufführungen offizielle Foto- und Videoaufnahmen an. <b>Private Foto- und Videoaufnahmen</b> sind während der Aufführung nicht erlaubt.</li>
+      <li>Es gilt die Hausordnung der Schule. Bitte folge den Hinweisen des Einlass-Teams.</li>
+      <li>Ändert sich etwas (z. B. Uhrzeit oder Ausfall), informieren wir dich per Mail an die angegebene Adresse.</li>
+    </ul>
+    <p>Fragen? Schreib an <a data-mail="outlook.com|jonah.weh" href="#">jonah.weh [at] outlook.com</a>.</p>
   </details>
 
   <footer>
-    <span>Mysterious Worlds · Musical 2026/27</span>
-    <span>Eintritt frei · Reservierung erbeten</span>
+    <span>Mysterious Worlds · Musical 2026/27 · Eine Veranstaltung des Gymnasiums Ismaning</span>
+    <span><a href="../impressum/">Impressum</a> · <a href="../datenschutz/">Datenschutz</a> · Hilfe: <a data-mail="outlook.com|jonah.weh" href="#">jonah.weh [at] outlook.com</a></span>
   </footer>
 </main>
 
@@ -387,7 +398,7 @@ $("form").addEventListener("submit", async ev => {
   if(!chosen) return showErr("Bitte wähle oben einen Abend.");
   if(name.length < 2) { $("name").focus(); return showErr("Bitte gib deinen Namen an."); }
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $("email").focus(); return showErr("Bitte prüfe deine E-Mail-Adresse."); }
-  if(!$("dsg").checked) return showErr("Bitte stimme dem Datenschutzhinweis zu.");
+  if(!$("dsg").checked) return showErr("Bitte bestätige, dass du die Reservierungsbedingungen und die Datenschutzhinweise gelesen hast.");
   const wm = waitMode();
   const btn = $("submit"), label = btn.textContent; btn.disabled = true;
   btn.innerHTML = `<span class="load" aria-hidden="true"></span>${wm ? "Wird eingetragen …" : "Wird reserviert …"}`;
@@ -552,6 +563,9 @@ const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 })();
 
 load();
+
+document.querySelectorAll("[data-mail]").forEach(a => { const m = a.dataset.mail.split("|").reverse().join("@"); a.href = "mailto:" + m; a.textContent = m; });
+document.addEventListener("click", ev => { const a = ev.target.closest("[data-open]"); if(!a) return; const d = document.getElementById(a.dataset.open); if(d){ d.open = true; } });
 </script>
 </body>
 </html>
