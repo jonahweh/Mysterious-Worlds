@@ -641,7 +641,7 @@ const STAND = "2026-10-14";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
   { art:"info", datum:"", titel:"Neue Termine: Gesamtproben, Einzelproben, Probenfahrt und Probensamstag", text:"Mittwochs gibt es nur noch die Gesamtproben am 14.10., 11.11., 25.11., 09.12. und 16.12. für alle, auch für die Schauspieler. Freitags laufen parallel Einzelproben für Songs (steht beim Termin). Die Szenenproben ab 23.10. sind dafür neu verteilt, damit niemand gleichzeitig in Szenen- und Einzelprobe ist – bitte deinen Plan neu ansehen! Probenfahrt nach Agatharied vom 17. bis 20.01.2027, Probensamstag am 20.02.2027 von 9 bis 17 Uhr.", ausgehaengt:"2026-10-14" },
-  { art:"info", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober", text:"Die erste Probe ist Freitag, 16.10., 13:55 Uhr. Geprobt werden Szene 1d (4) und Szene 2c (7a).", ausgehaengt:"2026-09-30" }
+  { art:"verschoben", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober: 11:30–13:00 Uhr in der Aula", text:"Die erste Probe ist in der 5.–6. Stunde, von 11:30 bis 13:00 Uhr in der Aula – nicht am Nachmittag. Geprobt werden Szene 1d (4) und Szene 2c (7a).", ausgehaengt:"2026-10-14" }
 ];
 
 /* ===== Rollen ===== */
@@ -661,7 +661,7 @@ const G = ["helen","vivian","james","petra"];
 // typ: fr | di | mi | pl | fe
 const PLAN = [
  {d:"2026-10-14",typ:"mi",zeit:["13:55","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:""},
- {d:"2026-10-16",typ:"fr",sz:"Szene 1d (4): Oberzauberer über Phillips Verschwinden informieren · Szene 2c (7a): Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
+ {d:"2026-10-16",typ:"fr",zeit:["11:30","13:00"],ort:"Aula",sz:"Szene 1d (4): Oberzauberer über Phillips Verschwinden informieren · Szene 2c (7a): Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
  {d:"2026-10-23",einzel:[{song:"Respect",lk:"Ge",roles:["petra"]}],typ:"fr",sz:"Szene 1a (1): Kessel brauen (mit Reprise) · Szene 1c (3): Franks Turm mit Phillip",songs:"Mysterious Worlds (Reprise), Once Upon a December",roles:["frank","lutzi","phillip","erzaehlerinnen"],note:"Beide Szenen spielen in Franks Turm."},
  {d:"2026-10-27",einzel:[{song:"Elephant Love Medley (Ansingen)",lk:"Ge",zeit:"15:30",roles:["helen","james"]}],typ:"di",sz:"Szene 2a (5): Cheshire Katze · Szene 3c (11): Madi und Sigi",songs:"Three Little Birds",roles:["phillip","gibbins","erzaehlerinnen","madeleine","sieglinde"],note:"Phillip ist in beiden Szenen dabei. Bei Madi und Sigi die gereimten Wechselpassagen im Rhythmus proben."},
  {d:"2026-10-30",einzel:[{song:"Like a Prayer",lk:"Br",roles:["weissekoenigin"]}],typ:"fr",sz:"Szene 1b (2): Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:""},
@@ -819,7 +819,7 @@ function renderNext(){
     const x = parse(nextEntry.d);
     const today2 = parse(nextEntry.d).getTime() === today.getTime();
     html = `<div class="big"><small>${today2 ? "heute" : WD[x.getDay()]}</small>${dm(nextEntry.d)}</div>
-    <div><div class="label">Nächste Probe · ${TYPE[nextEntry.typ]} · <span class="mono">${timeOf(nextEntry)}</span></div>
+    <div><div class="label">Nächste Probe · ${TYPE[nextEntry.typ]} · <span class="mono">${timeOf(nextEntry)}</span>${nextEntry.ort ? " · " + esc(nextEntry.ort) : ""}</div>
     <div class="what">${esc(shortWhat(nextEntry))}</div></div>`;
   }
   if(selected.size){
@@ -856,7 +856,7 @@ function entryHTML(e, me){
     ${cancelled?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}
     <div class="date">${e.bis ? `<span class="wd">${WD[x.getDay()]}–${WD[parse(e.bis).getDay()]}</span><span class="dm" style="font-size:18px">${dm(e.d)}–<br>${dm(e.bis)}</span>` : `<span class="wd">${WD[x.getDay()]}</span><span class="dm">${dm(e.d)}</span>`}</div>
     <div class="body">
-      <div class="line1"><span class="type">${TYPE[e.typ]}</span><span class="time">${timeOf(e)}</span>
+      <div class="line1"><span class="type">${TYPE[e.typ]}</span><span class="time">${timeOf(e)}${e.ort ? " · " + esc(e.ort) : ""}</span>
         ${ch.length?`<span class="flag">${cancelled?"Fällt aus":"Geändert"}</span>`:""}
         ${isNext?'<span class="nextbadge">● nächste Probe</span>':""}</div>
       <div class="scenes${cancelled?" cancelled":""}">${esc(title)}</div>
@@ -988,6 +988,7 @@ function icsFor(sel){
     if(e.typ==="auf" || e.typ==="fa") L.push(`DTSTART;VALUE=DATE:${e.d.replace(/-/g,"")}`, `DTEND;VALUE=DATE:${nextDay(e.bis || e.d)}`);
     else if(onlyEz && ezMine.every(x => x.zeit)){ const a = ezMine[0].zeit, [h,m] = a.split(":").map(Number), b = String(h + (m + 45 >= 60 ? 1 : 0)).padStart(2,"0") + ":" + String((m + 45) % 60).padStart(2,"0"); L.push(`DTSTART;TZID=Europe/Berlin:${local(e.d,a)}`, `DTEND;TZID=Europe/Berlin:${local(e.d,b)}`); }
     else { const [a,b] = slotOf(e); L.push(`DTSTART;TZID=Europe/Berlin:${local(e.d,a)}`, `DTEND;TZID=Europe/Berlin:${local(e.d,b)}`); }
+    if(e.ort) L.push(fold(`LOCATION:${escI(e.ort + ", Gymnasium Ismaning")}`));
     L.push(fold(`SUMMARY:${escI((cancelled ? "ABGESAGT: " : "") + "Musical · " + what)}`), fold(`DESCRIPTION:${escI(desc)}`), fold(`URL:${url}`));
     if(cancelled) L.push("STATUS:CANCELLED");
     L.push("END:VEVENT"); count++;
