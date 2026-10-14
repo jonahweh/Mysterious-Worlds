@@ -146,8 +146,8 @@ const ROLES = {
   frank:["Frank",["Frank"]], lutzi:["Lutzi",["Lutzi"]], phillip:["Phillip",["Phillip"]], james:["James",["James"]],
   helen:["Helen",["Helen"]], petra:["Petra",["Petra"]], vivian:["Vivian",["Vivian"]],
   oberzauberer:["Oberzauberer",["Oberzauberer"]], rotekoenigin:["Rote Königin",["Rote Königin"]],
-  weissekoenigin:["Weiße Königin",["Weiße Königin"]], katze:["Cheshire Katze",["Cheshire Katze"]],
-  gibbins:["Gibbins",["Gibbins"]], balldiva:["Balldiva",["Balldiva"]], madeleine:["Madeleine",["Madeleine"]],
+  weissekoenigin:["Weiße Königin",["Weiße Königin"]], 
+  gibbins:["Gibbins",["Gibbins","Cheshire Katze"]], balldiva:["Balldiva",["Balldiva"]], madeleine:["Madeleine",["Madeleine"]],
   sieglinde:["Sieglinde",["Sieglinde"]], erzaehlerinnen:["Erzählerinnen",["Linda","Lisa","Lina"]],
   gang:["Gang",["Gangmitglied*"]], frankjr:["Junger Frank",["Junger Frank"]], ozjr:["Junger Oberzauberer",["Junger Oberzauberer"]],
   lehrerin:["Lehrerin",["Lehrerin"]], schueler:["Schüler (80er)",["Mitschüler*"]]
@@ -159,7 +159,7 @@ const ls = {
 };
 const params = new URLSearchParams(location.hash.slice(1));
 let DATA = null, mode = "alles";
-let roles = new Set((params.get("r") || ls.get("mw-rollen") || "").split(".").filter(r => ROLES[r]));
+let roles = new Set((params.get("r") || ls.get("mw-rollen") || "").split(".").map(r => r === "katze" ? "gibbins" : r).filter(r => ROLES[r]));
 
 /* ===== Entschlüsseln (AES-GCM, Schlüssel aus dem Team-Passwort) ===== */
 const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
