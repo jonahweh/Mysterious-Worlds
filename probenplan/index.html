@@ -663,7 +663,7 @@ const PLAN = [
  {d:"2026-10-14",typ:"mi",zeit:["13:55","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:""},
  {d:"2026-10-16",typ:"fr",sz:"Szene 1d (4): Oberzauberer über Phillips Verschwinden informieren · Szene 2c (7a): Introduction der Roten Königin",songs:"",roles:[...G,"oberzauberer","rotekoenigin","weissekoenigin","erzaehlerinnen"],note:"Start mit zwei Sprechszenen ohne Songs."},
  {d:"2026-10-23",einzel:[{song:"Respect",lk:"Ge",roles:["petra"]}],typ:"fr",sz:"Szene 1a (1): Kessel brauen (mit Reprise) · Szene 1c (3): Franks Turm mit Phillip",songs:"Mysterious Worlds (Reprise), Once Upon a December",roles:["frank","lutzi","phillip","erzaehlerinnen"],note:"Beide Szenen spielen in Franks Turm."},
- {d:"2026-10-27",einzel:[{song:"Elephant Love Medley (Ansingen)",lk:"Ge",roles:["helen","james"]}],typ:"di",sz:"Szene 2a (5): Cheshire Katze · Szene 3c (11): Madi und Sigi",songs:"Three Little Birds",roles:["phillip","gibbins","erzaehlerinnen","madeleine","sieglinde"],note:"Phillip ist in beiden Szenen dabei. Bei Madi und Sigi die gereimten Wechselpassagen im Rhythmus proben."},
+ {d:"2026-10-27",einzel:[{song:"Elephant Love Medley (Ansingen)",lk:"Ge",zeit:"15:30",roles:["helen","james"]}],typ:"di",sz:"Szene 2a (5): Cheshire Katze · Szene 3c (11): Madi und Sigi",songs:"Three Little Birds",roles:["phillip","gibbins","erzaehlerinnen","madeleine","sieglinde"],note:"Phillip ist in beiden Szenen dabei. Bei Madi und Sigi die gereimten Wechselpassagen im Rhythmus proben."},
  {d:"2026-10-30",einzel:[{song:"Like a Prayer",lk:"Br",roles:["weissekoenigin"]}],typ:"fr",sz:"Szene 1b (2): Zuhause bei Vivian",songs:"I Say A Little Prayer",roles:["james","helen","petra","vivian"],note:""},
  {d:"2026-11-02",bis:"2026-11-06",typ:"fe",sz:"Herbstferien – keine Proben"},
  {d:"2026-11-10",typ:"di",sz:"Szene 2b (6): Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","weissekoenigin","gibbins"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
@@ -875,7 +875,7 @@ function einzelHTML(e, me){
   if(!e.einzel || !e.einzel.length) return "";
   return e.einzel.map(x => x.frei
     ? `<div class="einzel"><span class="ez-k">Einzelproben</span><span>Freigehalten für Songs, die noch mehr Übung brauchen. Wer dran ist, steht im Aushang.</span></div>`
-    : `<div class="einzel"><span class="ez-k">Parallel: Einzelprobe</span><span><b>${esc(x.song)}</b> mit ${esc(LK[x.lk] || x.lk)}</span>
+    : `<div class="einzel"><span class="ez-k">${x.zeit ? `Einzelprobe um ${esc(x.zeit)} Uhr, nach der Probe` : "Parallel: Einzelprobe"}</span><span><b>${esc(x.song)}</b> mit ${esc(LK[x.lk] || x.lk)}</span>
         <div class="roles">${ezR(x).map(r => `<button class="chip${me && me.has(r) ? " me" : ""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div></div>`).join("");
 }
 /* Szenentext zur Probe (passwortgeschützt unter szenen/) */
@@ -981,11 +981,12 @@ function icsFor(sel){
       : onlyEz ? "Einzelprobe " + ezMine.map(x => x.song).join(" + ") + (leads.length ? " (leiten)" : "")
       : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
     const desc = [e.sz, e.songs && "Songs: " + e.songs, e.roles.length && "Rollen: " + e.roles.map(r => ROLES[r]).join(", "), e.note,
-      ...(e.einzel || []).map(x => x.frei ? "Einzelproben: freigehalten für Songs mit mehr Übungsbedarf" : `Parallel Einzelprobe: ${x.song} mit ${LK[x.lk] || x.lk} (${x.roles.map(r => ROLES[r]).join(", ")})`),
+      ...(e.einzel || []).map(x => x.frei ? "Einzelproben: freigehalten für Songs mit mehr Übungsbedarf" : `${x.zeit ? "Einzelprobe um " + x.zeit + " Uhr" : "Parallel Einzelprobe"}: ${x.song} mit ${LK[x.lk] || x.lk} (${x.roles.map(r => ROLES[r]).join(", ")})`),
       ...changesFor(e.d).map(a => "Aushang: " + a.titel + (a.text ? " – " + a.text : "")),
       "Aktueller Stand und Änderungen: " + url].filter(Boolean).join("\n");
     L.push("BEGIN:VEVENT", `UID:mw-${e.d}-${e.typ}@jonahweh.github.io`, `DTSTAMP:${stamp}`);
     if(e.typ==="auf" || e.typ==="fa") L.push(`DTSTART;VALUE=DATE:${e.d.replace(/-/g,"")}`, `DTEND;VALUE=DATE:${nextDay(e.bis || e.d)}`);
+    else if(onlyEz && ezMine.every(x => x.zeit)){ const a = ezMine[0].zeit, [h,m] = a.split(":").map(Number), b = String(h + (m + 45 >= 60 ? 1 : 0)).padStart(2,"0") + ":" + String((m + 45) % 60).padStart(2,"0"); L.push(`DTSTART;TZID=Europe/Berlin:${local(e.d,a)}`, `DTEND;TZID=Europe/Berlin:${local(e.d,b)}`); }
     else { const [a,b] = slotOf(e); L.push(`DTSTART;TZID=Europe/Berlin:${local(e.d,a)}`, `DTEND;TZID=Europe/Berlin:${local(e.d,b)}`); }
     L.push(fold(`SUMMARY:${escI((cancelled ? "ABGESAGT: " : "") + "Musical · " + what)}`), fold(`DESCRIPTION:${escI(desc)}`), fold(`URL:${url}`));
     if(cancelled) L.push("STATUS:CANCELLED");
