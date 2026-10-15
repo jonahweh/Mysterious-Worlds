@@ -504,7 +504,7 @@ footer a{color:var(--muted)}
   <section id="view-gesamt" role="tabpanel" aria-labelledby="tab-gesamt">
     <div class="legend-row">
     <div class="legend">
-      <span><i class="sw" style="background:var(--fr)"></i>Fr 13:55–15:25 Szenenprobe</span>
+      <span><i class="sw" style="background:var(--fr)"></i>Fr 13:30–15:00 Szenenprobe</span>
       <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
       <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–15:25 Gesamtprobe (alle)</span>
       <span><i class="sw" style="background:var(--accent-soft);outline:1.5px solid var(--accent)"></i>Probenfahrt &amp; Probensamstag (alle)</span>
@@ -551,7 +551,7 @@ footer a{color:var(--muted)}
       <div class="info-card">
         <h3>Probenzeiten</h3>
         <ul>
-          <li><b>Freitag</b> <span class="mono">13:55–15:25</span> · Szenenprobe (Regeltermin)</li>
+          <li><b>Freitag</b> <span class="mono">13:30–15:00</span> · Szenenprobe (Regeltermin; am 16.10. ausnahmsweise 11:30–13:00 in der Aula)</li>
           <li><b>Dienstag</b> <span class="mono">13:55–15:25</span> · Zusatzprobe, nur wenn im Plan</li>
           <li><b>Mittwoch</b> <span class="mono">14:40–15:25</span> · Gesamtprobe mit Frau Geyer, nur an den Terminen im Plan (11.11., 25.11., 09.12., 16.12.; am 14.10. schon ab 13:55)</li>
           <li><b>Mittwoch</b> <span class="mono">13:55–14:40</span> · Einzelchorproben, nur wer eingeteilt ist</li>
@@ -637,9 +637,10 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-10-14";
+const STAND = "2026-10-15";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
+  { art:"verschoben", datum:"", titel:"Freitagsproben jetzt 13:30–15:00 Uhr", text:"Ab dem 23.10. beginnen alle Freitagsproben um 13:30 Uhr und gehen 1,5 Stunden bis 15:00 Uhr. Dienstags bleibt es bei 13:55–15:25 Uhr.", ausgehaengt:"2026-10-15" },
   { art:"info", datum:"", titel:"Neue Termine: Gesamtproben, Einzelproben, Probenfahrt und Probensamstag", text:"Mittwochs gibt es nur noch die Gesamtproben am 14.10., 11.11., 25.11., 09.12. und 16.12. für alle, auch für die Schauspieler. Freitags laufen parallel Einzelproben für Songs (steht beim Termin). Die Szenenproben ab 23.10. sind dafür neu verteilt, damit niemand gleichzeitig in Szenen- und Einzelprobe ist – bitte deinen Plan neu ansehen! Probenfahrt nach Agatharied vom 17. bis 20.01.2027, Probensamstag am 20.02.2027 von 9 bis 17 Uhr.", ausgehaengt:"2026-10-14" },
   { art:"verschoben", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober: 11:30–13:00 Uhr in der Aula", text:"Die erste Probe ist in der 5.–6. Stunde, von 11:30 bis 13:00 Uhr in der Aula – nicht am Nachmittag. Geprobt werden Szene 1d und Szene 2c.", ausgehaengt:"2026-10-14" }
 ];
@@ -730,7 +731,7 @@ const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
 const dm = s => { const x = parse(s); return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."; };
-const slotOf = e => e.zeit || (parse(e.d).getDay()===3 ? ["14:40","15:25"] : ["13:55","15:25"]);
+const slotOf = e => e.zeit || ({3:["14:40","15:25"], 5:["13:30","15:00"]}[parse(e.d).getDay()] || ["13:55","15:25"]);
 const timeOf = e => e.typ==="auf" ? "Uhrzeit folgt" : e.typ==="fa" ? `${WD[parse(e.d).getDay()]} ${dm(e.d)} – ${WD[parse(e.bis).getDay()]} ${dm(e.bis)}` : slotOf(e).join("–");
 /* Termine für alle Beteiligten: Gesamtproben (Mi), Probenfahrt, Probensamstag */
 const FOR_ALL = ["mi","pt","fa"];
