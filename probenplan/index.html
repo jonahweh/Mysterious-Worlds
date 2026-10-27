@@ -80,6 +80,47 @@ h1 span{color:var(--accent)}
 .board-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
 .board h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
 .board .stand{font-family:var(--mono);font-size:12px}
+/* Umfrage-Tafel im Aushang */
+.tafel{position:relative;background:#22382c;background-image:radial-gradient(120% 80% at 30% 20%,rgba(255,255,255,.07),transparent 60%);color:#f4f1e6;
+  border:8px solid #8a5a2b;border-radius:6px;box-shadow:inset 0 0 0 2px #5e3b19,0 3px 0 #231c00;padding:16px 16px 14px;display:grid;gap:10px}
+.tafel-k{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#c9e2b8}
+.tafel h3{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;letter-spacing:.02em;margin:0}
+.tafel-p,.tafel-note{margin:0;font-size:14px;color:#e6e2d3}
+.tafel-note{font-size:12px;color:#b9c4b2}
+.umf-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.umf-opt{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;border:2px dashed rgba(244,241,230,.5);border-radius:10px;padding:12px 8px;cursor:pointer}
+.umf-opt input{position:absolute;opacity:0;pointer-events:none}
+.umf-opt .crown{font-size:30px;line-height:1}
+.umf-opt.rot .crown{color:#ff6b7f}.umf-opt.weiss .crown{color:#ffffff}
+.umf-opt b{font-size:15px}
+.umf-opt small{font-size:12px;color:#c9e2b8;min-height:1em}
+.umf-opt:has(input:checked){border-style:solid;background:rgba(255,255,255,.12)}
+.umf-opt.rot:has(input:checked){border-color:#ff6b7f}.umf-opt.weiss:has(input:checked){border-color:#fff}
+.umf-opt:has(input:focus-visible){outline:3px solid #ffd23f;outline-offset:2px}
+.umf-opt.full{opacity:.5;cursor:not-allowed}
+.umf-row{display:flex;flex-wrap:wrap;gap:8px}
+.umf-row input{flex:1 1 180px;min-width:0;padding:8px 12px;border-radius:999px;border:2px solid rgba(244,241,230,.6);background:rgba(0,0,0,.18);color:#fff;font:inherit}
+.umf-row input::placeholder{color:#b9c4b2}
+.umf-btn{border:2px solid #ffd23f;background:#ffd23f;color:#231c00;border-radius:999px;padding:8px 18px;font:inherit;font-weight:700;cursor:pointer}
+.umf-btn:disabled{opacity:.6;cursor:wait}
+.umf-err{margin:0;font-size:14px;font-weight:600;color:#ffb3b3}
+.umf-done{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-weight:600;background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px}
+.umf-link{border:0;background:none;color:#ffd23f;text-decoration:underline;font:inherit;font-size:14px;cursor:pointer;padding:0}
+@media (max-width:420px){.umf-choice{grid-template-columns:1fr 1fr}.tafel h3{font-size:24px}}
+@media print{.tafel{display:none!important}}
+/* Umfrage-Ergebnis (nur #leitung) */
+.leit-umf{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:8px;padding:12px 14px;display:grid;gap:10px}
+.leit-umf h3{font-size:16px;margin:0}
+.lu-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lu-col{display:grid;gap:4px;align-content:start}
+.lu-col h4{margin:0;font-size:14px;display:grid;gap:0}
+.lu-col .n{font-family:var(--display);font-weight:800;font-size:22px}
+.lu-col.rot .n{color:#c8102e}.lu-col.weiss .n{color:var(--accent)}
+.lu-bar{height:8px;border-radius:99px;background:var(--line);position:relative;overflow:hidden}
+.lu-bar i{position:absolute;inset:0 auto 0 0;background:currentColor;border-radius:99px}
+.lu-bar b{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5}
+.lu-col ol{margin:4px 0 0;padding-left:20px;font-size:14px}
+.lu-hint{font-size:12px;color:var(--muted)}
 .notices{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .notice{background:#fffbe6;border:2px solid #231c00;border-radius:3px;padding:12px 14px;display:grid;gap:4px;min-width:0}
 .notice-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
@@ -484,6 +525,21 @@ footer a{color:var(--muted)}
     </div>
     <p class="newsline" id="newsline" hidden></p>
     <ul class="notices" id="notices"></ul>
+    <div class="tafel" id="umfrage" hidden aria-labelledby="umf-h">
+      <div class="tafel-k">Umfrage</div>
+      <h3 id="umf-h">Gefolge: Rote oder Weiße Königin?</h3>
+      <p class="tafel-p">Für das Gefolge der beiden Königinnen suchen wir pro Seite 5 bis 10 Leute. Bei wem möchtest du mitmachen?</p>
+      <form id="umf-form" novalidate>
+        <div class="umf-choice" role="radiogroup" aria-label="Seite wählen">
+          <label class="umf-opt rot"><input type="radio" name="umf" value="rot"><span class="crown" aria-hidden="true">♛</span><b>Rote Königin</b><small id="umf-st-rot"></small></label>
+          <label class="umf-opt weiss"><input type="radio" name="umf" value="weiss"><span class="crown" aria-hidden="true">♛</span><b>Weiße Königin</b><small id="umf-st-weiss"></small></label>
+        </div>
+        <div class="umf-row"><input type="text" id="umf-name" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="umf-send">Abstimmen</button></div>
+        <p class="umf-err" id="umf-err" role="alert" hidden></p>
+      </form>
+      <div class="umf-done" id="umf-done" hidden><span id="umf-done-txt"></span><span><button type="button" class="umf-link" id="umf-change">Ändern</button> · <button type="button" class="umf-link" id="umf-undo">Zurückziehen</button></span></div>
+      <p class="tafel-note">Wer wofür gestimmt hat, sieht nur die Leitung.</p>
+    </div>
     <details class="archive" id="archive" hidden><summary id="archive-sum">Ältere Aushänge</summary><ul class="notices" id="archive-list"></ul></details>
   </section>
 
@@ -593,15 +649,16 @@ footer a{color:var(--muted)}
 
   <section id="view-leitung" hidden aria-labelledby="leit-h">
     <div class="leit">
-      <div class="leit-head"><h2 id="leit-h">Absagen · Leitung</h2>
+      <div class="leit-head"><h2 id="leit-h">Leitung · Absagen &amp; Umfrage</h2>
         <span><button class="linkbtn" type="button" id="leit-reload" hidden>Aktualisieren</button> <button class="linkbtn" type="button" id="leit-out" hidden>Abmelden</button> <button class="linkbtn" type="button" data-goto="gesamt">Zum Plan</button></span></div>
       <form class="leit-pin" id="leit-pin">
         <b>Leitungs-PIN</b>
         <span class="note">Steht in der Reservierungs-Tabelle im Blatt „Einstellungen“.</span>
         <input id="leit-pinval" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Leitungs-PIN">
         <span class="err" id="leit-err" role="alert" style="color:var(--ausfall);font-weight:600"></span>
-        <button class="btn" type="submit">Absagen anzeigen</button>
+        <button class="btn" type="submit">Anzeigen</button>
       </form>
+      <div id="leit-umf" aria-live="polite"></div>
       <div id="leit-body" aria-live="polite"></div>
     </div>
   </section>
@@ -1518,10 +1575,92 @@ document.addEventListener("click", async ev => {
 function todayISO(){ return today.getFullYear() + "-" + String(today.getMonth()+1).padStart(2,"0") + "-" + String(today.getDate()).padStart(2,"0"); }
 
 /* ===== Leitung: Übersicht aller Absagen (nur mit Leitungs-PIN) ===== */
+/* ===== Umfrage Gefolge (Tafel im Aushang) ===== */
+const UMF_TXT = { rot:"Rote Königin", weiss:"Weiße Königin" }, UMF_GEN = { rot:"Roten Königin", weiss:"Weißen Königin" };
+let myVote = lsGet("mw-umfrage", null), umfFull = { rot:false, weiss:false }, umfEdit = false;
+function umfRender(){
+  const done = myVote && myVote.status !== "zurückgezogen" && myVote.status !== "gelöscht" && !umfEdit;
+  $a("umf-form").hidden = !!done; $a("umf-done").hidden = !done;
+  if(done) $a("umf-done-txt").textContent = `✓ Du (${myVote.name}) hast für das Gefolge der ${UMF_GEN[myVote.wahl]} gestimmt.`;
+  ["rot","weiss"].forEach(k => {
+    const mineHere = myVote && myVote.wahl === k && !done && myVote.status === "aktiv";
+    const full = umfFull[k] && !mineHere;
+    const inp = document.querySelector(`#umf-form input[value="${k}"]`);
+    inp.disabled = full; inp.closest(".umf-opt").classList.toggle("full", full);
+    if(full && inp.checked) inp.checked = false;
+    $a("umf-st-" + k).textContent = full ? "schon voll" : "noch Plätze frei";
+  });
+}
+async function umfLoad(){
+  try{
+    const r = await api(myVote ? { action:"poll_status", id: myVote.id, token: myVote.token } : { action:"poll_status" });
+    if(!r.ok || !r.open){ $a("umfrage").hidden = true; return; }
+    umfFull = r.full || umfFull;
+    if(myVote && r.mine){ if(r.mine.status === "gelöscht"){ myVote = null; lsSet("mw-umfrage", null); } else { myVote = Object.assign(myVote, r.mine); lsSet("mw-umfrage", myVote); } }
+    $a("umfrage").hidden = false; umfRender();
+  }catch(e){ $a("umfrage").hidden = true; }
+}
+$a("umf-name").value = (myVote && myVote.name) || lsGet("mw-name", "");
+$a("umf-form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const err = $a("umf-err"), btn = $a("umf-send"); err.hidden = true;
+  const wahl = (document.querySelector('#umf-form input[name="umf"]:checked') || {}).value;
+  const name = $a("umf-name").value.trim().replace(/\s+/g, " ");
+  if(!wahl){ err.textContent = "Bitte wähle eine Seite."; err.hidden = false; return; }
+  if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; $a("umf-name").focus(); return; }
+  btn.disabled = true; btn.textContent = "Sende …";
+  try{
+    const own = myVote && myVote.status === "aktiv" ? { id: myVote.id, token: myVote.token } : {};
+    const r = await api(Object.assign({ action:"poll_vote", name, wahl }, own));
+    if(!r.ok){ err.textContent = r.error || "Das hat nicht geklappt."; err.hidden = false; if(r.full) umfLoad(); return; }
+    myVote = { id: r.id, token: r.token, wahl: r.wahl, name, status:"aktiv" }; lsSet("mw-umfrage", myVote); lsSet("mw-name", name);
+    umfEdit = false; umfRender(); absToast("Danke, deine Stimme ist angekommen!");
+  }catch(e){ err.textContent = "Keine Verbindung. Bitte später nochmal versuchen."; err.hidden = false; }
+  finally{ btn.disabled = false; btn.textContent = "Abstimmen"; }
+});
+$a("umf-change").onclick = () => {
+  umfEdit = true;
+  const inp = document.querySelector(`#umf-form input[value="${myVote.wahl}"]`); if(inp) inp.checked = true;
+  $a("umf-name").value = myVote.name; umfRender();
+};
+$a("umf-undo").onclick = async () => {
+  const u = $a("umf-undo");
+  if(!u.classList.contains("armed")){ u.classList.add("armed"); u.textContent = "Wirklich zurückziehen?"; setTimeout(() => { if(u.isConnected){ u.classList.remove("armed"); u.textContent = "Zurückziehen"; } }, 4000); return; }
+  u.classList.remove("armed"); u.textContent = "Zurückziehen";
+  try{
+    const r = await api({ action:"poll_cancel", id: myVote.id, token: myVote.token });
+    if(!r.ok && r.error !== "Stimme nicht gefunden."){ absToast(r.error || "Das hat nicht geklappt."); return; }
+    myVote = null; lsSet("mw-umfrage", null); umfEdit = false;
+    document.querySelectorAll('#umf-form input[name="umf"]').forEach(i => i.checked = false);
+    absToast("Deine Stimme ist zurückgezogen."); umfLoad();
+  }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
+};
+umfLoad();
+
+/* Umfrage-Ergebnis für die Leitung */
+async function loadUmfrageLeitung(){
+  const box = $a("leit-umf");
+  try{
+    const r = await api({ action:"poll_results", pin: leitPin });
+    if(!r.ok){ box.innerHTML = ""; return; }
+    const col = (k, list) => {
+      const n = list.length, pct = Math.min(100, n / r.max * 100), minPct = 5 / r.max * 100;
+      const hint = n >= r.max ? "voll" : n >= 5 ? "genug Leute" : `noch ${5 - n} bis zum Minimum (5)`;
+      return `<div class="lu-col ${k}"><h4><span>Gefolge ${UMF_TXT[k]}</span><span class="n">${n}<small style="font-size:13px;color:var(--muted)"> / ${r.max}</small></span></h4>
+        <div class="lu-bar" style="color:${k === "rot" ? "#c8102e" : "var(--accent)"}"><i style="width:${pct}%"></i><b style="left:${minPct}%" title="Minimum 5"></b></div>
+        <span class="lu-hint">${hint}</span>
+        ${n ? `<ol>${list.map(x => `<li>${esc(x.name)}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch keine Stimmen.</span>'}</div>`;
+    };
+    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${r.open ? "" : " · beendet"}</h3>
+      <div class="lu-cols">${col("rot", r.rot)}${col("weiss", r.weiss)}</div>
+      <span class="lu-hint">${r.rot.length + r.weiss.length} Stimmen. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>`;
+  }catch(e){ box.innerHTML = ""; }
+}
+
 let leitPin = lsGet("mw-leit-pin", ""), leitBusy = false;
 function openLeitung(){
   $a("leit-pin").hidden = !!leitPin; $a("leit-out").hidden = !leitPin; $a("leit-reload").hidden = !leitPin;
-  if(leitPin) loadLeitung(); else { $a("leit-body").innerHTML = ""; setTimeout(() => $a("leit-pinval").focus(), 30); }
+  if(leitPin) loadLeitung(); else { $a("leit-body").innerHTML = ""; $a("leit-umf").innerHTML = ""; setTimeout(() => $a("leit-pinval").focus(), 30); }
 }
 $a("leit-pin").addEventListener("submit", ev => { ev.preventDefault(); const v = $a("leit-pinval").value.trim(); if(!v) return; leitPin = v; loadLeitung(true); });
 $a("leit-out").onclick = () => { leitPin = ""; lsSet("mw-leit-pin", null); $a("leit-pinval").value = ""; openLeitung(); };
@@ -1537,7 +1676,7 @@ async function loadLeitung(fromPin){
       $a("leit-body").innerHTML = `<p class="note">${esc(r.error || "Fehler beim Laden.")}</p>`; return;
     }
     lsSet("mw-leit-pin", leitPin); $a("leit-pin").hidden = true; $a("leit-out").hidden = false; $a("leit-reload").hidden = false;
-    renderLeitung(r.items);
+    renderLeitung(r.items); loadUmfrageLeitung();
   }catch(e){
     $a("leit-body").innerHTML = '<p class="note">Keine Verbindung. Bitte später nochmal „Aktualisieren“.</p>';
     if(fromPin){ $a("leit-err").textContent = "Keine Verbindung."; }

@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 9 (Impressum in Mails, automatische Löschung)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 10 (Umfrage Gefolge im Probenplan)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -22,6 +22,8 @@
  *   und Einlass-PIN im Blatt "Einstellungen" ändern. Wirkt sofort, ohne neue Bereitstellung.
  * - Probenabsagen der Mitwirkenden (aus dem Probenplan) stehen im Blatt "Absagen".
  *   Übersicht im Probenplan unter …/probenplan/#leitung mit der Leitungs-PIN.
+ * - Umfrage „Gefolge Rote oder Weiße Königin“ (Aushang im Probenplan): Stimmen im Blatt "Umfrage",
+ *   Ergebnis ebenfalls unter #leitung. Ein-/ausschalten und Höchstzahl pro Seite im Blatt "Einstellungen".
  * - Stornieren von Hand: in "Reservierungen" die Spalte Status auf "storniert" setzen
  *   (oder die Zahl bei Plätze verkleinern). Freie Plätze gehen automatisch an die Warteliste.
  */
@@ -36,10 +38,11 @@ const IMPRESSUM = "https://jonahweh.github.io/Mysterious-Worlds/impressum/";
 const DATENSCHUTZ = "https://jonahweh.github.io/Mysterious-Worlds/datenschutz/";
 const SUPPORT = "jonah.weh@outlook.com"; // Ansprechpartner für Fragen (steht auch im Impressum)
 const LOGO = "https://jonahweh.github.io/Mysterious-Worlds/mail-header.jpg"; // Kopfbild der Bestätigungsmail
-const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste", ABS = "Absagen";
+const RES = "Reservierungen", SET = "Einstellungen", WL = "Warteliste", ABS = "Absagen", UMF = "Umfrage";
 const COLS = ["Eingang", "Code", "Abend", "Plätze", "Name", "E-Mail", "Hinweis", "Status", "Storno-Token", "Storniert am",
   "Angekommen", "Angekommen um", "Ursprünglich", "Quelle", "Team-Hinweis"];
 const WCOLS = ["Eingang", "ID", "Abend", "Plätze", "Name", "E-Mail", "Status", "Code", "Token", "Geändert am", "Hinweis"];
+const UCOLS = ["Eingang", "ID", "Name", "Wahl", "Status", "Token", "Geändert am"];
 const ACOLS = ["Eingang", "ID", "Probe", "Name", "Rolle(n)", "Art", "Uhrzeit", "Grund", "Status", "Token", "Geändert am"];
 const C = { eingang: 1, code: 2, abend: 3, plaetze: 4, name: 5, email: 6, hinweis: 7, status: 8, token: 9, storniert: 10, da: 11, daUm: 12, orig: 13, quelle: 14, team: 15 };
 const W = { eingang: 1, id: 2, abend: 3, plaetze: 4, name: 5, email: 6, status: 7, code: 8, token: 9, geaendert: 10 };
@@ -89,6 +92,14 @@ function setup() {
   ab.getRange("C2:C").setNumberFormat("@");
   ab.getRange("G2:G").setNumberFormat("@");
   ab.getRange("I2:I").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["aktiv", "zurückgezogen"], true).build());
+  // Umfrage Gefolge (Probenplan)
+  let um = ss.getSheetByName(UMF);
+  if (!um) um = ss.insertSheet(UMF);
+  ensureHeader_(um, UCOLS);
+  um.setFrozenRows(1);
+  um.getRange("A:A").setNumberFormat("dd.mm.yyyy hh:mm");
+  um.getRange("D2:D").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(Object.values(SEITEN_), true).build());
+  um.getRange("E2:E").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["aktiv", "zurückgezogen"], true).build());
   // Einstellungen
   let s = ss.getSheetByName(SET);
   if (!s) s = ss.insertSheet(SET);
@@ -112,6 +123,8 @@ function setup() {
   ensureSetting_(s, "Daten löschen am", "2027-04-15", "Ab diesem Tag löscht das Script automatisch alle Reservierungen, Wartelisten-Einträge und Probenabsagen (Datenschutz). Format JJJJ-MM-TT");
   ensureSetting_(s, "Gelöscht am", "", "wird automatisch eingetragen");
   ensureSetting_(s, "Absagen möglich", true, "Mitwirkende können sich im Probenplan von Proben abmelden", true);
+  ensureSetting_(s, "Umfrage Gefolge offen", true, "Umfrage im Aushang des Probenplans: Gefolge der Roten oder der Weißen Königin", true);
+  ensureSetting_(s, "Gefolge max. pro Seite", 10, "Ist eine Seite voll, kann man sie nicht mehr wählen");
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
     `=SUMIFS(${RES}!D:D,${RES}!C:C,"${n.id}",${RES}!H:H,"aktiv")`, "wird automatisch berechnet"));
   ensureSetting_(s, "Auf der Warteliste (Plätze)", `=SUMIFS(${WL}!D:D,${WL}!G:G,"wartend")`, "wird automatisch berechnet");
@@ -166,6 +179,8 @@ function settings_() {
     pin: String(m["Einlass-PIN"] === undefined ? "" : m["Einlass-PIN"]).trim(),
     leitPin: String(m["Leitungs-PIN"] === undefined ? "" : m["Leitungs-PIN"]).trim(),
     absagen: m["Absagen möglich"] !== false,
+    umfrage: m["Umfrage Gefolge offen"] !== false,
+    umfrageMax: Math.max(1, Number(m["Gefolge max. pro Seite"]) || 10),
     loeschen: nightId_(m["Daten löschen am"] || "2027-04-15"),
     geloescht: m["Gelöscht am"] ? String(m["Gelöscht am"]) : ""
   };
@@ -328,7 +343,8 @@ function doPost(e) {
   const a = d.action || "reserve";
   const fn = { reserve: reserve_, waitlist: waitlist_, cancel: cancel_, lookup: lookup_, leave: leave_,
     admin_list: adminList_, checkin: checkin_, walkin: walkin_, release: release_, release_all: releaseAll_, admit: admit_, admin_find: adminFind_,
-    absence_add: absenceAdd_, absence_mine: absenceMine_, absence_cancel: absenceCancel_, absence_list: absenceList_ }[a];
+    absence_add: absenceAdd_, absence_mine: absenceMine_, absence_cancel: absenceCancel_, absence_list: absenceList_,
+    poll_status: pollStatus_, poll_vote: pollVote_, poll_cancel: pollCancel_, poll_results: pollResults_ }[a];
   if (!fn) return out_({ ok: false, error: "Unbekannte Aktion." });
   return out_(fn(d));
 }
@@ -715,6 +731,75 @@ function absenceList_(d) {
 }
 
 
+/* ---------- Umfrage: Gefolge der Roten oder der Weißen Königin ---------- */
+// Öffentlich sieht man nur, ob eine Seite noch Plätze hat. Namen und Zahlen sieht nur die Leitung (#leitung, Leitungs-PIN).
+const SEITEN_ = { rot: "Rote Königin", weiss: "Weiße Königin" };
+function pollRows_() {
+  const sh = book_().getSheetByName(UMF);
+  if (!sh) throw new Error("Blatt „Umfrage“ fehlt: bitte einmal setup ausführen.");
+  const v = sh.getDataRange().getValues();
+  return { sh: sh, rows: v.slice(1).map((r, i) => ({ row: i + 2, eingang: r[0], id: String(r[1]), name: String(r[2]),
+    wahl: Object.keys(SEITEN_).find(k => SEITEN_[k] === String(r[3]).trim()) || "", status: String(r[4]), token: String(r[5]) })).filter(r => r.id) };
+}
+function pollCount_(rows) {
+  const c = { rot: 0, weiss: 0 };
+  rows.filter(r => r.status === "aktiv" && c[r.wahl] !== undefined).forEach(r => c[r.wahl]++);
+  return c;
+}
+function pollStatus_(d) {
+  const s = settings_(), P = pollRows_(), c = pollCount_(P.rows);
+  let mine = null;
+  if (d && d.id) {
+    const r = P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || ""));
+    mine = r ? { id: r.id, wahl: r.wahl, status: r.status, name: r.name } : { id: String(d.id), status: "gelöscht" };
+  }
+  return { ok: true, open: s.umfrage, full: { rot: c.rot >= s.umfrageMax, weiss: c.weiss >= s.umfrageMax }, mine: mine };
+}
+function pollVote_(d) {
+  const s = settings_();
+  if (!s.umfrage) return { ok: false, error: "Die Umfrage ist beendet." };
+  const wahl = SEITEN_[d.wahl] ? d.wahl : "";
+  if (!wahl) return { ok: false, error: "Bitte wähle eine Seite." };
+  const name = String(d.name || "").trim().replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 60) return { ok: false, error: "Bitte gib deinen Namen an." };
+  return locked_(() => {
+    const P = pollRows_(), c = pollCount_(P.rows);
+    const own = d.id ? P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.status === "aktiv") : null;
+    if (!own && P.rows.some(r => r.status === "aktiv" && norm_(r.name) === norm_(name)))
+      return { ok: false, error: "Mit diesem Namen wurde schon abgestimmt. Ändern geht nur auf dem Gerät, mit dem du abgestimmt hast – sonst bitte bei der Leitung melden." };
+    if ((!own || own.wahl !== wahl) && c[wahl] >= s.umfrageMax)
+      return { ok: false, error: "Beim Gefolge der " + { rot: "Roten Königin", weiss: "Weißen Königin" }[wahl] + " sind schon alle Plätze vergeben.", full: true };
+    if (own) {
+      P.sh.getRange(own.row, 3, 1, 2).setValues([[name, SEITEN_[wahl]]]);
+      P.sh.getRange(own.row, 7).setValue(new Date());
+      return { ok: true, id: own.id, token: own.token, wahl: wahl };
+    }
+    let id; do { id = rand_("U-", 6); } while (P.rows.some(r => r.id === id));
+    const token = token_();
+    P.sh.appendRow([new Date(), id, name, SEITEN_[wahl], "aktiv", token, ""]);
+    return { ok: true, id: id, token: token, wahl: wahl };
+  });
+}
+function pollCancel_(d) {
+  return locked_(() => {
+    const P = pollRows_(), r = P.rows.find(x => x.id === String(d.id || "") && x.token === String(d.token || ""));
+    if (!r) return { ok: false, error: "Stimme nicht gefunden." };
+    P.sh.getRange(r.row, 5).setValue("zurückgezogen");
+    P.sh.getRange(r.row, 7).setValue(new Date());
+    return { ok: true };
+  });
+}
+function pollResults_(d) {
+  const s = settings_();
+  if (!s.leitPin) return { ok: false, error: "Im Blatt „Einstellungen“ ist keine Leitungs-PIN gesetzt (setup ausführen)." };
+  const p = pinOk_({ pin: s.leitPin }, d.pin);
+  if (!p.ok) return p;
+  const rows = pollRows_().rows.filter(r => r.status === "aktiv" && r.wahl);
+  const list = k => rows.filter(r => r.wahl === k).sort((a, b) => a.name.localeCompare(b.name, "de"))
+    .map(r => ({ name: r.name, am: r.eingang instanceof Date ? Utilities.formatDate(r.eingang, "Europe/Berlin", "dd.MM.") : "" }));
+  return { ok: true, open: s.umfrage, max: s.umfrageMax, rot: list("rot"), weiss: list("weiss") };
+}
+
 /* ---------- Automatische Löschung (Datenschutz) ---------- */
 // Läuft täglich per Trigger (von setup angelegt) und zusätzlich bei jedem Seitenaufruf.
 function taeglich() { datenLoeschen_(); }
@@ -723,7 +808,7 @@ function datenLoeschen_() {
   if (s.geloescht || today_() < s.loeschen) return false;
   return locked_(() => {
     const ss = book_();
-    [RES, WL, ABS].forEach(name => {
+    [RES, WL, ABS, UMF].forEach(name => {
       const sh = ss.getSheetByName(name);
       if (sh && sh.getLastRow() > 1) sh.deleteRows(2, sh.getLastRow() - 1);
     });
