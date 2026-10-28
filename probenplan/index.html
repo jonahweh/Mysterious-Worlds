@@ -87,6 +87,7 @@ h1 span{color:var(--accent)}
 .tafel h3{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;letter-spacing:.02em;margin:0}
 .tafel-p,.tafel-note{margin:0;font-size:14px;color:#e6e2d3}
 .tafel-note{font-size:12px;color:#b9c4b2}
+.tafel-frist{margin:0;justify-self:start;font-size:13px;color:#231c00;background:#ffd23f;border-radius:999px;padding:3px 12px;transform:rotate(-1.5deg)}
 .umf-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .umf-opt{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;border:2px dashed rgba(244,241,230,.5);border-radius:10px;padding:12px 8px;cursor:pointer}
 .umf-opt input{position:absolute;opacity:0;pointer-events:none}
@@ -529,6 +530,8 @@ footer a{color:var(--muted)}
       <div class="tafel-k">Umfrage</div>
       <h3 id="umf-h">Gefolge: Rote oder Weiße Königin?</h3>
       <p class="tafel-p">Für das Gefolge der beiden Königinnen suchen wir pro Seite 5 bis 10 Leute. Bei wem möchtest du mitmachen?</p>
+      <p class="tafel-frist" id="umf-frist">Abstimmen bis <b>Sonntag, 08.11.</b></p>
+      <p class="tafel-p" id="umf-closed" hidden><b>Die Abstimmung ist beendet.</b> Die Einteilung kommt in den Aushang.</p>
       <form id="umf-form" novalidate>
         <div class="umf-choice" role="radiogroup" aria-label="Seite wählen">
           <label class="umf-opt rot"><input type="radio" name="umf" value="rot"><span class="crown" aria-hidden="true">♛</span><b>Rote Königin</b><small id="umf-st-rot"></small></label>
@@ -1576,9 +1579,18 @@ function todayISO(){ return today.getFullYear() + "-" + String(today.getMonth()+
 
 /* ===== Leitung: Übersicht aller Absagen (nur mit Leitungs-PIN) ===== */
 /* ===== Umfrage Gefolge (Tafel im Aushang) ===== */
+const UMF_BIS = "2026-11-08"; // Frist: bis einschließlich Sonntag, 08.11.
+const umfVorbei = () => NOW > at(UMF_BIS, "23:59");
 const UMF_TXT = { rot:"Rote Königin", weiss:"Weiße Königin" }, UMF_GEN = { rot:"Roten Königin", weiss:"Weißen Königin" };
 let myVote = lsGet("mw-umfrage", null), umfFull = { rot:false, weiss:false }, umfEdit = false;
 function umfRender(){
+  if(umfVorbei()){
+    $a("umf-form").hidden = true; $a("umf-frist").hidden = true; $a("umf-closed").hidden = false;
+    const has = myVote && myVote.status === "aktiv";
+    $a("umf-done").hidden = !has;
+    if(has){ $a("umf-done-txt").textContent = `✓ Du (${myVote.name}) hast für das Gefolge der ${UMF_GEN[myVote.wahl]} gestimmt.`; $a("umf-change").parentElement.hidden = true; }
+    return;
+  }
   const done = myVote && myVote.status !== "zurückgezogen" && myVote.status !== "gelöscht" && !umfEdit;
   $a("umf-form").hidden = !!done; $a("umf-done").hidden = !done;
   if(done) $a("umf-done-txt").textContent = `✓ Du (${myVote.name}) hast für das Gefolge der ${UMF_GEN[myVote.wahl]} gestimmt.`;
@@ -1594,7 +1606,7 @@ function umfRender(){
 async function umfLoad(){
   try{
     const r = await api(myVote ? { action:"poll_status", id: myVote.id, token: myVote.token } : { action:"poll_status" });
-    if(!r.ok || !r.open){ $a("umfrage").hidden = true; return; }
+    if(!r.ok || !r.open || daysSince(UMF_BIS) > 7){ $a("umfrage").hidden = true; return; } // eine Woche nach der Frist verschwindet die Tafel
     umfFull = r.full || umfFull;
     if(myVote && r.mine){ if(r.mine.status === "gelöscht"){ myVote = null; lsSet("mw-umfrage", null); } else { myVote = Object.assign(myVote, r.mine); lsSet("mw-umfrage", myVote); } }
     $a("umfrage").hidden = false; umfRender();
@@ -1604,6 +1616,7 @@ $a("umf-name").value = (myVote && myVote.name) || lsGet("mw-name", "");
 $a("umf-form").addEventListener("submit", async ev => {
   ev.preventDefault();
   const err = $a("umf-err"), btn = $a("umf-send"); err.hidden = true;
+  if(umfVorbei()){ umfRender(); return; }
   const wahl = (document.querySelector('#umf-form input[name="umf"]:checked') || {}).value;
   const name = $a("umf-name").value.trim().replace(/\s+/g, " ");
   if(!wahl){ err.textContent = "Bitte wähle eine Seite."; err.hidden = false; return; }
@@ -1651,7 +1664,7 @@ async function loadUmfrageLeitung(){
         <span class="lu-hint">${hint}</span>
         ${n ? `<ol>${list.map(x => `<li>${esc(x.name)}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch keine Stimmen.</span>'}</div>`;
     };
-    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${r.open ? "" : " · beendet"}</h3>
+    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)}`}</h3>
       <div class="lu-cols">${col("rot", r.rot)}${col("weiss", r.weiss)}</div>
       <span class="lu-hint">${r.rot.length + r.weiss.length} Stimmen. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>`;
   }catch(e){ box.innerHTML = ""; }
