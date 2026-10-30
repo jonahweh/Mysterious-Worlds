@@ -80,6 +80,22 @@ h1 span{color:var(--accent)}
 .board-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
 .board h2{font-family:var(--display);font-weight:800;font-size:34px;line-height:1;text-transform:uppercase;letter-spacing:.02em}
 .board .stand{font-family:var(--mono);font-size:12px}
+/* Willkommen */
+.welcome{position:relative;background:linear-gradient(150deg,#2d1a6e 0%,#5b2bb5 55%,#a2338f 100%);color:#fff;border-radius:16px;padding:26px 22px 20px;display:grid;gap:14px;overflow:hidden;box-shadow:0 10px 30px rgba(45,26,110,.25)}
+.welcome::after{content:"";position:absolute;inset:auto -60px -80px auto;width:240px;height:240px;border-radius:50%;background:radial-gradient(circle,rgba(255,210,63,.35),transparent 70%);pointer-events:none}
+.welcome h2{font-family:var(--display);font-weight:800;font-size:clamp(34px,7vw,56px);line-height:.95;text-transform:uppercase;letter-spacing:.01em}
+.wl-stars{color:#ffd23f;letter-spacing:.4em;font-size:14px}
+.wl-lede{margin:0;max-width:62ch;font-size:16px;color:#f1eafe}
+.wl-steps{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;counter-reset:wl}
+.wl-steps li{counter-increment:wl;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.wl-steps li::before{content:counter(wl);font-family:var(--display);font-weight:800;font-size:26px;line-height:1;color:#ffd23f}
+.wl-steps b{font-size:15px}
+.wl-steps span{font-size:14px;color:#e9e0fb}
+.welcome .linkbtn{color:#ffd23f;justify-self:start;font-size:14px}
+.wl-sign{margin:0;font-weight:600;color:#ffe9a3}
+.wl-x{position:absolute;top:10px;right:12px;border:0;background:rgba(255,255,255,.15);color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;line-height:1;cursor:pointer;z-index:1}
+.wl-x:hover{background:rgba(255,255,255,.28)}
+@media print{.welcome{display:none!important}}
 /* Umfrage-Tafel im Aushang */
 .tafel{position:relative;background:#22382c;background-image:radial-gradient(120% 80% at 30% 20%,rgba(255,255,255,.07),transparent 60%);color:#f4f1e6;
   border:8px solid #8a5a2b;border-radius:6px;box-shadow:inset 0 0 0 2px #5e3b19,0 3px 0 #231c00;padding:16px 16px 14px;display:grid;gap:10px}
@@ -521,6 +537,19 @@ footer a{color:var(--muted)}
     </div>
   </header>
 
+  <section class="welcome" id="welcome" aria-labelledby="welcome-h">
+    <button class="wl-x" type="button" id="welcome-x" aria-label="Willkommen ausblenden">×</button>
+    <div class="wl-stars" aria-hidden="true">✦ ✧ ✦</div>
+    <h2 id="welcome-h">Herzlich willkommen<br>in den Mysterious Worlds!</h2>
+    <p class="wl-lede">Schön, dass du dabei bist! Ab jetzt ist das hier deine Zentrale fürs Musical: Hier stehen alle Proben, alle Änderungen und alles, was du für deine Rolle brauchst. Gemeinsam reisen wir in den nächsten Monaten durch sechs Welten – bis zur Premiere am 17. März.</p>
+    <ol class="wl-steps">
+      <li><b>Rolle wählen</b><span>Unter „Mein Probenplan“ deine Rolle antippen – dann siehst du nur deine Termine und kannst sie in deinen Kalender holen.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></li>
+      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort zwei Umfragen: Gefolge der Königinnen und Gang – macht mit!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
+      <li><b>Kannst du mal nicht?</b><span>Bei jeder Probe auf „Ich kann nicht“ tippen. Deinen Text zum Lernen findest du bei jeder Szenenprobe unter „Text lesen“.</span><a class="linkbtn" href="../downloads/mysterious-worlds-website-anleitung.pdf" target="_blank" rel="noopener">Anleitung (PDF)</a></li>
+    </ol>
+    <p class="wl-sign">Wir freuen uns riesig auf die gemeinsame Zeit! 🎭 Eure Musical-Leitung</p>
+  </section>
+
   <section class="board" id="aushang" aria-labelledby="aushang-h">
     <div class="board-head">
       <h2 id="aushang-h">Aushang · Änderungen</h2>
@@ -711,12 +740,9 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-10-15";
+const STAND = "2026-10-30";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
-  { art:"verschoben", datum:"", titel:"Freitagsproben jetzt 13:30–15:00 Uhr", text:"Ab dem 23.10. beginnen alle Freitagsproben um 13:30 Uhr und gehen 1,5 Stunden bis 15:00 Uhr. Dienstags bleibt es bei 13:55–15:25 Uhr.", ausgehaengt:"2026-10-15" },
-  { art:"info", datum:"", titel:"Neue Termine: Gesamtproben, Einzelproben, Probenfahrt und Probensamstag", text:"Mittwochs gibt es nur noch die Gesamtproben am 14.10., 11.11., 25.11., 09.12. und 16.12. für alle, auch für die Schauspieler. Freitags laufen parallel Einzelproben für Songs (steht beim Termin). Die Szenenproben ab 23.10. sind dafür neu verteilt, damit niemand gleichzeitig in Szenen- und Einzelprobe ist – bitte deinen Plan neu ansehen! Probenfahrt nach Agatharied vom 17. bis 20.01.2027, Probensamstag am 20.02.2027 von 9 bis 17 Uhr.", ausgehaengt:"2026-10-14" },
-  { art:"verschoben", datum:"2026-10-16", titel:"Probenstart am Freitag, 16. Oktober: 11:30–13:00 Uhr in der Aula", text:"Die erste Probe ist in der 5.–6. Stunde, von 11:30 bis 13:00 Uhr in der Aula – nicht am Nachmittag. Geprobt werden Szene 1d und Szene 2c.", ausgehaengt:"2026-10-14" }
 ];
 
 /* ===== Rollen ===== */
@@ -875,7 +901,7 @@ function renderBoard(){
   const isNew = a => FRESH.ids.has(noticeId(a));
   document.getElementById("notices").innerHTML = active.length
     ? active.map(a => noticeHTML(a, isNew(a))).join("")
-    : '<li class="notice"><span class="empty">Aktuell keine Änderungen. Es gilt der Plan unten.</span></li>';
+    : '<li class="notice" id="notice-empty"><span class="empty">Aktuell keine Änderungen. Es gilt der Plan unten.</span></li>';
   const newCount = active.filter(isNew).length, line = document.getElementById("newsline");
   line.hidden = !(FRESH.since && newCount);
   line.textContent = newCount === 1 ? "1 neuer Aushang seit deinem letzten Besuch" : `${newCount} neue Aushänge seit deinem letzten Besuch`;
@@ -1664,6 +1690,10 @@ $a("umf-undo").onclick = async () => {
 };
 umfLoad();
 
+/* ===== Willkommen (lässt sich ausblenden) ===== */
+if(lsGet("mw-willkommen-weg", false)) $a("welcome").hidden = true;
+$a("welcome-x").onclick = () => { $a("welcome").hidden = true; lsSet("mw-willkommen-weg", true); };
+
 /* ===== Umfrage Gang ===== */
 let myGang = lsGet("mw-umfrage-gang", null), gangFull = false;
 function gangRender(){
@@ -1708,6 +1738,10 @@ $a("gang-undo").onclick = async () => {
   }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
 };
 gangLoad();
+// Sind Umfragen sichtbar und keine Aushänge da, braucht es den Hinweis „keine Änderungen“ nicht
+function boardTidy(){ const e = document.getElementById("notice-empty"); if(e) $a("notices").hidden = !$a("umfrage").hidden || !$a("gangumf").hidden; }
+new MutationObserver(boardTidy).observe($a("umfrage"), {attributes:true, attributeFilter:["hidden"]});
+new MutationObserver(boardTidy).observe($a("gangumf"), {attributes:true, attributeFilter:["hidden"]});
 
 /* Umfrage-Ergebnis für die Leitung */
 async function loadUmfrageLeitung(){
