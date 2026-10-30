@@ -87,6 +87,8 @@ h1 span{color:var(--accent)}
 .tafel h3{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;text-transform:uppercase;letter-spacing:.02em;margin:0}
 .tafel-p,.tafel-note{margin:0;font-size:14px;color:#e6e2d3}
 .tafel-note{font-size:12px;color:#b9c4b2}
+.tafel.gang{background-color:#2a2f2a}
+.umf-st{margin:0;font-size:13px;color:#c9e2b8}
 .tafel-frist{margin:0;justify-self:start;font-size:13px;color:#231c00;background:#ffd23f;border-radius:999px;padding:3px 12px;transform:rotate(-1.5deg)}
 .umf-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .umf-opt{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;border:2px dashed rgba(244,241,230,.5);border-radius:10px;padding:12px 8px;cursor:pointer}
@@ -542,6 +544,18 @@ footer a{color:var(--muted)}
       </form>
       <div class="umf-done" id="umf-done" hidden><span id="umf-done-txt"></span><span><button type="button" class="umf-link" id="umf-change">Ändern</button> · <button type="button" class="umf-link" id="umf-undo">Zurückziehen</button></span></div>
       <p class="tafel-note">Wer wofür gestimmt hat, sieht nur die Leitung.</p>
+    </div>
+    <div class="tafel gang" id="gangumf" hidden aria-labelledby="gang-h">
+      <div class="tafel-k">Umfrage</div>
+      <h3 id="gang-h">Wer macht bei der Gang mit?</h3>
+      <p class="tafel-p">Für die Gang in der Bösen Welt suchen wir <b>14 Leute</b>. Auch wer schon im Gefolge einer Königin ist, darf mitmachen!</p>
+      <form id="gang-form" novalidate>
+        <div class="umf-row"><input type="text" id="gang-name" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="gang-send">Ich bin dabei</button></div>
+        <p class="umf-st" id="gang-st"></p>
+        <p class="umf-err" id="gang-err" role="alert" hidden></p>
+      </form>
+      <div class="umf-done" id="gang-done" hidden><span id="gang-done-txt"></span><span><button type="button" class="umf-link" id="gang-undo">Doch nicht</button></span></div>
+      <p class="tafel-note">Wer sich eingetragen hat, sieht nur die Leitung.</p>
     </div>
     <details class="archive" id="archive" hidden><summary id="archive-sum">Ältere Aushänge</summary><ul class="notices" id="archive-list"></ul></details>
   </section>
@@ -1650,6 +1664,51 @@ $a("umf-undo").onclick = async () => {
 };
 umfLoad();
 
+/* ===== Umfrage Gang ===== */
+let myGang = lsGet("mw-umfrage-gang", null), gangFull = false;
+function gangRender(){
+  const done = myGang && myGang.status === "aktiv";
+  $a("gang-form").hidden = !!done; $a("gang-done").hidden = !done;
+  if(done) $a("gang-done-txt").textContent = `✓ Du (${myGang.name}) bist für die Gang eingetragen.`;
+  $a("gang-send").disabled = gangFull;
+  $a("gang-st").textContent = gangFull ? "Die Gang ist schon voll." : "Es sind noch Plätze frei.";
+}
+async function gangLoad(){
+  try{
+    const r = await api(myGang ? { action:"poll_status", poll:"gang", id: myGang.id, token: myGang.token } : { action:"poll_status", poll:"gang" });
+    if(!r.ok || r.poll !== "gang" || !r.open){ $a("gangumf").hidden = true; return; } // r.poll fehlt = Script noch vor Version 11
+    gangFull = !!(r.full && r.full.gang);
+    if(myGang && r.mine){ if(r.mine.status !== "aktiv"){ myGang = null; lsSet("mw-umfrage-gang", null); } else { myGang = Object.assign(myGang, r.mine); lsSet("mw-umfrage-gang", myGang); } }
+    $a("gangumf").hidden = false; gangRender();
+  }catch(e){ $a("gangumf").hidden = true; }
+}
+$a("gang-name").value = (myGang && myGang.name) || lsGet("mw-name", "");
+$a("gang-form").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const err = $a("gang-err"), btn = $a("gang-send"); err.hidden = true;
+  const name = $a("gang-name").value.trim().replace(/\s+/g, " ");
+  if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; $a("gang-name").focus(); return; }
+  btn.disabled = true; btn.textContent = "Sende …";
+  try{
+    const r = await api({ action:"poll_vote", poll:"gang", name });
+    if(!r.ok){ err.textContent = r.error || "Das hat nicht geklappt."; err.hidden = false; if(r.full){ gangFull = true; } return; }
+    myGang = { id: r.id, token: r.token, name, status:"aktiv" }; lsSet("mw-umfrage-gang", myGang); lsSet("mw-name", name);
+    absToast("Super, du bist für die Gang eingetragen!");
+  }catch(e){ err.textContent = "Keine Verbindung. Bitte später nochmal versuchen."; err.hidden = false; }
+  finally{ btn.textContent = "Ich bin dabei"; gangRender(); }
+});
+$a("gang-undo").onclick = async () => {
+  const u = $a("gang-undo");
+  if(!u.classList.contains("armed")){ u.classList.add("armed"); u.textContent = "Wirklich austragen?"; setTimeout(() => { if(u.isConnected){ u.classList.remove("armed"); u.textContent = "Doch nicht"; } }, 4000); return; }
+  u.classList.remove("armed"); u.textContent = "Doch nicht";
+  try{
+    const r = await api({ action:"poll_cancel", id: myGang.id, token: myGang.token });
+    if(!r.ok && r.error !== "Stimme nicht gefunden."){ absToast(r.error || "Das hat nicht geklappt."); return; }
+    myGang = null; lsSet("mw-umfrage-gang", null); absToast("Du bist wieder ausgetragen."); gangLoad();
+  }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
+};
+gangLoad();
+
 /* Umfrage-Ergebnis für die Leitung */
 async function loadUmfrageLeitung(){
   const box = $a("leit-umf");
@@ -1666,7 +1725,13 @@ async function loadUmfrageLeitung(){
     };
     box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)}`}</h3>
       <div class="lu-cols">${col("rot", r.rot)}${col("weiss", r.weiss)}</div>
-      <span class="lu-hint">${r.rot.length + r.weiss.length} Stimmen. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>`;
+      <span class="lu-hint">${r.rot.length + r.weiss.length} ${r.rot.length + r.weiss.length === 1 ? "Stimme" : "Stimmen"}. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>
+      ${r.gang ? (() => { const n = r.gang.length, pct = Math.min(100, n / r.gangMax * 100);
+        return `<div class="leit-umf" style="margin-top:10px"><h3>Umfrage: Gang${r.gangOpen ? "" : " · beendet"}</h3>
+        <div class="lu-col"><h4><span>Gangmitglieder</span><span class="n">${n}<small style="font-size:13px;color:var(--muted)"> / ${r.gangMax}</small></span></h4>
+        <div class="lu-bar" style="color:#23402a"><i style="width:${pct}%"></i></div>
+        <span class="lu-hint">${n >= r.gangMax ? "voll" : `noch ${r.gangMax - n} gesucht`}</span>
+        ${n ? `<ol>${r.gang.map(x => `<li>${esc(x.name)}${r.rot.concat(r.weiss).some(y => y.name.toLowerCase() === x.name.toLowerCase()) ? ' <span class="lu-hint">(auch Gefolge)</span>' : ""}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch niemand eingetragen.</span>'}</div></div>`; })() : ""}`;
   }catch(e){ box.innerHTML = ""; }
 }
 
