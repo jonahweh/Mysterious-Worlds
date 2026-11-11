@@ -548,7 +548,7 @@ footer a{color:var(--muted)}
     <p class="wl-lede">Schön, dass du dabei bist! Ab jetzt ist das hier deine Zentrale fürs Musical: Hier stehen alle Proben, alle Änderungen und alles, was du für deine Rolle brauchst. Gemeinsam reisen wir in den nächsten Monaten durch sechs Welten – bis zur Premiere am 17. März.</p>
     <ol class="wl-steps">
       <li><b>Rolle wählen</b><span>Unter „Mein Probenplan“ deine Rolle antippen – dann siehst du nur deine Termine und kannst sie in deinen Kalender holen.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></li>
-      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort Umfragen, wer bei Gefolge, Gang, Ballgesellschaft und 80er-Highschool mitmacht – trag dich ein!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
+      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort Umfragen, wer bei Gefolge, Ballgesellschaft und 80er-Highschool mitmacht – trag dich ein!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
       <li><b>Kannst du mal nicht?</b><span>Bei jeder Probe auf „Ich kann nicht“ tippen. Deinen Text zum Lernen findest du bei jeder Szenenprobe unter „Text lesen“.</span><a class="linkbtn" href="../downloads/mysterious-worlds-website-anleitung.pdf" target="_blank" rel="noopener">Anleitung (PDF)</a></li>
     </ol>
     <p class="wl-sign">Wir freuen uns riesig auf die gemeinsame Zeit! 🎭 Eure Musical-Leitung</p>
@@ -1691,8 +1691,6 @@ $a("welcome-x").onclick = () => { $a("welcome").hidden = true; lsSet("mw-willkom
 /* ===== „Ich bin dabei“-Umfragen (Gang, Ballgesellschaft, 80er-Highschool) ===== */
 // Neue Umfrage = neuer Eintrag hier; das Script (ab Version 12) braucht dafür kein Update.
 const JOIN_POLLS = [
-  { id:"gang", label:"Gang", dativ:"der Gang", emoji:"😎", titel:"Wer macht bei der Gang mit?", max:14,
-    text:"Zwei Gangs, ein Revier: In der Bösen Welt stellt ihr euch den Freunden in den Weg, macht Sprüche, krempelt die Ärmel hoch und eskaliert in „Beat It“. Für alle, die gern cool, frech und ein bisschen bedrohlich spielen. Einzelne Sprechrollen sind möglich." },
   { id:"ball", label:"Ballgesellschaft", dativ:"der Ballgesellschaft", emoji:"💃", titel:"Wer macht bei der Ballgesellschaft mit?", max:15,
     text:"Prächtige Roben, fest geschnürte Mieder, ganz viel Anmut: Ihr seid die feine Gesellschaft auf der „Langen Nacht der Tänze“ der Balldiva. Ihr knickst, tanzt Walzer, raunt empört, als die Freunde im falschen Aufzug hereinplatzen – und tragt am Ende Tütüs. Perfekt für alle, die gern tanzen und übertrieben vornehm spielen." },
   { id:"highschool", label:"80er-Highschool", dativ:"der 80er-Highschool", emoji:"📼", titel:"Wer macht bei der 80er-Highschool mit?", max:15,
