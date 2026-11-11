@@ -107,11 +107,15 @@ h1 span{color:var(--accent)}
 .umf-st{margin:0;font-size:13px;color:#c9e2b8}
 .tafel-frist{margin:0;justify-self:start;font-size:13px;color:#231c00;background:#ffd23f;border-radius:999px;padding:3px 12px;transform:rotate(-1.5deg)}
 .umf-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.umf-choice{grid-template-columns:1fr}}
+.tafel-emoji{font-size:26px;line-height:1}
+#join-polls .tafel{margin-top:14px}
 .umf-opt{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;border:2px dashed rgba(244,241,230,.5);border-radius:10px;padding:12px 8px;cursor:pointer}
 .umf-opt input{position:absolute;opacity:0;pointer-events:none}
 .umf-opt .crown{font-size:30px;line-height:1}
 .umf-opt.rot .crown{color:#ff6b7f}.umf-opt.weiss .crown{color:#ffffff}
 .umf-opt b{font-size:15px}
+.umf-desc{font-size:13px;line-height:1.4;color:#e6e2d3;margin-top:4px;text-align:left}
 .umf-opt small{font-size:12px;color:#c9e2b8;min-height:1em}
 .umf-opt:has(input:checked){border-style:solid;background:rgba(255,255,255,.12)}
 .umf-opt.rot:has(input:checked){border-color:#ff6b7f}.umf-opt.weiss:has(input:checked){border-color:#fff}
@@ -125,7 +129,7 @@ h1 span{color:var(--accent)}
 .umf-err{margin:0;font-size:14px;font-weight:600;color:#ffb3b3}
 .umf-done{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-weight:600;background:rgba(255,255,255,.1);border-radius:8px;padding:8px 12px}
 .umf-link{border:0;background:none;color:#ffd23f;text-decoration:underline;font:inherit;font-size:14px;cursor:pointer;padding:0}
-@media (max-width:420px){.umf-choice{grid-template-columns:1fr 1fr}.tafel h3{font-size:24px}}
+@media (max-width:420px){.tafel h3{font-size:24px}}
 @media print{.tafel{display:none!important}}
 /* Umfrage-Ergebnis (nur #leitung) */
 .leit-umf{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:8px;padding:12px 14px;display:grid;gap:10px}
@@ -544,7 +548,7 @@ footer a{color:var(--muted)}
     <p class="wl-lede">Schön, dass du dabei bist! Ab jetzt ist das hier deine Zentrale fürs Musical: Hier stehen alle Proben, alle Änderungen und alles, was du für deine Rolle brauchst. Gemeinsam reisen wir in den nächsten Monaten durch sechs Welten – bis zur Premiere am 17. März.</p>
     <ol class="wl-steps">
       <li><b>Rolle wählen</b><span>Unter „Mein Probenplan“ deine Rolle antippen – dann siehst du nur deine Termine und kannst sie in deinen Kalender holen.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></li>
-      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort zwei Umfragen: Gefolge der Königinnen und Gang – macht mit!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
+      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort Umfragen, wer bei Gefolge, Gang, Ballgesellschaft und 80er-Highschool mitmacht – trag dich ein!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
       <li><b>Kannst du mal nicht?</b><span>Bei jeder Probe auf „Ich kann nicht“ tippen. Deinen Text zum Lernen findest du bei jeder Szenenprobe unter „Text lesen“.</span><a class="linkbtn" href="../downloads/mysterious-worlds-website-anleitung.pdf" target="_blank" rel="noopener">Anleitung (PDF)</a></li>
     </ol>
     <p class="wl-sign">Wir freuen uns riesig auf die gemeinsame Zeit! 🎭 Eure Musical-Leitung</p>
@@ -561,31 +565,20 @@ footer a{color:var(--muted)}
       <div class="tafel-k">Umfrage</div>
       <h3 id="umf-h">Gefolge: Rote oder Weiße Königin?</h3>
       <p class="tafel-p">Für das Gefolge der beiden Königinnen suchen wir pro Seite 5 bis 10 Leute. Bei wem möchtest du mitmachen?</p>
-      <p class="tafel-frist" id="umf-frist">Abstimmen bis <b>Sonntag, 08.11.</b></p>
+      <p class="tafel-frist" id="umf-frist">Abstimmen bis <b>Freitag, 13.11., 18 Uhr</b></p>
       <p class="tafel-p" id="umf-closed" hidden><b>Die Abstimmung ist beendet.</b> Die Einteilung kommt in den Aushang.</p>
       <form id="umf-form" novalidate>
         <div class="umf-choice" role="radiogroup" aria-label="Seite wählen">
-          <label class="umf-opt rot"><input type="radio" name="umf" value="rot"><span class="crown" aria-hidden="true">♛</span><b>Rote Königin</b><small id="umf-st-rot"></small></label>
-          <label class="umf-opt weiss"><input type="radio" name="umf" value="weiss"><span class="crown" aria-hidden="true">♛</span><b>Weiße Königin</b><small id="umf-st-weiss"></small></label>
+          <label class="umf-opt rot"><input type="radio" name="umf" value="rot"><span class="crown" aria-hidden="true">♛</span><b>Rote Königin</b><small id="umf-st-rot"></small><span class="umf-desc">Laut, mächtig, ein bisschen furchteinflößend: Ihr begleitet die Rote Königin bei ihrem großen Auftritt im Wunderland („Candy Store“) und steht hinter ihr, wenn sie „Ab mit ihren Köpfen!“ ruft. Geschlossen, stolz, mit viel Bühnenpräsenz – kein eigener Text, dafür Auftritt, Haltung und Chor.</span></label>
+          <label class="umf-opt weiss"><input type="radio" name="umf" value="weiss"><span class="crown" aria-hidden="true">♛</span><b>Weiße Königin</b><small id="umf-st-weiss"></small><span class="umf-desc">Ruhig, edel, geheimnisvoll: Ihr umgebt die Weiße Königin, die im Wunderland für Regeln und Schutz steht und den Freunden hilft. Bei „Like a Prayer“ und im Medley gegen die Rote Königin seid ihr ihre Seite des Konflikts – eher anmutig als laut, mit viel Ausdruck. Kein eigener Text, dafür Auftritt und Chor.</span></label>
         </div>
         <div class="umf-row"><input type="text" id="umf-name" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="umf-send">Abstimmen</button></div>
         <p class="umf-err" id="umf-err" role="alert" hidden></p>
       </form>
       <div class="umf-done" id="umf-done" hidden><span id="umf-done-txt"></span><span><button type="button" class="umf-link" id="umf-change">Ändern</button> · <button type="button" class="umf-link" id="umf-undo">Zurückziehen</button></span></div>
-      <p class="tafel-note">Wer wofür gestimmt hat, sieht nur die Leitung.</p>
+      <p class="tafel-note">Wer wofür gestimmt hat, sieht nur die Leitung. Jede und jeder macht in höchstens zwei Gruppen mit, damit alle zum Zug kommen.</p>
     </div>
-    <div class="tafel gang" id="gangumf" hidden aria-labelledby="gang-h">
-      <div class="tafel-k">Umfrage</div>
-      <h3 id="gang-h">Wer macht bei der Gang mit?</h3>
-      <p class="tafel-p">Für die Gang in der Bösen Welt suchen wir <b>14 Leute</b>. Auch wer schon im Gefolge einer Königin ist, darf mitmachen!</p>
-      <form id="gang-form" novalidate>
-        <div class="umf-row"><input type="text" id="gang-name" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="gang-send">Ich bin dabei</button></div>
-        <p class="umf-st" id="gang-st"></p>
-        <p class="umf-err" id="gang-err" role="alert" hidden></p>
-      </form>
-      <div class="umf-done" id="gang-done" hidden><span id="gang-done-txt"></span><span><button type="button" class="umf-link" id="gang-undo">Doch nicht</button></span></div>
-      <p class="tafel-note">Wer sich eingetragen hat, sieht nur die Leitung.</p>
-    </div>
+    <div id="join-polls"></div>
     <details class="archive" id="archive" hidden><summary id="archive-sum">Ältere Aushänge</summary><ul class="notices" id="archive-list"></ul></details>
   </section>
 
@@ -1620,8 +1613,8 @@ function todayISO(){ return today.getFullYear() + "-" + String(today.getMonth()+
 
 /* ===== Leitung: Übersicht aller Absagen (nur mit Leitungs-PIN) ===== */
 /* ===== Umfrage Gefolge (Tafel im Aushang) ===== */
-const UMF_BIS = "2026-11-08"; // Frist: bis einschließlich Sonntag, 08.11.
-const umfVorbei = () => NOW > at(UMF_BIS, "23:59");
+const UMF_BIS = "2026-11-13", UMF_BIS_ZEIT = "18:00"; // Frist (verlängert): Freitag, 13.11., 18 Uhr
+const umfVorbei = () => NOW > at(UMF_BIS, UMF_BIS_ZEIT);
 const UMF_TXT = { rot:"Rote Königin", weiss:"Weiße Königin" }, UMF_GEN = { rot:"Roten Königin", weiss:"Weißen Königin" };
 let myVote = lsGet("mw-umfrage", null), umfFull = { rot:false, weiss:false }, umfEdit = false;
 function umfRender(){
@@ -1695,54 +1688,83 @@ umfLoad();
 if(lsGet("mw-willkommen-weg", false)) $a("welcome").hidden = true;
 $a("welcome-x").onclick = () => { $a("welcome").hidden = true; lsSet("mw-willkommen-weg", true); };
 
-/* ===== Umfrage Gang ===== */
-let myGang = lsGet("mw-umfrage-gang", null), gangFull = false;
-function gangRender(){
-  const done = myGang && myGang.status === "aktiv";
-  $a("gang-form").hidden = !!done; $a("gang-done").hidden = !done;
-  if(done) $a("gang-done-txt").textContent = `✓ Du (${myGang.name}) bist für die Gang eingetragen.`;
-  $a("gang-send").disabled = gangFull;
-  $a("gang-st").textContent = gangFull ? "Die Gang ist schon voll." : "Es sind noch Plätze frei.";
-}
-async function gangLoad(){
-  try{
-    const r = await api(myGang ? { action:"poll_status", poll:"gang", id: myGang.id, token: myGang.token } : { action:"poll_status", poll:"gang" });
-    if(!r.ok || r.poll !== "gang" || !r.open){ $a("gangumf").hidden = true; return; } // r.poll fehlt = Script noch vor Version 11
-    gangFull = !!(r.full && r.full.gang);
-    if(myGang && r.mine){ if(r.mine.status !== "aktiv"){ myGang = null; lsSet("mw-umfrage-gang", null); } else { myGang = Object.assign(myGang, r.mine); lsSet("mw-umfrage-gang", myGang); } }
-    $a("gangumf").hidden = false; gangRender();
-  }catch(e){ $a("gangumf").hidden = true; }
-}
-$a("gang-name").value = (myGang && myGang.name) || lsGet("mw-name", "");
-$a("gang-form").addEventListener("submit", async ev => {
-  ev.preventDefault();
-  const err = $a("gang-err"), btn = $a("gang-send"); err.hidden = true;
-  const name = $a("gang-name").value.trim().replace(/\s+/g, " ");
-  if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; $a("gang-name").focus(); return; }
-  btn.disabled = true; btn.textContent = "Sende …";
-  try{
-    const r = await api({ action:"poll_vote", poll:"gang", name });
-    if(!r.ok){ err.textContent = r.error || "Das hat nicht geklappt."; err.hidden = false; if(r.full){ gangFull = true; } return; }
-    myGang = { id: r.id, token: r.token, name, status:"aktiv" }; lsSet("mw-umfrage-gang", myGang); lsSet("mw-name", name);
-    absToast("Super, du bist für die Gang eingetragen!");
-  }catch(e){ err.textContent = "Keine Verbindung. Bitte später nochmal versuchen."; err.hidden = false; }
-  finally{ btn.textContent = "Ich bin dabei"; gangRender(); }
-});
-$a("gang-undo").onclick = async () => {
-  const u = $a("gang-undo");
-  if(!u.classList.contains("armed")){ u.classList.add("armed"); u.textContent = "Wirklich austragen?"; setTimeout(() => { if(u.isConnected){ u.classList.remove("armed"); u.textContent = "Doch nicht"; } }, 4000); return; }
-  u.classList.remove("armed"); u.textContent = "Doch nicht";
-  try{
-    const r = await api({ action:"poll_cancel", id: myGang.id, token: myGang.token });
-    if(!r.ok && r.error !== "Stimme nicht gefunden."){ absToast(r.error || "Das hat nicht geklappt."); return; }
-    myGang = null; lsSet("mw-umfrage-gang", null); absToast("Du bist wieder ausgetragen."); gangLoad();
-  }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
-};
-gangLoad();
+/* ===== „Ich bin dabei“-Umfragen (Gang, Ballgesellschaft, 80er-Highschool) ===== */
+// Neue Umfrage = neuer Eintrag hier; das Script (ab Version 12) braucht dafür kein Update.
+const JOIN_POLLS = [
+  { id:"gang", label:"Gang", dativ:"der Gang", emoji:"😎", titel:"Wer macht bei der Gang mit?", max:14,
+    text:"Zwei Gangs, ein Revier: In der Bösen Welt stellt ihr euch den Freunden in den Weg, macht Sprüche, krempelt die Ärmel hoch und eskaliert in „Beat It“. Für alle, die gern cool, frech und ein bisschen bedrohlich spielen. Einzelne Sprechrollen sind möglich." },
+  { id:"ball", label:"Ballgesellschaft", dativ:"der Ballgesellschaft", emoji:"💃", titel:"Wer macht bei der Ballgesellschaft mit?", max:15,
+    text:"Prächtige Roben, fest geschnürte Mieder, ganz viel Anmut: Ihr seid die feine Gesellschaft auf der „Langen Nacht der Tänze“ der Balldiva. Ihr knickst, tanzt Walzer, raunt empört, als die Freunde im falschen Aufzug hereinplatzen – und tragt am Ende Tütüs. Perfekt für alle, die gern tanzen und übertrieben vornehm spielen." },
+  { id:"highschool", label:"80er-Highschool", dativ:"der 80er-Highschool", emoji:"📼", titel:"Wer macht bei der 80er-Highschool mit?", max:15,
+    text:"Schnattern auf dem Gang, Pausengong, Neonfarben: Ihr seid die Schülerinnen und Schüler einer Highschool in den 80ern, in der der junge Frank und sein Bruder zur Schule gehen. Ihr lacht mit, wenn Franky aufgezogen wird, sitzt im Chemieunterricht und füllt die Bühne mit echtem 80er-Feeling. Es gibt auch kleine Sätze zu sprechen." },
+];
 // Sind Umfragen sichtbar und keine Aushänge da, braucht es den Hinweis „keine Änderungen“ nicht
-function boardTidy(){ const e = document.getElementById("notice-empty"); if(e) $a("notices").hidden = !$a("umfrage").hidden || !$a("gangumf").hidden; }
+function boardTidy(){ const e = document.getElementById("notice-empty"); if(e) $a("notices").hidden = [...document.querySelectorAll(".board .tafel")].some(x => !x.hidden); }
 new MutationObserver(boardTidy).observe($a("umfrage"), {attributes:true, attributeFilter:["hidden"]});
-new MutationObserver(boardTidy).observe($a("gangumf"), {attributes:true, attributeFilter:["hidden"]});
+function joinPoll(cfg){
+  const key = "mw-umfrage-" + cfg.id, P = s => `jp-${cfg.id}-${s}`;
+  let mine = lsGet(key, null), full = false;
+  const box = document.createElement("div");
+  box.className = "tafel join"; box.id = P("box"); box.hidden = true; box.setAttribute("aria-labelledby", P("h"));
+  box.innerHTML = `<div class="tafel-k">Umfrage</div>
+    <h3 id="${P("h")}"><span class="tafel-emoji" aria-hidden="true">${cfg.emoji}</span> ${esc(cfg.titel)}</h3>
+    <p class="tafel-p">${esc(cfg.text)}</p>
+    <p class="tafel-p">Gesucht: <b>etwa ${cfg.max} Leute</b>. Du darfst auch bei einer anderen Gruppe dabei sein – aber jede und jeder höchstens bei zwei, damit alle zum Zug kommen.</p>
+    <form id="${P("form")}" novalidate>
+      <div class="umf-row"><input type="text" id="${P("name")}" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="${P("send")}">Ich bin dabei</button></div>
+      <p class="umf-st" id="${P("st")}"></p>
+      <p class="umf-err" id="${P("err")}" role="alert" hidden></p>
+    </form>
+    <div class="umf-done" id="${P("done")}" hidden><span id="${P("done-txt")}"></span><span><button type="button" class="umf-link" id="${P("undo")}">Doch nicht</button></span></div>
+    <p class="tafel-note">Wer sich eingetragen hat, sieht nur die Leitung.</p>`;
+  $a("join-polls").appendChild(box);
+  const q = s => document.getElementById(P(s));
+  q("name").value = (mine && mine.name) || lsGet("mw-name", "");
+  const render = () => {
+    const done = mine && mine.status === "aktiv";
+    q("form").hidden = !!done; q("done").hidden = !done;
+    if(done) q("done-txt").textContent = `✓ Du (${mine.name}) bist bei ${cfg.dativ} eingetragen.`;
+    q("send").disabled = full;
+    q("st").textContent = full ? "Hier sind schon alle Plätze vergeben." : "Es sind noch Plätze frei.";
+  };
+  const load = async () => {
+    try{
+      const base = { action:"poll_status", poll: cfg.id, label: cfg.label, max: cfg.max };
+      const r = await api(mine ? Object.assign(base, { id: mine.id, token: mine.token }) : base);
+      if(!r.ok || r.poll !== cfg.id || !r.open){ box.hidden = true; return; } // r.poll fehlt = Script zu alt für diese Umfrage
+      full = !!(r.full && r.full[cfg.id]);
+      if(mine && r.mine){ if(r.mine.status !== "aktiv"){ mine = null; lsSet(key, null); } else { mine = Object.assign(mine, r.mine); lsSet(key, mine); } }
+      box.hidden = false; render();
+    }catch(e){ box.hidden = true; }
+  };
+  q("form").addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const err = q("err"), btn = q("send"); err.hidden = true;
+    const name = q("name").value.trim().replace(/\s+/g, " ");
+    if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; q("name").focus(); return; }
+    btn.disabled = true; btn.textContent = "Sende …";
+    try{
+      const r = await api({ action:"poll_vote", poll: cfg.id, label: cfg.label, max: cfg.max, name });
+      if(!r.ok){ err.textContent = r.error || "Das hat nicht geklappt."; err.hidden = false; if(r.full) full = true; return; }
+      mine = { id: r.id, token: r.token, name, status:"aktiv" }; lsSet(key, mine); lsSet("mw-name", name);
+      absToast("Super, du bist eingetragen!");
+    }catch(e){ err.textContent = "Keine Verbindung. Bitte später nochmal versuchen."; err.hidden = false; }
+    finally{ btn.textContent = "Ich bin dabei"; render(); }
+  });
+  q("undo").onclick = async () => {
+    const u = q("undo");
+    if(!u.classList.contains("armed")){ u.classList.add("armed"); u.textContent = "Wirklich austragen?"; setTimeout(() => { if(u.isConnected){ u.classList.remove("armed"); u.textContent = "Doch nicht"; } }, 4000); return; }
+    u.classList.remove("armed"); u.textContent = "Doch nicht";
+    try{
+      const r = await api({ action:"poll_cancel", id: mine.id, token: mine.token });
+      if(!r.ok && r.error !== "Stimme nicht gefunden."){ absToast(r.error || "Das hat nicht geklappt."); return; }
+      mine = null; lsSet(key, null); absToast("Du bist wieder ausgetragen."); load();
+    }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
+  };
+  new MutationObserver(boardTidy).observe(box, {attributes:true, attributeFilter:["hidden"]});
+  load();
+}
+JOIN_POLLS.forEach(joinPoll);
 
 /* Umfrage-Ergebnis für die Leitung */
 async function loadUmfrageLeitung(){
@@ -1758,15 +1780,19 @@ async function loadUmfrageLeitung(){
         <span class="lu-hint">${hint}</span>
         ${n ? `<ol>${list.map(x => `<li>${esc(x.name)}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch keine Stimmen.</span>'}</div>`;
     };
-    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)}`}</h3>
+    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)}, ${UMF_BIS_ZEIT} Uhr`}</h3>
       <div class="lu-cols">${col("rot", r.rot)}${col("weiss", r.weiss)}</div>
       <span class="lu-hint">${r.rot.length + r.weiss.length} ${r.rot.length + r.weiss.length === 1 ? "Stimme" : "Stimmen"}. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>
-      ${r.gang ? (() => { const n = r.gang.length, pct = Math.min(100, n / r.gangMax * 100);
-        return `<div class="leit-umf" style="margin-top:10px"><h3>Umfrage: Gang${r.gangOpen ? "" : " · beendet"}</h3>
-        <div class="lu-col"><h4><span>Gangmitglieder</span><span class="n">${n}<small style="font-size:13px;color:var(--muted)"> / ${r.gangMax}</small></span></h4>
-        <div class="lu-bar" style="color:#23402a"><i style="width:${pct}%"></i></div>
-        <span class="lu-hint">${n >= r.gangMax ? "voll" : `noch ${r.gangMax - n} gesucht`}</span>
-        ${n ? `<ol>${r.gang.map(x => `<li>${esc(x.name)}${r.rot.concat(r.weiss).some(y => y.name.toLowerCase() === x.name.toLowerCase()) ? ' <span class="lu-hint">(auch Gefolge)</span>' : ""}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch niemand eingetragen.</span>'}</div></div>`; })() : ""}`;
+      ${(r.groups || []).map(g => { const n = g.list.length, pct = Math.min(100, n / g.max * 100);
+        const others = nm => { const o = [], low = nm.toLowerCase();
+          if(r.rot.some(y => y.name.toLowerCase() === low)) o.push("Gefolge Rot"); if(r.weiss.some(y => y.name.toLowerCase() === low)) o.push("Gefolge Weiß");
+          (r.groups || []).forEach(h => { if(h.id !== g.id && h.list.some(y => y.name.toLowerCase() === low)) o.push(h.label); }); return o; };
+        return `<div class="leit-umf" style="margin-top:10px"><h3>Umfrage: ${esc(g.label)}${g.open ? "" : " · beendet"}</h3>
+        <div class="lu-col"><h4><span>Eingetragen</span><span class="n">${n}<small style="font-size:13px;color:var(--muted)"> / ${g.max}</small></span></h4>
+        <div class="lu-bar" style="color:var(--accent)"><i style="width:${pct}%"></i></div>
+        <span class="lu-hint">${n >= g.max ? "voll" : `noch ${g.max - n} gesucht`}</span>
+        ${n ? `<ol>${g.list.map(x => { const o = others(x.name); return `<li>${esc(x.name)}${o.length ? ` <span class="lu-hint">(auch ${esc(o.join(", "))})</span>` : ""}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`; }).join("")}</ol>` : '<span class="lu-hint">Noch niemand eingetragen.</span>'}</div></div>`; }).join("")}
+      <p class="lu-hint" style="margin:8px 0 0">Jede Person darf in höchstens ${r.maxGruppen || 2} Gruppen sein (das Gefolge zählt als eine). Ändern lässt sich das im Blatt „Einstellungen“.</p>`;
   }catch(e){ box.innerHTML = ""; }
 }
 

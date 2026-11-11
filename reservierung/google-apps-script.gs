@@ -1,5 +1,5 @@
 /**
- * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 11 (Umfragen Gefolge und Gang im Probenplan)
+ * Mysterious Worlds – Reservierungen (Google Apps Script) · Version 12 (Umfragen Gefolge, Gang, Ballgesellschaft, 80er-Highschool; max. 2 Gruppen pro Person)
  *
  * Einrichtung am Computer ODER iPad (ca. 10 Minuten):
  * 1. Im Browser script.google.com öffnen (iPad: Safari, „Desktop-Website anfordern“)
@@ -22,7 +22,8 @@
  *   und Einlass-PIN im Blatt "Einstellungen" ändern. Wirkt sofort, ohne neue Bereitstellung.
  * - Probenabsagen der Mitwirkenden (aus dem Probenplan) stehen im Blatt "Absagen".
  *   Übersicht im Probenplan unter …/probenplan/#leitung mit der Leitungs-PIN.
- * - Umfragen „Gefolge Rote oder Weiße Königin“ und „Gang“ (Aushang im Probenplan): Stimmen im Blatt "Umfrage",
+ * - Umfragen im Aushang des Probenplans (Gefolge Rote/Weiße Königin, Gang, Ballgesellschaft, 80er-Highschool, künftige
+ *   „Ich bin dabei“-Umfragen ohne Script-Update): Stimmen im Blatt "Umfrage", jede Person in höchstens 2 Gruppen,
  *   Ergebnis ebenfalls unter #leitung. Ein-/ausschalten und Höchstzahl pro Seite im Blatt "Einstellungen".
  * - Stornieren von Hand: in "Reservierungen" die Spalte Status auf "storniert" setzen
  *   (oder die Zahl bei Plätze verkleinern). Freie Plätze gehen automatisch an die Warteliste.
@@ -98,7 +99,7 @@ function setup() {
   ensureHeader_(um, UCOLS);
   um.setFrozenRows(1);
   um.getRange("A:A").setNumberFormat("dd.mm.yyyy hh:mm");
-  um.getRange("D2:D").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(Object.values(SEITEN_).concat(["Gang"]), true).build());
+  um.getRange("D2:D").clearDataValidations();
   um.getRange("E2:E").setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(["aktiv", "zurückgezogen"], true).build());
   // Einstellungen
   let s = ss.getSheetByName(SET);
@@ -127,6 +128,11 @@ function setup() {
   ensureSetting_(s, "Gefolge max. pro Seite", 10, "Ist eine Seite voll, kann man sie nicht mehr wählen");
   ensureSetting_(s, "Umfrage Gang offen", true, "Umfrage im Aushang des Probenplans: Wer macht bei der Gang mit? (Gefolge dürfen auch mitmachen)", true);
   ensureSetting_(s, "Gang max.", 14, "So viele Gangmitglieder werden gesucht");
+  ensureSetting_(s, "Umfrage Ballgesellschaft offen", true, "Umfrage im Aushang des Probenplans: Wer macht bei der Ballgesellschaft mit?", true);
+  ensureSetting_(s, "Ballgesellschaft max.", 15, "So viele Leute werden für die Ballgesellschaft gesucht");
+  ensureSetting_(s, "Umfrage 80er-Highschool offen", true, "Umfrage im Aushang des Probenplans: Wer macht bei der 80er-Highschool mit?", true);
+  ensureSetting_(s, "80er-Highschool max.", 15, "So viele Schülerinnen und Schüler werden für die 80er-Highschool gesucht");
+  ensureSetting_(s, "Umfragen max. Gruppen pro Person", 2, "In wie vielen Gruppen (Gefolge, Gang, Ball …) eine Person höchstens mitmachen darf");
   NIGHTS.forEach(n => ensureSetting_(s, "Reserviert " + n.kurz,
     `=SUMIFS(${RES}!D:D,${RES}!C:C,"${n.id}",${RES}!H:H,"aktiv")`, "wird automatisch berechnet"));
   ensureSetting_(s, "Auf der Warteliste (Plätze)", `=SUMIFS(${WL}!D:D,${WL}!G:G,"wartend")`, "wird automatisch berechnet");
@@ -185,6 +191,8 @@ function settings_() {
     umfrageMax: Math.max(1, Number(m["Gefolge max. pro Seite"]) || 10),
     gang: m["Umfrage Gang offen"] !== false,
     gangMax: Math.max(1, Number(m["Gang max."]) || 14),
+    maxGruppen: Math.max(1, Number(m["Umfragen max. Gruppen pro Person"]) || 2),
+    raw: m,
     loeschen: nightId_(m["Daten löschen am"] || "2027-04-15"),
     geloescht: m["Gelöscht am"] ? String(m["Gelöscht am"]) : ""
   };
@@ -735,40 +743,60 @@ function absenceList_(d) {
 }
 
 
-/* ---------- Umfrage: Gefolge der Roten oder der Weißen Königin ---------- */
-// Öffentlich sieht man nur, ob eine Seite noch Plätze hat. Namen und Zahlen sieht nur die Leitung (#leitung, Leitungs-PIN).
+/* ---------- Umfragen im Probenplan ---------- */
+// Öffentlich sieht man nur, ob noch Plätze frei sind. Namen und Zahlen sieht nur die Leitung (#leitung, Leitungs-PIN).
+// „gefolge“ = Wahl zwischen zwei Seiten. Alle anderen Umfragen sind „Ich bin dabei“-Umfragen; neue lassen sich ohne
+// Script-Update anlegen: Titel und Höchstzahl kommen dann von der Website oder aus „Umfrage <Titel> offen“ / „<Titel> max.“.
 const SEITEN_ = { rot: "Rote Königin", weiss: "Weiße Königin" };
+const JOIN_ = { gang: { label: "Gang", def: 14 }, ball: { label: "Ballgesellschaft", def: 15 }, highschool: { label: "80er-Highschool", def: 15 } };
+const LABEL2ID_ = { Gang: "gang", Ballgesellschaft: "ball", "80er-Highschool": "highschool" };
 function pollRows_() {
   const sh = book_().getSheetByName(UMF);
   if (!sh) throw new Error("Blatt „Umfrage“ fehlt: bitte einmal setup ausführen.");
   const v = sh.getDataRange().getValues();
-  return { sh: sh, rows: v.slice(1).map((r, i) => ({ row: i + 2, eingang: r[0], id: String(r[1]), name: String(r[2]),
-    wahl: String(r[3]).trim() === "Gang" ? "gang" : Object.keys(SEITEN_).find(k => SEITEN_[k] === String(r[3]).trim()) || "",
-    status: String(r[4]), token: String(r[5]), umfrage: String(r[7] || "").trim() === "gang" ? "gang" : "gefolge" })).filter(r => r.id) };
+  return { sh: sh, rows: v.slice(1).map((r, i) => {
+    const wahlTxt = String(r[3]).trim(), u = String(r[7] || "").trim() || (LABEL2ID_[wahlTxt] || "gefolge");
+    return { row: i + 2, eingang: r[0], id: String(r[1]), name: String(r[2]), label: wahlTxt,
+      wahl: u === "gefolge" ? (Object.keys(SEITEN_).find(k => SEITEN_[k] === wahlTxt) || "") : u,
+      status: String(r[4]), token: String(r[5]), umfrage: u };
+  }).filter(r => r.id) };
 }
 function pollCount_(rows) {
-  const c = { rot: 0, weiss: 0, gang: 0 };
-  rows.filter(r => r.status === "aktiv" && c[r.wahl] !== undefined).forEach(r => c[r.wahl]++);
+  const c = { rot: 0, weiss: 0 };
+  rows.filter(r => r.status === "aktiv" && r.wahl).forEach(r => c[r.wahl] = (c[r.wahl] || 0) + 1);
   return c;
 }
-const pollOf_ = d => d && d.poll === "gang" ? "gang" : "gefolge";
+const pollOf_ = d => { const p = String((d && d.poll) || "gefolge").trim().toLowerCase(); return /^[a-z0-9-]{2,24}$/.test(p) ? p : "gefolge"; };
+function joinCfg_(s, id, d) {
+  const k = JOIN_[id] || {}, label = k.label || String((d && d.label) || id).trim().slice(0, 40);
+  const open = s.raw["Umfrage " + label + " offen"];
+  const max = Number(s.raw[label + " max."]) || k.def || Number(d && d.max) || 15;
+  return { id: id, label: label, open: open !== false, max: Math.max(1, Math.min(200, max)) };
+}
+// In wie vielen anderen Gruppen ist dieser Name schon aktiv? (Gefolge zählt als eine Gruppe)
+function otherGroups_(rows, name, exceptPoll) {
+  return [...new Set(rows.filter(r => r.status === "aktiv" && r.umfrage !== exceptPoll && norm_(r.name) === norm_(name))
+    .map(r => r.umfrage === "gefolge" ? "Gefolge der " + { rot: "Roten", weiss: "Weißen" }[r.wahl] + " Königin" : (JOIN_[r.umfrage] || {}).label || r.label))];
+}
+function limitMsg_(s, groups) {
+  return { ok: false, limit: true, error: "Du bist schon bei " + groups.join(" und ") + " eingetragen. Jede und jeder macht höchstens bei " + s.maxGruppen +
+    " Gruppen mit, damit alle zum Zug kommen. Wenn du wechseln willst, zieh vorher eine Stimme zurück." };
+}
+function mineOf_(P, d, poll) {
+  if (!d || !d.id) return null;
+  const r = P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.umfrage === poll);
+  return r ? { id: r.id, wahl: r.wahl, status: r.status, name: r.name } : { id: String(d.id), status: "gelöscht" };
+}
 function pollStatus_(d) {
-  const s = settings_(), P = pollRows_(), c = pollCount_(P.rows);
-  if (pollOf_(d) === "gang") {
-    let mine = null;
-    if (d.id) { const r = P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.umfrage === "gang");
-      mine = r ? { id: r.id, wahl: r.wahl, status: r.status, name: r.name } : { id: String(d.id), status: "gelöscht" }; }
-    return { ok: true, poll: "gang", open: s.gang, full: { gang: c.gang >= s.gangMax }, mine: mine };
+  const s = settings_(), P = pollRows_(), c = pollCount_(P.rows), poll = pollOf_(d);
+  if (poll !== "gefolge") {
+    const k = joinCfg_(s, poll, d);
+    return { ok: true, poll: poll, open: k.open, full: { [poll]: (c[poll] || 0) >= k.max }, mine: mineOf_(P, d, poll), maxGruppen: s.maxGruppen };
   }
-  let mine = null;
-  if (d && d.id) {
-    const r = P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || ""));
-    mine = r ? { id: r.id, wahl: r.wahl, status: r.status, name: r.name } : { id: String(d.id), status: "gelöscht" };
-  }
-  return { ok: true, open: s.umfrage, full: { rot: c.rot >= s.umfrageMax, weiss: c.weiss >= s.umfrageMax }, mine: mine };
+  return { ok: true, open: s.umfrage, full: { rot: c.rot >= s.umfrageMax, weiss: c.weiss >= s.umfrageMax }, mine: mineOf_(P, d, "gefolge"), maxGruppen: s.maxGruppen };
 }
 function pollVote_(d) {
-  if (pollOf_(d) === "gang") return gangVote_(d);
+  if (pollOf_(d) !== "gefolge") return joinVote_(d);
   const s = settings_();
   if (!s.umfrage) return { ok: false, error: "Die Umfrage ist beendet." };
   const wahl = SEITEN_[d.wahl] ? d.wahl : "";
@@ -780,6 +808,7 @@ function pollVote_(d) {
     const own = d.id ? P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.status === "aktiv" && x.umfrage === "gefolge") : null;
     if (!own && P.rows.some(r => r.status === "aktiv" && r.umfrage === "gefolge" && norm_(r.name) === norm_(name)))
       return { ok: false, error: "Mit diesem Namen wurde schon abgestimmt. Ändern geht nur auf dem Gerät, mit dem du abgestimmt hast – sonst bitte bei der Leitung melden." };
+    if (!own) { const g = otherGroups_(P.rows, name, "gefolge"); if (g.length >= s.maxGruppen) return limitMsg_(s, g); }
     if ((!own || own.wahl !== wahl) && c[wahl] >= s.umfrageMax)
       return { ok: false, error: "Beim Gefolge der " + { rot: "Roten Königin", weiss: "Weißen Königin" }[wahl] + " sind schon alle Plätze vergeben.", full: true };
     if (own) {
@@ -793,23 +822,25 @@ function pollVote_(d) {
     return { ok: true, id: id, token: token, wahl: wahl };
   });
 }
-// Gang: nur „ich bin dabei“; wer im Gefolge ist, darf zusätzlich mitmachen
-function gangVote_(d) {
-  const s = settings_();
-  if (!s.gang) return { ok: false, error: "Die Umfrage ist beendet." };
+// „Ich bin dabei“-Umfragen (Gang, Ballgesellschaft, 80er-Highschool, …)
+function joinVote_(d) {
+  const s = settings_(), poll = pollOf_(d), k = joinCfg_(s, poll, d);
+  if (!k.open) return { ok: false, error: "Die Umfrage ist beendet." };
   const name = String(d.name || "").trim().replace(/\s+/g, " ");
   if (name.length < 2 || name.length > 60) return { ok: false, error: "Bitte gib deinen Namen an." };
   return locked_(() => {
     const P = pollRows_(), c = pollCount_(P.rows);
-    const own = d.id ? P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.status === "aktiv" && x.umfrage === "gang") : null;
-    if (own) { P.sh.getRange(own.row, 3).setValue(name); P.sh.getRange(own.row, 7).setValue(new Date()); return { ok: true, id: own.id, token: own.token, wahl: "gang" }; }
-    if (P.rows.some(r => r.status === "aktiv" && r.umfrage === "gang" && norm_(r.name) === norm_(name)))
-      return { ok: false, error: "Mit diesem Namen hat sich schon jemand für die Gang eingetragen. Bei Fragen bitte bei der Leitung melden." };
-    if (c.gang >= s.gangMax) return { ok: false, error: "Bei der Gang sind schon alle Plätze vergeben.", full: true };
+    const own = d.id ? P.rows.find(x => x.id === String(d.id) && x.token === String(d.token || "") && x.status === "aktiv" && x.umfrage === poll) : null;
+    if (own) { P.sh.getRange(own.row, 3).setValue(name); P.sh.getRange(own.row, 7).setValue(new Date()); return { ok: true, id: own.id, token: own.token, wahl: poll }; }
+    if (P.rows.some(r => r.status === "aktiv" && r.umfrage === poll && norm_(r.name) === norm_(name)))
+      return { ok: false, error: "Mit diesem Namen hat sich schon jemand für " + k.label + " eingetragen. Bei Fragen bitte bei der Leitung melden." };
+    const g = otherGroups_(P.rows, name, poll);
+    if (g.length >= s.maxGruppen) return limitMsg_(s, g);
+    if ((c[poll] || 0) >= k.max) return { ok: false, error: "Bei " + k.label + " sind schon alle Plätze vergeben.", full: true };
     let id; do { id = rand_("G-", 6); } while (P.rows.some(r => r.id === id));
     const token = token_();
-    P.sh.appendRow([new Date(), id, name, "Gang", "aktiv", token, "", "gang"]);
-    return { ok: true, id: id, token: token, wahl: "gang" };
+    P.sh.appendRow([new Date(), id, name, k.label, "aktiv", token, "", poll]);
+    return { ok: true, id: id, token: token, wahl: poll };
   });
 }
 function pollCancel_(d) {
@@ -829,7 +860,11 @@ function pollResults_(d) {
   const rows = pollRows_().rows.filter(r => r.status === "aktiv" && r.wahl);
   const list = k => rows.filter(r => r.wahl === k).sort((a, b) => a.name.localeCompare(b.name, "de"))
     .map(r => ({ name: r.name, am: r.eingang instanceof Date ? Utilities.formatDate(r.eingang, "Europe/Berlin", "dd.MM.") : "" }));
-  return { ok: true, open: s.umfrage, max: s.umfrageMax, rot: list("rot"), weiss: list("weiss"), gangOpen: s.gang, gangMax: s.gangMax, gang: list("gang") };
+  const ids = [...new Set(Object.keys(JOIN_).concat(rows.filter(r => r.umfrage !== "gefolge").map(r => r.umfrage)))];
+  const groups = ids.map(id => { const lbl = (rows.find(r => r.umfrage === id) || {}).label; const k = joinCfg_(s, id, { label: lbl });
+    return { id: id, label: k.label, open: k.open, max: k.max, list: list(id) }; });
+  return { ok: true, open: s.umfrage, max: s.umfrageMax, rot: list("rot"), weiss: list("weiss"), maxGruppen: s.maxGruppen,
+    groups: groups, gangOpen: s.gang, gangMax: s.gangMax, gang: list("gang") };
 }
 
 /* ---------- Automatische Löschung (Datenschutz) ---------- */
