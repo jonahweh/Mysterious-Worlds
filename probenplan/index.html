@@ -144,6 +144,9 @@ h1 span{color:var(--accent)}
 .lu-bar b{position:absolute;top:0;bottom:0;width:2px;background:var(--ink);opacity:.5}
 .lu-col ol{margin:4px 0 0;padding-left:20px;font-size:14px}
 .lu-hint{font-size:12px;color:var(--muted)}
+.notice:has(.stamp) > strong{padding-right:96px}
+.nlist{margin:6px 0 4px;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.nlist span{color:var(--muted);font-size:13px}
 .notices{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .notice{background:#fffbe6;border:2px solid #231c00;border-radius:3px;padding:12px 14px;display:grid;gap:4px;min-width:0}
 .notice-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
@@ -600,7 +603,6 @@ footer a{color:var(--muted)}
     <div class="legend-row">
     <div class="legend">
       <span><i class="sw" style="background:var(--fr)"></i>Fr 13:30–15:00 Szenenprobe</span>
-      <span><i class="sw" style="background:var(--di)"></i>Di 13:55–15:25 Zusatzprobe</span>
       <span><i class="sw" style="background:var(--mi)"></i>Mi 14:40–15:25 Gesamtprobe (alle)</span>
       <span><i class="sw" style="background:var(--accent-soft);outline:1.5px solid var(--accent)"></i>Probenfahrt &amp; Probensamstag (alle)</span>
           </div>
@@ -647,7 +649,6 @@ footer a{color:var(--muted)}
         <h3>Probenzeiten</h3>
         <ul>
           <li><b>Freitag</b> <span class="mono">13:30–15:00</span> · Szenenprobe (Regeltermin; am 16.10. ausnahmsweise 11:30–13:00 in der Aula)</li>
-          <li><b>Dienstag</b> <span class="mono">13:55–15:25</span> · Zusatzprobe, nur wenn im Plan</li>
           <li><b>Mittwoch</b> <span class="mono">14:40–15:25</span> · Gesamtprobe mit Frau Geyer, nur an den Terminen im Plan (11.11., 25.11., 09.12., 16.12.; am 14.10. schon ab 13:55)</li>
           <li><b>Mittwoch</b> <span class="mono">13:55–14:40</span> · Einzelchorproben, nur wer eingeteilt ist</li>
           <li><b>Probenfahrt</b> <span class="mono">So 17.01.–Mi 20.01.2027</span> · Agatharied, alle</li>
@@ -673,11 +674,6 @@ footer a{color:var(--muted)}
           <li><span class="mono">24.12.–08.01.</span> Weihnachtsferien</li>
         </ul>
         <p class="note">An diesen Tagen finden keine Proben statt.</p>
-      </div>
-      <div class="info-card">
-        <h3>Reserve-Dienstage</h3>
-        <p class="mono">20.10. · 01.12. · 15.12. · 22.12.</p>
-        <p class="note">Werden nur genutzt, wenn eine Probe ausfällt oder eine Szene mehr Zeit braucht. Das steht dann im Aushang.</p>
       </div>
       <div class="info-card">
         <h3>So funktioniert der Plan</h3>
@@ -733,9 +729,15 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-10";
+const STAND = "2026-11-11";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
+  { art:"ausfall", datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
+    liste:[["Szene 3a: Ballsaal · Szene 3b: Balldiva (bis Frank & Lutzi auftauchen)","Helen, James, Petra, Vivian, Phillip, Balldiva"],
+           ["Szene 2f: Wiedersehen mit Phillip & Wanderung","Helen, James, Petra, Vivian, Phillip"],
+           ["Szene 4c: Entkommen","Helen, Petra, Vivian, Phillip, Frank, Erzählerinnen"],
+           ["Szene 5a: 80er-Highschool-Welt","Helen, James, Petra, Vivian, Phillip, Junger Frank, Junger Oberzauberer, Lehrerin, Schüler (80er), Erzählerinnen"]],
+    text2:"Sie werden ausführlich auf den Probentagen in Agatharied (17.–20.01.2027) geprobt.", ausgehaengt:"2026-11-11" },
   { art:"info", datum:"2026-11-11", titel:"Gesamtprobe am Mittwoch, 11.11., findet ganz normal statt", text:"Die Chorprobe mit Frau Geyer ist wie geplant von 14:40 bis 15:25 Uhr – für alle Mitwirkenden, auch die Schauspieler.", ausgehaengt:"2026-11-10" },
 ];
 
@@ -764,22 +766,18 @@ const PLAN = [
  {d:"2026-11-10",typ:"di",sz:"Szene 2b: Ankunft der Gruppe",songs:"Candy Store",roles:[...G,"rotekoenigin","weissekoenigin","gibbins"],note:"Einsätze der Bigband mit dem Licht abstimmen."},
  {d:"2026-11-11",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-11-13",einzel:[{song:"Beat It",lk:"Ge",roles:["oberzauberer","gang"]}],typ:"fr",sz:"Szene 2d: Gibbins soll ausspionieren · Szene 2e: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","erzaehlerinnen"],note:""},
- {d:"2026-11-17",typ:"di",sz:"Szene 3a: Ballsaal · Szene 3b: Balldiva, bis Frank & Lutzi auftauchen",songs:"Lied der Balldiva, Walzer",roles:[...G,"phillip","balldiva"],note:""},
  {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – schulfrei"},
  {d:"2026-11-20",einzel:[{song:"I Say a Little Prayer",lk:"Br",roles:["james","helen","petra","vivian"]}],typ:"fr",sz:"Szene 3b: Balldiva, ab Frank & Lutzi bis Szenenende",songs:"Walzer / Ballmusik",roles:["balldiva","frank","lutzi","phillip"],note:"Längste Szene, daher zwei Termine."},
- {d:"2026-11-24",typ:"di",sz:"Szene 2f: Wiedersehen mit Phillip & Wanderung",songs:"Like a Prayer",roles:[...G,"phillip"],note:"Dunkel-Passage und Lichtwechsel genau proben."},
  {d:"2026-11-25",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-11-27",einzel:[{song:"Show Me the Meaning of Being Lonely",lk:"Ge",roles:["erzaehlerinnen"]}],typ:"fr",sz:"Szene 2g: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:["petra","vivian","james","phillip","weissekoenigin","rotekoenigin"],note:""},
  {d:"2026-12-04",einzel:[{song:"Three Little Birds",lk:"Br",roles:["gibbins"]}],typ:"fr",sz:"Szene 4a: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:[...G,"erzaehlerinnen"],note:"Petra und Vivian nur am Szenenanfang."},
- {d:"2026-12-08",typ:"di",sz:"Szene 4c: Entkommen",songs:"",roles:["helen","petra","vivian","phillip","frank","erzaehlerinnen"],note:"Wird ausnahmsweise vor Szene 4b geprobt, damit sich keine Einzelprobe überschneidet."},
  {d:"2026-12-09",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-12-11",einzel:[{song:"From Now On",lk:"Ge",roles:["oberzauberer","petra","rotekoenigin","balldiva","frank","phillip"]}],typ:"fr",sz:"Opening: Mysterious Worlds · Erzählerinnen: alle Zwischentexte",text:"op.1a.1d.2a.2c.2e.4a.4c.5a",songs:"",roles:["erzaehlerinnen"],note:"Probe für die Erzählerinnen: das Opening und alle ihre Auftritte im Stück am Stück durchgehen."},
  {d:"2026-12-16",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-12-18",einzel:[{song:"Once Upon a December",lk:"Ge",roles:["frank","phillip"]}],typ:"fr",sz:"Szene 4b: Big big Trouble",songs:"Beat It",roles:[...G,"gang"],note:""},
  {d:"2026-12-24",bis:"2027-01-08",typ:"fe",sz:"Weihnachtsferien – keine Proben"},
- {d:"2027-01-12",typ:"di",sz:"Szene 5a: 80er-Highschool-Welt",songs:"Show Me the Meaning of Being Lonely",roles:[...G,"phillip","frankjr","ozjr","lehrerin","schueler","erzaehlerinnen"],note:""},
  {d:"2027-01-15",einzel:[{frei:true}],typ:"fr",sz:"Szene 5b: Der Nährboden für Franks Unzufriedenheit",songs:"One Last Time, From Now On",roles:[...G,"phillip","frank","oberzauberer"],note:"Szene 6 (Finale) wird noch geschrieben, der Termin dafür kommt in den Aushang."},
- {d:"2027-01-17",bis:"2027-01-20",typ:"fa",sz:"Probenfahrt nach Agatharied",songs:"",roles:[],note:"Alle Beteiligten fahren mit. Wer im Stück mitspielt, fährt schon am Sonntag, 17.01. Wer nur im Chor ist, kommt am Montag, 18.01., nach. Zurück am Mittwoch, 20.01."},
+ {d:"2027-01-17",bis:"2027-01-20",typ:"fa",sz:"Probenfahrt nach Agatharied",text:"3a.3b-1.2f.4c.5a",songs:"",roles:[],note:"Alle Beteiligten fahren mit. Wer im Stück mitspielt, fährt schon am Sonntag, 17.01. Wer nur im Chor ist, kommt am Montag, 18.01., nach. Zurück am Mittwoch, 20.01. Ausführlich geprobt werden dort unter anderem die Szenen, die sonst dienstags dran gewesen wären: 3a, 3b (erster Teil), 2f, 4c und 5a."},
  {d:"2027-02-20",typ:"pt",zeit:["09:00","17:00"],sz:"Probensamstag",songs:"",roles:[],note:"Den ganzen Tag Probe mit allen Beteiligten des Musicals."},
  {d:"2027-03-17",typ:"auf",sz:"Aufführung 1",songs:"",roles:[],note:"Uhrzeit und Ort folgen."},
  {d:"2027-03-18",typ:"auf",sz:"Aufführung 2",songs:"",roles:[],note:"Uhrzeit und Ort folgen."}
@@ -883,7 +881,7 @@ function noticeHTML(a, fresh){
   const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
   const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
   return `<li class="notice${fresh?" fresh":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
-    <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}
+    <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}${a.liste?`<ul class="nlist">${a.liste.map(([s,r]) => `<li><b>${esc(s)}</b><br><span>${esc(r)}</span></li>`).join("")}</ul>`:""}${a.text2?`<span>${esc(a.text2)}</span>`:""}
     ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
 }
 
