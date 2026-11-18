@@ -151,6 +151,13 @@ h1 span{color:var(--accent)}
 .notice{background:#fffbe6;border:2px solid #231c00;border-radius:3px;padding:12px 14px;display:grid;gap:4px;min-width:0}
 .notice-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
 .kind{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#fff;padding:2px 8px;border-radius:2px}
+.kind.gang{background:#ff2e88;color:#fff}
+.notice.n-gang{background:#15151a;color:#f2f2f2;border-color:#ff2e88;box-shadow:inset 0 0 0 1px #39ff88,0 0 18px rgba(255,46,136,.35)}
+.notice.n-gang strong{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.03em;text-transform:uppercase;color:#39ff88;text-shadow:0 0 8px rgba(57,255,136,.5)}
+.notice.n-gang .notice-meta b,.notice.n-gang .notice-meta span{color:#f2f2f2}
+.notice.n-gang .posted{color:#a7a7b5}
+.notice.n-gang .notice-meta{padding-right:34px}
+.notice.n-gang::after{content:"🕺";position:absolute;right:12px;top:10px;font-size:26px;transform:rotate(12deg)}
 .kind.ausfall{background:#c62828}.kind.verschoben{background:#b45300}.kind.info{background:#2451b3}.kind.neu{background:#1f7a4d}
 .notice strong{font-size:16px}
 .notice .posted{font-size:12px;color:#5b5230}
@@ -187,6 +194,8 @@ nav.menu{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:v
 .einzel{margin-top:8px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:4px;padding:6px 10px;display:grid;gap:4px;font-size:14px}
 .einzel .ez-k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
 .einzel .roles{margin:0}
+.einzel.ez-gang{background:#15151a;border-left-color:#ff2e88;color:#f2f2f2}
+.einzel.ez-gang .ez-k{color:#39ff88}
 .entry.t-auf .date{background:var(--accent);color:var(--bg)}
 .entry.t-auf .date .wd{color:var(--bg);opacity:.85}
 .shows{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;background:var(--accent);color:var(--bg);border-radius:6px;padding:18px 20px;margin-top:10px}
@@ -568,7 +577,7 @@ footer a{color:var(--muted)}
       <div class="tafel-k">Umfrage</div>
       <h3 id="umf-h">Gefolge: Rote oder Weiße Königin?</h3>
       <p class="tafel-p">Für das Gefolge der beiden Königinnen suchen wir pro Seite 5 bis 10 Leute. Bei wem möchtest du mitmachen?</p>
-      <p class="tafel-frist" id="umf-frist">Abstimmen bis <b>Freitag, 13.11., 18 Uhr</b></p>
+      <p class="tafel-frist" id="umf-frist">Abstimmen bis <b>Sonntag, 22.11., abends</b></p>
       <p class="tafel-p" id="umf-closed" hidden><b>Die Abstimmung ist beendet.</b> Die Einteilung kommt in den Aushang.</p>
       <form id="umf-form" novalidate>
         <div class="umf-choice" role="radiogroup" aria-label="Seite wählen">
@@ -729,9 +738,11 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-11";
+const STAND = "2026-11-18";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
+  { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
+  { art:"info", datum:"", titel:"Umfragen laufen noch bis Sonntagabend, 22.11.", text:"Gefolge, Ballgesellschaft und 80er-Highschool: Wer mitmachen will, trägt sich bis Sonntag, 22.11., abends unten auf den Tafeln ein.", ausgehaengt:"2026-11-18" },
   { art:"ausfall", datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
     liste:[["Szene 3a: Ballsaal · Szene 3b: Balldiva (bis Frank & Lutzi auftauchen)","Helen, James, Petra, Vivian, Phillip, Balldiva"],
            ["Szene 2f: Wiedersehen mit Phillip & Wanderung","Helen, James, Petra, Vivian, Phillip"],
@@ -767,7 +778,7 @@ const PLAN = [
  {d:"2026-11-11",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-11-13",einzel:[{song:"Beat It",lk:"Ge",roles:["oberzauberer","gang"]}],typ:"fr",sz:"Szene 2d: Gibbins soll ausspionieren · Szene 2e: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","erzaehlerinnen"],note:""},
  {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – schulfrei"},
- {d:"2026-11-20",einzel:[{song:"I Say a Little Prayer",lk:"Br",roles:["james","helen","petra","vivian"]}],typ:"fr",sz:"Szene 3b: Balldiva, ab Frank & Lutzi bis Szenenende",songs:"Walzer / Ballmusik",roles:["balldiva","frank","lutzi","phillip"],note:"Längste Szene, daher zwei Termine."},
+ {d:"2026-11-20",einzel:[{song:"I Say a Little Prayer",lk:"Br",roles:["james","helen","petra","vivian"]},{kopf:"Tanzprobe Gang · 13:55 Uhr · Treffpunkt Foyer",song:"Tanzprobe für alle Gangmitglieder",lk:"",zeit:"13:55",roles:["gang"],gang:true}],typ:"fr",sz:"Szene 3b: Balldiva, ab Frank & Lutzi bis Szenenende",songs:"Walzer / Ballmusik",roles:["balldiva","frank","lutzi","phillip"],note:"Längste Szene, daher zwei Termine."},
  {d:"2026-11-25",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-11-27",einzel:[{song:"Show Me the Meaning of Being Lonely",lk:"Ge",roles:["erzaehlerinnen"]}],typ:"fr",sz:"Szene 2g: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:["petra","vivian","james","phillip","weissekoenigin","rotekoenigin"],note:""},
  {d:"2026-12-04",einzel:[{song:"Three Little Birds",lk:"Br",roles:["gibbins"]}],typ:"fr",sz:"Szene 4a: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:[...G,"erzaehlerinnen"],note:"Petra und Vivian nur am Szenenanfang."},
@@ -878,9 +889,9 @@ const isArchived = a => a.bis ? parse(a.bis) < today
   : a.ausgehaengt ? daysSince(a.ausgehaengt) > 21 : false;
 
 function noticeHTML(a, fresh){
-  const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu"}[a.art] || "Info";
+  const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu",gang:"Gang · Tanzprobe"}[a.art] || "Info";
   const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
-  return `<li class="notice${fresh?" fresh":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
+  return `<li class="notice${fresh?" fresh":""}${a.art==="gang"?" n-gang":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
     <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}${a.liste?`<ul class="nlist">${a.liste.map(([s,r]) => `<li><b>${esc(s)}</b><br><span>${esc(r)}</span></li>`).join("")}</ul>`:""}${a.text2?`<span>${esc(a.text2)}</span>`:""}
     ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
 }
@@ -968,7 +979,7 @@ function einzelHTML(e, me){
   if(!e.einzel || !e.einzel.length) return "";
   return e.einzel.map(x => x.frei
     ? `<div class="einzel"><span class="ez-k">Einzelproben</span><span>Freigehalten für Songs, die noch mehr Übung brauchen. Wer dran ist, steht im Aushang.</span></div>`
-    : `<div class="einzel"><span class="ez-k">${x.zeit ? `Einzelprobe um ${esc(x.zeit)} Uhr, nach der Probe` : "Parallel: Einzelprobe"}</span><span><b>${esc(x.song)}</b> mit ${esc(LK[x.lk] || x.lk)}</span>
+    : `<div class="einzel${x.gang ? " ez-gang" : ""}"><span class="ez-k">${x.kopf ? esc(x.kopf) : x.zeit ? `Einzelprobe um ${esc(x.zeit)} Uhr, nach der Probe` : "Parallel: Einzelprobe"}</span><span><b>${esc(x.song)}</b>${x.lk ? ` mit ${esc(LK[x.lk] || x.lk)}` : ""}</span>
         <div class="roles">${ezR(x).map(r => `<button class="chip${me && me.has(r) ? " me" : ""}" data-role="${r}" title="Probenplan für ${esc(ROLES[r])} anzeigen">${esc(ROLES[r])}</button>`).join("")}</div></div>`).join("");
 }
 /* Szenentext zur Probe (passwortgeschützt unter szenen/) */
@@ -1020,7 +1031,7 @@ function songsFor(sel){
       map.get(k).sz.push(e);
     });
   });
-  PLAN.forEach(e => (e.einzel || []).filter(x => !x.frei && ezR(x).some(r => sel.has(r))).forEach(x => {
+  PLAN.forEach(e => (e.einzel || []).filter(x => !x.frei && !x.gang && ezR(x).some(r => sel.has(r))).forEach(x => {
     const k = songKey(x.song);
     if(!map.has(k)) map.set(k, {name: x.song.replace(/\s*\(.*?\)\s*$/,""), sz:[], ez:[]});
     (map.get(k).ez = map.get(k).ez || []).push(e);
@@ -1071,10 +1082,11 @@ function icsFor(sel){
     const ezMine = (e.einzel || []).filter(x => !x.frei && ezR(x).some(r => sel.has(r)));
     const leads = ezMine.filter(x => sel.has(LK_ROLE[x.lk]));
     const what = e.typ==="auf" || e.typ==="pt" || e.typ==="fa" ? e.sz : e.typ==="mi" ? "Gesamtprobe (Chor mit Frau Geyer)"
+      : onlyEz && ezMine.every(x => x.gang) ? "Tanzprobe Gang (Treffpunkt Foyer)"
       : onlyEz ? "Einzelprobe " + ezMine.map(x => x.song).join(" + ") + (leads.length ? " (leiten)" : "")
       : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
     const desc = [e.sz, e.songs && "Songs: " + e.songs, e.roles.length && "Rollen: " + e.roles.map(r => ROLES[r]).join(", "), e.note,
-      ...(e.einzel || []).map(x => x.frei ? "Einzelproben: freigehalten für Songs mit mehr Übungsbedarf" : `${x.zeit ? "Einzelprobe um " + x.zeit + " Uhr" : "Parallel Einzelprobe"}: ${x.song} mit ${LK[x.lk] || x.lk} (${x.roles.map(r => ROLES[r]).join(", ")})`),
+      ...(e.einzel || []).map(x => x.frei ? "Einzelproben: freigehalten für Songs mit mehr Übungsbedarf" : x.kopf ? `${x.kopf}: ${x.song} (` + x.roles.map(r => ROLES[r]).join(", ") + ")" : `${x.zeit ? "Einzelprobe um " + x.zeit + " Uhr" : "Parallel Einzelprobe"}: ${x.song} mit ${LK[x.lk] || x.lk} (${x.roles.map(r => ROLES[r]).join(", ")})`),
       ...changesFor(e.d).map(a => "Aushang: " + a.titel + (a.text ? " – " + a.text : "")),
       "Aktueller Stand und Änderungen: " + url].filter(Boolean).join("\n");
     L.push("BEGIN:VEVENT", `UID:mw-${e.d}-${e.typ}@jonahweh.github.io`, `DTSTAMP:${stamp}`);
@@ -1611,7 +1623,7 @@ function todayISO(){ return today.getFullYear() + "-" + String(today.getMonth()+
 
 /* ===== Leitung: Übersicht aller Absagen (nur mit Leitungs-PIN) ===== */
 /* ===== Umfrage Gefolge (Tafel im Aushang) ===== */
-const UMF_BIS = "2026-11-13", UMF_BIS_ZEIT = "18:00"; // Frist (verlängert): Freitag, 13.11., 18 Uhr
+const UMF_BIS = "2026-11-22", UMF_BIS_ZEIT = "23:59"; // Frist für alle Umfragen: Sonntag, 22.11., abends
 const umfVorbei = () => NOW > at(UMF_BIS, UMF_BIS_ZEIT);
 const UMF_TXT = { rot:"Rote Königin", weiss:"Weiße Königin" }, UMF_GEN = { rot:"Roten Königin", weiss:"Weißen Königin" };
 let myVote = lsGet("mw-umfrage", null), umfFull = { rot:false, weiss:false }, umfEdit = false;
@@ -1705,6 +1717,8 @@ function joinPoll(cfg){
   box.innerHTML = `<div class="tafel-k">Umfrage</div>
     <h3 id="${P("h")}"><span class="tafel-emoji" aria-hidden="true">${cfg.emoji}</span> ${esc(cfg.titel)}</h3>
     <p class="tafel-p">${esc(cfg.text)}</p>
+    <p class="tafel-frist" id="${P("frist")}">Eintragen bis <b>Sonntag, 22.11., abends</b></p>
+    <p class="tafel-p" id="${P("closed")}" hidden><b>Die Umfrage ist beendet.</b> Die Einteilung kommt in den Aushang.</p>
     <p class="tafel-p">Gesucht: <b>etwa ${cfg.max} Leute</b>. Du darfst auch bei einer anderen Gruppe dabei sein – aber jede und jeder höchstens bei zwei, damit alle zum Zug kommen.</p>
     <form id="${P("form")}" novalidate>
       <div class="umf-row"><input type="text" id="${P("name")}" maxlength="60" autocomplete="name" placeholder="Vor- und Nachname" aria-label="Dein Name"><button class="umf-btn" type="submit" id="${P("send")}">Ich bin dabei</button></div>
@@ -1717,6 +1731,12 @@ function joinPoll(cfg){
   const q = s => document.getElementById(P(s));
   q("name").value = (mine && mine.name) || lsGet("mw-name", "");
   const render = () => {
+    if(umfVorbei()){
+      q("form").hidden = true; q("frist").hidden = true; q("closed").hidden = false;
+      const has = mine && mine.status === "aktiv"; q("done").hidden = !has;
+      if(has){ q("done-txt").textContent = `✓ Du (${mine.name}) bist bei ${cfg.dativ} eingetragen.`; q("undo").parentElement.hidden = true; }
+      return;
+    }
     const done = mine && mine.status === "aktiv";
     q("form").hidden = !!done; q("done").hidden = !done;
     if(done) q("done-txt").textContent = `✓ Du (${mine.name}) bist bei ${cfg.dativ} eingetragen.`;
@@ -1727,7 +1747,7 @@ function joinPoll(cfg){
     try{
       const base = { action:"poll_status", poll: cfg.id, label: cfg.label, max: cfg.max };
       const r = await api(mine ? Object.assign(base, { id: mine.id, token: mine.token }) : base);
-      if(!r.ok || r.poll !== cfg.id || !r.open){ box.hidden = true; return; } // r.poll fehlt = Script zu alt für diese Umfrage
+      if(!r.ok || r.poll !== cfg.id || !r.open || daysSince(UMF_BIS) > 7){ box.hidden = true; return; } // r.poll fehlt = Script zu alt für diese Umfrage
       full = !!(r.full && r.full[cfg.id]);
       if(mine && r.mine){ if(r.mine.status !== "aktiv"){ mine = null; lsSet(key, null); } else { mine = Object.assign(mine, r.mine); lsSet(key, mine); } }
       box.hidden = false; render();
@@ -1736,6 +1756,7 @@ function joinPoll(cfg){
   q("form").addEventListener("submit", async ev => {
     ev.preventDefault();
     const err = q("err"), btn = q("send"); err.hidden = true;
+    if(umfVorbei()){ render(); return; }
     const name = q("name").value.trim().replace(/\s+/g, " ");
     if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; q("name").focus(); return; }
     btn.disabled = true; btn.textContent = "Sende …";
@@ -1776,7 +1797,7 @@ async function loadUmfrageLeitung(){
         <span class="lu-hint">${hint}</span>
         ${n ? `<ol>${list.map(x => `<li>${esc(x.name)}${x.am ? ` <span class="lu-hint">${esc(x.am)}</span>` : ""}</li>`).join("")}</ol>` : '<span class="lu-hint">Noch keine Stimmen.</span>'}</div>`;
     };
-    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)}, ${UMF_BIS_ZEIT} Uhr`}</h3>
+    box.innerHTML = `<div class="leit-umf"><h3>Umfrage: Gefolge Rote oder Weiße Königin${!r.open || umfVorbei() ? " · beendet" : ` · läuft bis ${WD[parse(UMF_BIS).getDay()]} ${dm(UMF_BIS)} abends`}</h3>
       <div class="lu-cols">${col("rot", r.rot)}${col("weiss", r.weiss)}</div>
       <span class="lu-hint">${r.rot.length + r.weiss.length} ${r.rot.length + r.weiss.length === 1 ? "Stimme" : "Stimmen"}. Alles steht auch im Blatt „Umfrage“ der Tabelle; dort lässt sich die Umfrage unter „Einstellungen“ beenden.</span></div>
       ${(r.groups || []).map(g => { const n = g.list.length, pct = Math.min(100, n / g.max * 100);
