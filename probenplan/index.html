@@ -186,7 +186,7 @@ nav.menu{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:v
 .month{display:grid;gap:10px}
 .month h3{font-family:var(--display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding-top:8px}
 .entry{display:grid;grid-template-columns:78px 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;position:relative}
-.entry.t-fr .date{background:var(--fr)}.entry.t-di .date{background:var(--di)}.entry.t-mi .date{background:var(--mi)}.entry.t-pl .date{background:var(--pl)}
+.entry.t-ez .date{background:var(--accent-soft)}.entry.t-fr .date{background:var(--fr)}.entry.t-di .date{background:var(--di)}.entry.t-mi .date{background:var(--mi)}.entry.t-pl .date{background:var(--pl)}
 .entry.t-fe{background:var(--fe);border-style:dashed}
 .entry.t-auf{border:2px solid var(--accent);background:var(--accent-soft)}
 .entry.t-pt,.entry.t-fa{border:2px dashed var(--accent)}
@@ -738,9 +738,10 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-18";
+const STAND = "2026-11-20";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
+  { art:"neu", datum:"2026-11-24", titel:"Dienstag, 24.11., ab 15:20 Uhr: nochmal I Say a Little Prayer", text:"Songprobe mit Frau Bretl für James, Helen, Petra und Vivian.", ausgehaengt:"2026-11-20" },
   { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
   { art:"info", datum:"", titel:"Umfragen laufen noch bis Sonntagabend, 22.11.", text:"Gefolge, Ballgesellschaft und 80er-Highschool: Wer mitmachen will, trägt sich bis Sonntag, 22.11., abends unten auf den Tafeln ein.", ausgehaengt:"2026-11-18" },
   { art:"ausfall", datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
@@ -779,6 +780,7 @@ const PLAN = [
  {d:"2026-11-13",einzel:[{song:"Beat It",lk:"Ge",roles:["oberzauberer","gang"]}],typ:"fr",sz:"Szene 2d: Gibbins soll ausspionieren · Szene 2e: Petra reicht's!",songs:"Respect",roles:[...G,"rotekoenigin","gibbins","erzaehlerinnen"],note:""},
  {d:"2026-11-18",typ:"fe",sz:"Buß- und Bettag – schulfrei"},
  {d:"2026-11-20",einzel:[{song:"I Say a Little Prayer",lk:"Br",roles:["james","helen","petra","vivian"]},{kopf:"Tanzprobe Gang · 13:55 Uhr · Treffpunkt Foyer",song:"Tanzprobe für alle Gangmitglieder",lk:"",zeit:"13:55",roles:["gang"],gang:true}],typ:"fr",sz:"Szene 3b: Balldiva, ab Frank & Lutzi bis Szenenende",songs:"Walzer / Ballmusik",roles:["balldiva","frank","lutzi","phillip"],note:"Längste Szene, daher zwei Termine."},
+ {d:"2026-11-24",typ:"ez",zeit:["15:20","16:05"],offen:true,sz:"Einzelprobe: I Say a Little Prayer",songs:"I Say a Little Prayer",roles:["james","helen","petra","vivian","bretl"],note:"Noch einmal Songprobe mit Frau Bretl, ab 15:20 Uhr."},
  {d:"2026-11-25",typ:"mi",zeit:["14:40","15:25"],sz:"Gesamtprobe",songs:"",roles:[],note:"Davor, 13:55–14:40, können Einzelchorproben stattfinden – nur wer dafür eingeteilt ist."},
  {d:"2026-11-27",einzel:[{song:"Show Me the Meaning of Being Lonely",lk:"Ge",roles:["erzaehlerinnen"]}],typ:"fr",sz:"Szene 2g: Die Weiße Königin hilft",songs:"Medley Like a Prayer vs. Candy Store",roles:["petra","vivian","james","phillip","weissekoenigin","rotekoenigin"],note:""},
  {d:"2026-12-04",einzel:[{song:"Three Little Birds",lk:"Br",roles:["gibbins"]}],typ:"fr",sz:"Szene 4a: Böse Welt, James wird romantisch",songs:"Elephant Love Medley",roles:[...G,"erzaehlerinnen"],note:"Petra und Vivian nur am Szenenanfang."},
@@ -829,13 +831,13 @@ const SECRET_WORLD = { k:"geheim", name:"Die Hinterbühne", sub:"Geheime Welt", 
   text:"Seile, Sandsäcke, Requisitenchaos und Licht, das nur ihr seht. Ohne die Welt hinter dem Vorhang gäbe es keine einzige Welt davor. Glückwunsch, du hast sie gefunden!" };
 
 /* ===== Darstellung ===== */
-const TYPE = {fr:"Szenenprobe",di:"Zusatzprobe",mi:"Gesamtprobe",pt:"Probensamstag",fa:"Probenfahrt",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
+const TYPE = {ez:"Einzelprobe",fr:"Szenenprobe",di:"Zusatzprobe",mi:"Gesamtprobe",pt:"Probensamstag",fa:"Probenfahrt",pl:"Szenenprobe · Platzhalter",fe:"schulfrei",auf:"Aufführung"};
 const WD = ["So","Mo","Di","Mi","Do","Fr","Sa"];
 const MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
 const parse = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
 const dm = s => { const x = parse(s); return String(x.getDate()).padStart(2,"0")+"."+String(x.getMonth()+1).padStart(2,"0")+"."; };
 const slotOf = e => e.zeit || ({3:["14:40","15:25"], 5:["13:30","15:00"]}[parse(e.d).getDay()] || ["13:55","15:25"]);
-const timeOf = e => e.typ==="auf" ? "Uhrzeit folgt" : e.typ==="fa" ? `${WD[parse(e.d).getDay()]} ${dm(e.d)} – ${WD[parse(e.bis).getDay()]} ${dm(e.bis)}` : slotOf(e).join("–");
+const timeOf = e => e.typ==="auf" ? "Uhrzeit folgt" : e.offen ? "ab " + slotOf(e)[0] + " Uhr" : e.typ==="fa" ? `${WD[parse(e.d).getDay()]} ${dm(e.d)} – ${WD[parse(e.bis).getDay()]} ${dm(e.bis)}` : slotOf(e).join("–");
 /* Termine für alle Beteiligten: Gesamtproben (Mi), Probenfahrt, Probensamstag */
 const FOR_ALL = ["mi","pt","fa"];
 const forAll = e => FOR_ALL.includes(e.typ);
@@ -1081,7 +1083,7 @@ function icsFor(sel){
     const onlyEz = !forAll(e) && !e.roles.some(r => sel.has(r)) && einzelRoles(e).some(r => sel.has(r));
     const ezMine = (e.einzel || []).filter(x => !x.frei && ezR(x).some(r => sel.has(r)));
     const leads = ezMine.filter(x => sel.has(LK_ROLE[x.lk]));
-    const what = e.typ==="auf" || e.typ==="pt" || e.typ==="fa" ? e.sz : e.typ==="mi" ? "Gesamtprobe (Chor mit Frau Geyer)"
+    const what = e.typ==="auf" || e.typ==="pt" || e.typ==="fa" || e.typ==="ez" ? e.sz : e.typ==="mi" ? "Gesamtprobe (Chor mit Frau Geyer)"
       : onlyEz && ezMine.every(x => x.gang) ? "Tanzprobe Gang (Treffpunkt Foyer)"
       : onlyEz ? "Einzelprobe " + ezMine.map(x => x.song).join(" + ") + (leads.length ? " (leiten)" : "")
       : `${TYPE[e.typ]}${scenes.length ? " " + scenes.join(" + ") : ""}`;
@@ -1510,7 +1512,7 @@ function applyHash(){
   else if(h === "mein-plan") showView("rolle");
 }
 /* ===== Probenabsagen ===== */
-const ABS_TYPES = ["fr","di","mi","pl","pt","fa"];
+const ABS_TYPES = ["fr","di","mi","pl","pt","fa","ez"];
 const ART_TXT = { fehlt:"fehlt", spaeter:"kommt später", frueher:"geht früher" };
 const lsGet = (k, d) => { try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } };
 const lsSet = (k, v) => { try{ v === null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
