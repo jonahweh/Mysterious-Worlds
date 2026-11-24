@@ -145,6 +145,17 @@ h1 span{color:var(--accent)}
 .lu-col ol{margin:4px 0 0;padding-left:20px;font-size:14px}
 .lu-hint{font-size:12px;color:var(--muted)}
 .notice:has(.stamp) > strong{padding-right:96px}
+.geschuetzt{display:grid;gap:8px;margin-top:4px}
+.gs-lock{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.gs-lock input{flex:1 1 160px;min-width:0;padding:7px 12px;border:2px solid #231c00;border-radius:999px;background:#fff;color:#231c00;font:inherit}
+.gs-lock button{border:2px solid #231c00;background:#231c00;color:#ffd23f;border-radius:999px;padding:7px 16px;font:inherit;font-weight:700;cursor:pointer}
+.gs-err{color:#c62828;font-weight:600;font-size:13px}
+.gs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.gs-grp{background:#fff;border:1.5px solid #231c00;border-radius:6px;padding:8px 10px}
+.gs-grp h4{margin:0 0 4px;font-size:15px}
+.gs-grp ol{margin:0;padding-left:20px;font-size:14px}
+.gs-grp li.me{background:#ffd23f;font-weight:700;border-radius:3px}
+.gs-find{padding:7px 12px;border:2px solid #231c00;border-radius:999px;font:inherit;min-width:0}
 .nlist{margin:6px 0 4px;padding-left:18px;display:grid;gap:6px;font-size:14px}
 .nlist span{color:var(--muted);font-size:13px}
 .notices{list-style:none;margin:0;padding:0;display:grid;gap:10px}
@@ -894,7 +905,7 @@ function noticeHTML(a, fresh){
   const label = {ausfall:"Fällt aus",verschoben:"Verschoben",info:"Info",neu:"Neu",gang:"Gang · Tanzprobe"}[a.art] || "Info";
   const when = a.datum ? `<span>betrifft <b>${WD[parse(a.datum).getDay()]} ${dm(a.datum)}</b></span>` : "";
   return `<li class="notice${fresh?" fresh":""}${a.art==="gang"?" n-gang":""}">${a.art==="ausfall"?'<span class="stamp" aria-hidden="true">Abgesagt</span>':""}<div class="notice-meta">${fresh?'<span class="freshtag">NEU</span>':""}<span class="kind ${esc(a.art)}">${label}</span>${when}</div>
-    <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}${a.liste?`<ul class="nlist">${a.liste.map(([s,r]) => `<li><b>${esc(s)}</b><br><span>${esc(r)}</span></li>`).join("")}</ul>`:""}${a.text2?`<span>${esc(a.text2)}</span>`:""}
+    <strong>${esc(a.titel)}</strong>${a.text?`<span>${esc(a.text)}</span>`:""}${a.liste?`<ul class="nlist">${a.liste.map(([s,r]) => `<li><b>${esc(s)}</b><br><span>${esc(r)}</span></li>`).join("")}</ul>`:""}${a.text2?`<span>${esc(a.text2)}</span>`:""}${a.geschuetzt?`<div class="geschuetzt" data-src="${esc(a.geschuetzt)}"></div>`:""}
     ${a.ausgehaengt?`<span class="posted">ausgehängt am ${dm(a.ausgehaengt)}</span>`:""}</li>`;
 }
 
@@ -1695,6 +1706,43 @@ $a("umf-undo").onclick = async () => {
   }catch(e){ absToast("Keine Verbindung. Bitte später nochmal versuchen."); }
 };
 umfLoad();
+
+/* ===== Geschützte Aushänge (Einteilung): nur mit dem Team-Passwort lesbar, wie der Szenentext ===== */
+const b64d = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function decryptWith(pw, e){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b64d(e.salt), iterations:e.iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64d(e.iv)}, key, b64d(e.ct))));
+}
+function gsRender(box, d){
+  const my = (lsGet("mw-name", "") || "").toLowerCase();
+  box.innerHTML = `<input class="gs-find" type="search" placeholder="Namen suchen …" aria-label="Namen suchen">
+    <div class="gs-grid">${d.gruppen.map(g => `<div class="gs-grp"><h4>${esc(g.emoji || "")} ${esc(g.titel)} <span style="font-weight:400;color:#5b5230">(${g.namen.length})</span></h4>
+      <ol>${g.namen.map(n => `<li${my && n.toLowerCase() === my ? ' class="me"' : ""}>${esc(n)}</li>`).join("")}</ol></div>`).join("")}</div>
+    ${d.hinweis ? `<span>${esc(d.hinweis)}</span>` : ""}`;
+  box.querySelector(".gs-find").addEventListener("input", ev => {
+    const q = ev.target.value.trim().toLowerCase();
+    box.querySelectorAll(".gs-grp li").forEach(li => li.classList.toggle("me", !!q && li.textContent.toLowerCase().includes(q)));
+  });
+}
+async function gsInit(box){
+  let enc;
+  try{ const r = await fetch(box.dataset.src, {cache:"no-cache"}); enc = await r.json(); }
+  catch(e){ box.innerHTML = '<span class="gs-err">Die Liste konnte nicht geladen werden.</span>'; return; }
+  const lock = (msg) => {
+    box.innerHTML = `<form class="gs-lock"><input type="password" placeholder="Team-Passwort" aria-label="Team-Passwort" autocomplete="current-password"><button type="submit">Einteilung zeigen</button></form>
+      <span class="note" style="color:#5b5230">Die Namen sieht nur das Ensemble. Es ist dasselbe Passwort wie beim Szenentext.</span>${msg ? `<span class="gs-err">${esc(msg)}</span>` : ""}`;
+    box.querySelector("form").addEventListener("submit", async ev => {
+      ev.preventDefault(); const pw = ev.target.querySelector("input").value.trim(); if(!pw) return;
+      try{ const d = await decryptWith(pw, enc); try{ localStorage.setItem("mw-textpw", pw); }catch(e){} gsRender(box, d); }
+      catch(e){ lock("Das Passwort stimmt nicht."); }
+    });
+  };
+  let saved = null; try{ saved = localStorage.getItem("mw-textpw"); }catch(e){}
+  if(saved){ try{ gsRender(box, await decryptWith(saved, enc)); return; }catch(e){} }
+  lock();
+}
+document.querySelectorAll(".geschuetzt").forEach(gsInit);
 
 /* ===== Willkommen (lässt sich ausblenden) ===== */
 if(lsGet("mw-willkommen-weg", false)) $a("welcome").hidden = true;
