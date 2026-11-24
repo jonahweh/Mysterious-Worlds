@@ -749,12 +749,12 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-20";
+const STAND = "2026-11-24";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
+  { art:"info", datum:"", titel:"Einteilung: Gefolge, Gang, Ballgesellschaft & 80er-Highschool", text:"Danke fürs Mitmachen bei den Umfragen! Hier siehst du, in welcher Gruppe du dabei bist. Die Liste ist mit dem Team-Passwort geschützt.", geschuetzt:"einteilung.json", ausgehaengt:"2026-11-24" },
   { art:"neu", datum:"2026-11-24", titel:"Dienstag, 24.11., ab 15:20 Uhr: nochmal I Say a Little Prayer", text:"Songprobe mit Frau Bretl für James, Helen, Petra und Vivian.", ausgehaengt:"2026-11-20" },
   { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
-  { art:"info", datum:"", titel:"Umfragen laufen noch bis Sonntagabend, 22.11.", text:"Gefolge, Ballgesellschaft und 80er-Highschool: Wer mitmachen will, trägt sich bis Sonntag, 22.11., abends unten auf den Tafeln ein.", ausgehaengt:"2026-11-18" },
   { art:"ausfall", datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
     liste:[["Szene 3a: Ballsaal · Szene 3b: Balldiva (bis Frank & Lutzi auftauchen)","Helen, James, Petra, Vivian, Phillip, Balldiva"],
            ["Szene 2f: Wiedersehen mit Phillip & Wanderung","Helen, James, Petra, Vivian, Phillip"],
@@ -1715,7 +1715,8 @@ async function decryptWith(pw, e){
   return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b64d(e.iv)}, key, b64d(e.ct))));
 }
 function gsRender(box, d){
-  const my = (lsGet("mw-name", "") || "").toLowerCase();
+  const abbr = s => { const p = String(s || "").trim().split(/\s+/); return (p[0] + (p[1] ? " " + p[1][0] + "." : "")).toLowerCase(); };
+  const my = lsGet("mw-name", "") ? abbr(lsGet("mw-name", "")) : "";
   box.innerHTML = `<input class="gs-find" type="search" placeholder="Namen suchen …" aria-label="Namen suchen">
     <div class="gs-grid">${d.gruppen.map(g => `<div class="gs-grp"><h4>${esc(g.emoji || "")} ${esc(g.titel)} <span style="font-weight:400;color:#5b5230">(${g.namen.length})</span></h4>
       <ol>${g.namen.map(n => `<li${my && n.toLowerCase() === my ? ' class="me"' : ""}>${esc(n)}</li>`).join("")}</ol></div>`).join("")}</div>
