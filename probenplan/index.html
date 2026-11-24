@@ -755,7 +755,7 @@ const AUSHANG = [
   { art:"info", datum:"", titel:"Einteilung: Gefolge, Gang, Ballgesellschaft & 80er-Highschool", text:"Danke fürs Mitmachen bei den Umfragen! Hier siehst du, in welcher Gruppe du dabei bist. Die Liste ist mit dem Team-Passwort geschützt.", geschuetzt:"einteilung.json", ausgehaengt:"2026-11-24" },
   { art:"neu", datum:"2026-11-24", titel:"Dienstag, 24.11., ab 15:20 Uhr: nochmal I Say a Little Prayer", text:"Songprobe mit Frau Bretl für James, Helen, Petra und Vivian.", ausgehaengt:"2026-11-20" },
   { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
-  { art:"ausfall", datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
+  { art:"ausfall", archiv:true, datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
     liste:[["Szene 3a: Ballsaal · Szene 3b: Balldiva (bis Frank & Lutzi auftauchen)","Helen, James, Petra, Vivian, Phillip, Balldiva"],
            ["Szene 2f: Wiedersehen mit Phillip & Wanderung","Helen, James, Petra, Vivian, Phillip"],
            ["Szene 4c: Entkommen","Helen, Petra, Vivian, Phillip, Frank, Erzählerinnen"],
@@ -897,7 +897,7 @@ const FRESH = (() => {
   }
 })();
 // Alte Aushänge wandern ins Archiv: 3 Tage nach dem betroffenen Termin, allgemeine Hinweise nach 3 Wochen oder ab "bis"
-const isArchived = a => a.bis ? parse(a.bis) < today
+const isArchived = a => a.archiv ? true : a.bis ? parse(a.bis) < today
   : a.datum ? daysSince(a.datum) > 3
   : a.ausgehaengt ? daysSince(a.ausgehaengt) > 21 : false;
 
