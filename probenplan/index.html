@@ -749,10 +749,11 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-24";
+const STAND = "2026-11-25";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
-  { art:"info", datum:"", titel:"Einteilung: Gefolge, Gang, Ballgesellschaft & 80er-Highschool", text:"Danke fürs Mitmachen bei den Umfragen! Hier siehst du, in welcher Gruppe du dabei bist. Die Liste ist mit dem Team-Passwort geschützt.", geschuetzt:"einteilung.json", ausgehaengt:"2026-11-24" },
+  { art:"info", datum:"", bis:"2026-11-27", titel:"Ballgesellschaft: Umfrage nochmal offen bis Freitag, 27.11., 23:59 Uhr", text:"Für die Ballgesellschaft suchen wir noch Leute! Trag dich unten auf der Tafel ein. Wer schon dabei ist, muss nichts tun.", ausgehaengt:"2026-11-25" },
+  { art:"info", datum:"", titel:"Einteilung: Gefolge, Gang & 80er-Highschool", text:"Danke fürs Mitmachen bei den Umfragen! Hier siehst du, in welcher Gruppe du dabei bist. Die Liste ist mit dem Team-Passwort geschützt. Die Ballgesellschaft folgt, sobald die Umfrage dafür beendet ist.", geschuetzt:"einteilung.json", ausgehaengt:"2026-11-24" },
   { art:"neu", datum:"2026-11-24", titel:"Dienstag, 24.11., ab 15:20 Uhr: nochmal I Say a Little Prayer", text:"Songprobe mit Frau Bretl für James, Helen, Petra und Vivian.", ausgehaengt:"2026-11-20" },
   { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
   { art:"ausfall", archiv:true, datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
@@ -1752,7 +1753,7 @@ $a("welcome-x").onclick = () => { $a("welcome").hidden = true; lsSet("mw-willkom
 /* ===== „Ich bin dabei“-Umfragen (Gang, Ballgesellschaft, 80er-Highschool) ===== */
 // Neue Umfrage = neuer Eintrag hier; das Script (ab Version 12) braucht dafür kein Update.
 const JOIN_POLLS = [
-  { id:"ball", label:"Ballgesellschaft", dativ:"der Ballgesellschaft", emoji:"💃", titel:"Wer macht bei der Ballgesellschaft mit?", max:15,
+  { id:"ball", label:"Ballgesellschaft", dativ:"der Ballgesellschaft", emoji:"💃", titel:"Wer macht bei der Ballgesellschaft mit?", max:15, bis:"2026-11-27", fristText:"Freitag, 27.11., 23:59 Uhr", nochmal:true,
     text:"Prächtige Roben, fest geschnürte Mieder, ganz viel Anmut: Ihr seid die feine Gesellschaft auf der „Langen Nacht der Tänze“ der Balldiva. Ihr knickst, tanzt Walzer, raunt empört, als die Freunde im falschen Aufzug hereinplatzen – und tragt am Ende Tütüs. Perfekt für alle, die gern tanzen und übertrieben vornehm spielen." },
   { id:"highschool", label:"80er-Highschool", dativ:"der 80er-Highschool", emoji:"📼", titel:"Wer macht bei der 80er-Highschool mit?", max:15,
     text:"Schnattern auf dem Gang, Pausengong, Neonfarben: Ihr seid die Schülerinnen und Schüler einer Highschool in den 80ern, in der der junge Frank und sein Bruder zur Schule gehen. Ihr lacht mit, wenn Franky aufgezogen wird, sitzt im Chemieunterricht und füllt die Bühne mit echtem 80er-Feeling. Es gibt auch kleine Sätze zu sprechen." },
@@ -1763,12 +1764,13 @@ new MutationObserver(boardTidy).observe($a("umfrage"), {attributes:true, attribu
 function joinPoll(cfg){
   const key = "mw-umfrage-" + cfg.id, P = s => `jp-${cfg.id}-${s}`;
   let mine = lsGet(key, null), full = false;
+  const bis = cfg.bis || UMF_BIS, vorbei = () => NOW > at(bis, cfg.bis ? "23:59" : UMF_BIS_ZEIT);
   const box = document.createElement("div");
   box.className = "tafel join"; box.id = P("box"); box.hidden = true; box.setAttribute("aria-labelledby", P("h"));
   box.innerHTML = `<div class="tafel-k">Umfrage</div>
     <h3 id="${P("h")}"><span class="tafel-emoji" aria-hidden="true">${cfg.emoji}</span> ${esc(cfg.titel)}</h3>
     <p class="tafel-p">${esc(cfg.text)}</p>
-    <p class="tafel-frist" id="${P("frist")}">Eintragen bis <b>Sonntag, 22.11., abends</b></p>
+    ${cfg.nochmal ? `<p class="tafel-p"><b>Nochmal geöffnet!</b> Für die Ballgesellschaft brauchen wir noch Leute. Wer schon eingetragen ist, bleibt dabei.</p>` : ""}<p class="tafel-frist" id="${P("frist")}">Eintragen bis <b>${esc(cfg.fristText || "Sonntag, 22.11., abends")}</b></p>
     <p class="tafel-p" id="${P("closed")}" hidden><b>Die Umfrage ist beendet.</b> Die Einteilung kommt in den Aushang.</p>
     <p class="tafel-p">Gesucht: <b>etwa ${cfg.max} Leute</b>. Du darfst auch bei einer anderen Gruppe dabei sein – aber jede und jeder höchstens bei zwei, damit alle zum Zug kommen.</p>
     <form id="${P("form")}" novalidate>
@@ -1782,7 +1784,7 @@ function joinPoll(cfg){
   const q = s => document.getElementById(P(s));
   q("name").value = (mine && mine.name) || lsGet("mw-name", "");
   const render = () => {
-    if(umfVorbei()){
+    if(vorbei()){
       q("form").hidden = true; q("frist").hidden = true; q("closed").hidden = false;
       const has = mine && mine.status === "aktiv"; q("done").hidden = !has;
       if(has){ q("done-txt").textContent = `✓ Du (${mine.name}) bist bei ${cfg.dativ} eingetragen.`; q("undo").parentElement.hidden = true; }
@@ -1798,7 +1800,7 @@ function joinPoll(cfg){
     try{
       const base = { action:"poll_status", poll: cfg.id, label: cfg.label, max: cfg.max };
       const r = await api(mine ? Object.assign(base, { id: mine.id, token: mine.token }) : base);
-      if(!r.ok || r.poll !== cfg.id || !r.open || daysSince(UMF_BIS) > 7){ box.hidden = true; return; } // r.poll fehlt = Script zu alt für diese Umfrage
+      if(!r.ok || r.poll !== cfg.id || !r.open || daysSince(bis) > 7){ box.hidden = true; return; } // r.poll fehlt = Script zu alt für diese Umfrage
       full = !!(r.full && r.full[cfg.id]);
       if(mine && r.mine){ if(r.mine.status !== "aktiv"){ mine = null; lsSet(key, null); } else { mine = Object.assign(mine, r.mine); lsSet(key, mine); } }
       box.hidden = false; render();
@@ -1807,7 +1809,7 @@ function joinPoll(cfg){
   q("form").addEventListener("submit", async ev => {
     ev.preventDefault();
     const err = q("err"), btn = q("send"); err.hidden = true;
-    if(umfVorbei()){ render(); return; }
+    if(vorbei()){ render(); return; }
     const name = q("name").value.trim().replace(/\s+/g, " ");
     if(name.length < 2){ err.textContent = "Bitte gib deinen Namen an."; err.hidden = false; q("name").focus(); return; }
     btn.disabled = true; btn.textContent = "Sende …";
