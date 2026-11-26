@@ -571,7 +571,7 @@ footer a{color:var(--muted)}
     <p class="wl-lede">Schön, dass du dabei bist! Ab jetzt ist das hier deine Zentrale fürs Musical: Hier stehen alle Proben, alle Änderungen und alles, was du für deine Rolle brauchst. Gemeinsam reisen wir in den nächsten Monaten durch sechs Welten – bis zur Premiere am 17. März.</p>
     <ol class="wl-steps">
       <li><b>Rolle wählen</b><span>Unter „Mein Probenplan“ deine Rolle antippen – dann siehst du nur deine Termine und kannst sie in deinen Kalender holen.</span><button class="linkbtn" type="button" data-goto="rolle">Rolle wählen</button></li>
-      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Gerade laufen dort Umfragen, wer bei Gefolge, Ballgesellschaft und 80er-Highschool mitmacht – trag dich ein!</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
+      <li><b>Aushang lesen</b><span>Der gelbe Aushang direkt hier drunter zeigt, was neu ist. Dort findest du auch die Einteilung für Gefolge, Gang und 80er-Highschool – und bis Freitag die Umfrage für die Ballgesellschaft.</span><a class="linkbtn" href="#aushang">Zum Aushang</a></li>
       <li><b>Kannst du mal nicht?</b><span>Bei jeder Probe auf „Ich kann nicht“ tippen. Deinen Text zum Lernen findest du bei jeder Szenenprobe unter „Text lesen“.</span><a class="linkbtn" href="../downloads/mysterious-worlds-website-anleitung.pdf" target="_blank" rel="noopener">Anleitung (PDF)</a></li>
     </ol>
     <p class="wl-sign">Wir freuen uns riesig auf die gemeinsame Zeit! 🎭 Eure Musical-Leitung</p>
@@ -749,12 +749,11 @@ footer a{color:var(--muted)}
 /* Gleiche Web-App wie Reservierung und Einlass: speichert die Probenabsagen im Blatt „Absagen“ */
 const API = "https://script.google.com/macros/s/AKfycbwgUbcjS_n4vmYI7qf6ybIBeDyczOVHR56IyaTWk48RjCcIWJrpeshd6ScZKQHLKOqiKA/exec";
 /* ===== Stand & Aushang – hier werden spontane Änderungen eingetragen ===== */
-const STAND = "2026-11-25";
+const STAND = "2026-11-26";
 // art: "ausfall" | "verschoben" | "info" | "neu"; datum: betroffener Termin (ISO) oder "" für allgemeine Hinweise
 const AUSHANG = [
   { art:"info", datum:"", bis:"2026-11-27", titel:"Ballgesellschaft: Umfrage nochmal offen bis Freitag, 27.11., 23:59 Uhr", text:"Für die Ballgesellschaft suchen wir noch Leute! Trag dich unten auf der Tafel ein. Wer schon dabei ist, muss nichts tun.", ausgehaengt:"2026-11-25" },
   { art:"info", datum:"", titel:"Einteilung: Gefolge, Gang & 80er-Highschool", text:"Danke fürs Mitmachen bei den Umfragen! Hier siehst du, in welcher Gruppe du dabei bist. Die Liste ist mit dem Team-Passwort geschützt. Die Ballgesellschaft folgt, sobald die Umfrage dafür beendet ist.", geschuetzt:"einteilung.json", ausgehaengt:"2026-11-24" },
-  { art:"neu", datum:"2026-11-24", titel:"Dienstag, 24.11., ab 15:20 Uhr: nochmal I Say a Little Prayer", text:"Songprobe mit Frau Bretl für James, Helen, Petra und Vivian.", ausgehaengt:"2026-11-20" },
   { art:"gang", datum:"2026-11-20", titel:"Tanzprobe für die Gang", text:"Freitag, 20.11., um 13:55 Uhr gibt es eine Tanzprobe für alle Gangmitglieder. Treffpunkt: Foyer. Bequeme Kleidung und Schuhe, in denen ihr gut tanzen könnt 🤙", ausgehaengt:"2026-11-18" },
   { art:"ausfall", archiv:true, datum:"", titel:"Dienstagsproben finden ab jetzt nicht mehr statt", text:"Einige Darsteller haben dienstags noch Nachmittagsunterricht, deshalb fallen alle Dienstagsproben weg. Diese Szenen hätten dienstags geprobt werden sollen:",
     liste:[["Szene 3a: Ballsaal · Szene 3b: Balldiva (bis Frank & Lutzi auftauchen)","Helen, James, Petra, Vivian, Phillip, Balldiva"],
@@ -1661,7 +1660,9 @@ function umfRender(){
     $a("umf-st-" + k).textContent = full ? "schon voll" : "noch Plätze frei";
   });
 }
+const GEFOLGE_TAFEL = false; // Gefolge-Umfrage ist abgeschlossen: Tafel nicht mehr im Aushang
 async function umfLoad(){
+  if(!GEFOLGE_TAFEL){ $a("umfrage").hidden = true; return; }
   try{
     const r = await api(myVote ? { action:"poll_status", id: myVote.id, token: myVote.token } : { action:"poll_status" });
     if(!r.ok || !r.open || daysSince(UMF_BIS) > 7){ $a("umfrage").hidden = true; return; } // eine Woche nach der Frist verschwindet die Tafel
@@ -1755,8 +1756,6 @@ $a("welcome-x").onclick = () => { $a("welcome").hidden = true; lsSet("mw-willkom
 const JOIN_POLLS = [
   { id:"ball", label:"Ballgesellschaft", dativ:"der Ballgesellschaft", emoji:"💃", titel:"Wer macht bei der Ballgesellschaft mit?", max:15, bis:"2026-11-27", fristText:"Freitag, 27.11., 23:59 Uhr", nochmal:true,
     text:"Prächtige Roben, fest geschnürte Mieder, ganz viel Anmut: Ihr seid die feine Gesellschaft auf der „Langen Nacht der Tänze“ der Balldiva. Ihr knickst, tanzt Walzer, raunt empört, als die Freunde im falschen Aufzug hereinplatzen – und tragt am Ende Tütüs. Perfekt für alle, die gern tanzen und übertrieben vornehm spielen." },
-  { id:"highschool", label:"80er-Highschool", dativ:"der 80er-Highschool", emoji:"📼", titel:"Wer macht bei der 80er-Highschool mit?", max:15,
-    text:"Schnattern auf dem Gang, Pausengong, Neonfarben: Ihr seid die Schülerinnen und Schüler einer Highschool in den 80ern, in der der junge Frank und sein Bruder zur Schule gehen. Ihr lacht mit, wenn Franky aufgezogen wird, sitzt im Chemieunterricht und füllt die Bühne mit echtem 80er-Feeling. Es gibt auch kleine Sätze zu sprechen." },
 ];
 // Sind Umfragen sichtbar und keine Aushänge da, braucht es den Hinweis „keine Änderungen“ nicht
 function boardTidy(){ const e = document.getElementById("notice-empty"); if(e) $a("notices").hidden = [...document.querySelectorAll(".board .tafel")].some(x => !x.hidden); }
